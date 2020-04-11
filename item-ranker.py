@@ -1,5 +1,3 @@
-import sys
-import time
 from termcolor import cprint, colored
 from random import randint
 
@@ -78,11 +76,8 @@ def rank(elems):
 def askExclude():
     isExclude = input(
         'Do you want to exclude some integer from the list? [ y / n ]').lower()
-    sys.stdout.flush()
     if isExclude == 'y':
-        ans = input('Exclude: ').split(',')
-        sys.stdout.flush()
-        return ans
+        return input('Exclude: ').split(',')
     elif isExclude != 'n':
         return askExclude()
     else:
@@ -90,30 +85,18 @@ def askExclude():
 
 
 cprint('Item ranker by comparison\n', 'yellow', attrs=['bold'])
-sys.stdout.flush()
-sys.stdin.flush()
-time.sleep(2)
 
 start = int(input(colored('Enter the first integer of the list: ', 'yellow')))
-sys.stdout.flush()
-sys.stdin.flush()
-time.sleep(2)
 end = int(input(colored('Enter the last integer of the list: ', 'yellow')))
-sys.stdout.flush()
-sys.stdin.flush()
-time.sleep(2)
 
 excludelist = askExclude()
 
 
 print()
-sys.stdout.flush()
 
 ranklist = [n for n in range(start, end + 1)]
 print(ranklist)
-sys.stdout.flush()
 print(excludelist)
-sys.stdout.flush()
 for item in excludelist:
     ranklist.remove(int(item))
 

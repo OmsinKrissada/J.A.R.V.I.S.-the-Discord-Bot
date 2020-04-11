@@ -37,49 +37,16 @@ function sendEmbed(title, text, type = 'info', channel = current_channel) {
 	channel.send(embed);
 }
 
-function ranking(origin_message) {
-	stopranking = false
 
+
+function rank(origin_message) {
+	let stopranking = false;
 	const { spawn } = require("child_process");
+
 	const py = spawn("python", ["-u", "item-ranker.py"]);
 
-	py.stdout.on('data', data => {
-		origin_message.channel.send(data)
-		console.log(data)
-	});
-
-	client.on('message', message => {
-		if (stop) return;
-		if (!message.author.bot && message.author == origin_message.author) {
-			if (message.content != 'stop') {
-				console.log('[\'' + message.content + '\']');
-				console.log(stop)
-			}
-			else {
-				py.stdin.end();
-
-				origin_message.reply('Ended Session')
-				console.log('finished');
-				console.log(stop)
-				stop = true
-			}
-		}
-	});
-}
-
-const readline = require("readline");
-const rl = readline.createInterface({
-	input: process.stdin,
-	output: process.stdout
-});
-
-function terminal(message) {
-	const { spawn } = require("child_process");
-
-	const py = spawn("python", ["item-ranker.py"]);
-
 	py.stdout.on("data", data => {
-		sendEmbed('stdout: ', `${data}`)
+		sendEmbed('', `${data}\n${origin_message.author}`, channel = origin_message.channel)
 		console.log(`stdout: ${data}`);
 	});
 
@@ -93,41 +60,29 @@ function terminal(message) {
 
 	py.on("close", code => {
 		console.log(`child process exited with code ${code}`);
+		pass.destroy()
+		stopranking = true
 	});
 
-	// process.stdin.pipe(py.stdin)
-	const { Readable } = require('stream')
-	const readable = Readable.from(message.content)
+	// Create a new stream and pipe to python input stream 
+	const { PassThrough } = require('stream')
+	const pass = new PassThrough();
+	pass.pipe(py.stdin)
 
-	// console.log(`going to pipe as ${process.stdin.read()}`)
-	readable.pipe(process.stdin)
-	process.stdin.pipe(py.stdin)
-	// console.log(`piped as ${process.stdin.read()}`)
-	// console.log('piped')
+	// Log data for the sake of debugging
+	pass.on('data', data => {
+		console.log(`data: ${data}`)
+	})
 
-
-	// rl.question("input: ", function (ans) {
-	// 	process.stdin.pipe(ls.stdin)
-	// 	// ls.stdin.write(ans)
-	// });
 	client.on('message', message => {
-
-		console.log('before add')
-		console.log(`going to add "${message.content}" to "readable" stream`)
-		readable.
-
-			console.log('after add')
+		if (stopranking) return;
+		if (!message.author.bot && (message.author == origin_message.author)) {
+			// Write discord input to 'pass'
+			pass.write(message.content + '\r\n')
+			console.log(`wrote ${message.content}`)
+		}
 	})
 }
-
-
-// process.stdin.pipe(py.stdin)
-
-// rl.question("input: ", function (ans) {
-// 	process.stdin.pipe(ls.stdin)
-// 	// ls.stdin.write(ans)
-// });
-
 
 
 class RepeatSession {
@@ -144,9 +99,9 @@ client.on('message', message => {
 		// message.reply('\nCommand is: ' + command + '\nArgument is: ' + arg)
 
 		switch (command) {
-			case 'terminal':
-				terminal(message)
-				break
+			// case 'terminal':
+			// 	terminal(message)
+			// 	break
 
 			case 'help':
 				sendEmbed('Commands',
@@ -191,8 +146,8 @@ ${prefix}rank : Start a ranking session ()`)
 				break
 
 			case 'rank':
-				message.reply('You started a ranking session.')
-				ranking(message)
+				sendEmbed('Now Ranking', `${message.author} started a ranking session.\n\nType your answer into the chat. (without prefix)\nType !stopranking to end the session.`)
+				rank(message)
 
 				rankflag = true
 				break
