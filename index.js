@@ -26,6 +26,12 @@ fs.readFile('prefix.txt', 'utf-8', (err, data) => {
 	console.log(`Prefix has set to "${prefix}"`)
 });
 
+fs.readFile('token', 'utf-8', (err, data) => {
+	if (err) throw err;
+	let mytoken = data;
+	client.login(mytoken)
+});
+
 const red = 0xff0000
 const green = 0x00ff00
 const blue = 0x4287f5
@@ -243,4 +249,3 @@ ${prefix}rank : Start a ranking session ()`)
 // 		message.reply(message.author.displayAvatarURL());
 // 	}
 // });
-client.login("Njk2OTczNzI1ODA2ODg2OTYz.XowjuA.gsDCNyOUTDF_07KAA3ihQ_i7hoM")
