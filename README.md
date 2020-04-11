@@ -17,7 +17,11 @@ A Discord bot using [discord.js](discordjs.org) module in node.js
 
 ---
 
-
+---
+## What You Need:
+- node.js (with *npm* installed)
+- Python 3.+
+---
 ## Dependencies:
 Install [discord.js](discordjs.org) module using
 ```
@@ -27,4 +31,11 @@ Install [highlight.js](highlightjs.org) module using
 ```
 npm install highlight.js
 ```
-In order for `item-ranker.py` to work properly, please use **Python 3.+**
+Note: In order for `item-ranker.py` to work properly, please use **Python 3.+**
+
+---
+## Run
+Get the bot online by running
+```
+npm run dev
+```
