@@ -6,7 +6,7 @@ The original source for the file is available for public in [this repository](ht
 
 ---
 
-A Discord bot using [discord.js](discordjs.org) module in node.js
+A Discord bot using [discord.js](https://discord.js.org) module in node.js
 
 ## Features:
 - ping
@@ -19,11 +19,11 @@ A Discord bot using [discord.js](discordjs.org) module in node.js
 - Python 3.+
 ---
 ## Dependencies:
-Install [discord.js](discordjs.org) module using
+Install [discord.js](https://discord.js.org) module using
 ```
 npm install discord.js
 ```
-Install [highlight.js](highlightjs.org) module using
+Install [highlight.js](https://highlightjs.org) module using
 ```
 npm install highlight.js
 ```
