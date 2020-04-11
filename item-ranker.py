@@ -1,3 +1,4 @@
+import sys
 from termcolor import cprint, colored
 from random import randint
 
@@ -28,16 +29,16 @@ def insert_elems(start, list, index):
 def is_better(a, b):
     reversed = True if randint(0, 1) == 1 else False
     while True:
-        cprint('Which is better? ', 'cyan', end='')
+        print('Which is better? ')
         if not reversed:
-            cprint(str(a), 'yellow', end='')
-            cprint(' or ', 'cyan', end='')
-            cprint(str(b), 'yellow', end='')
+            print(str(a))
+            print(' or ')
+            print(str(b))
         else:
-            cprint(str(b), 'yellow', end='')
-            cprint(' or ', 'cyan', end='')
-            cprint(str(a), 'yellow', end='')
-        cprint(': ', 'cyan', end='')
+            print(str(b))
+            print(' or ')
+            print(str(a))
+        print(': ')
 
         user_input = input()
 
@@ -46,7 +47,7 @@ def is_better(a, b):
         elif user_input == str(b):
             return False
         else:
-            cprint('Invalid choice. Choose again.', 'red')
+            print('Invalid choice. Choose again.')
 
 
 def rank(elems):
@@ -84,10 +85,10 @@ def askExclude():
         return []
 
 
-cprint('Item ranker by comparison\n', 'yellow', attrs=['bold'])
+sys.stdout.write(['text', 'Item ranker by comparison\n'])
 
-start = int(input(colored('Enter the first integer of the list: ', 'yellow')))
-end = int(input(colored('Enter the last integer of the list: ', 'yellow')))
+start = int(input('Enter the first integer of the list: '))
+end = int(input('Enter the last integer of the list: '))
 
 excludelist = askExclude()
 

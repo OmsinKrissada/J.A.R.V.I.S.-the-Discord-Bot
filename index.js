@@ -1,12 +1,12 @@
 const fs = require('fs');
+const highlight = require('highlight.js')
 
 // Import the discord.js module
-const Discord = require('discord.js');
+const { Discord, Client, MessageEmbed } = require('discord.js');
 
 // Create an instance of a Discord client
-const client = new Discord.Client();
+const client = new Client();
 // const clientInformation = new Discord.clientInformation();
-var PythonShell = require('python-shell');
 
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
@@ -26,14 +26,18 @@ fs.readFile('prefix.txt', 'utf-8', (err, data) => {
 	console.log(`Prefix has set to "${prefix}"`)
 });
 
+const red = 0xff0000
+const green = 0x00ff00
+const blue = 0x4287f5
+
 function sendEmbed(title, text, type = 'info', channel = current_channel) {
-	const embed = new Discord.MessageEmbed()
+	const embed = new MessageEmbed()
 		.setTitle(title)
 		.setDescription(text)
-	if (type == 'error') embed.setColor(0xff0000)
-	else if (type == 'success') embed.setColor(0x00ff00)
+	if (type == 'error') embed.setColor(red)
+	else if (type == 'success') embed.setColor(green)
 	//0x32a852
-	else if (type == 'info') embed.setColor(0x4287f5)
+	else if (type == 'info') embed.setColor(blue)
 	channel.send(embed);
 }
 
@@ -146,7 +150,8 @@ ${prefix}rank : Start a ranking session ()`)
 				break
 
 			case 'rank':
-				sendEmbed('Now Ranking', `${message.author} started a ranking session.\n\nType your answer into the chat. (without prefix)\nType !stopranking to end the session.`)
+				// message.channel.send(Discord.MessageEmbed('Now Ranking', `${message.author} started a ranking session.\n\nType your answer into the chat. (without prefix)\nType !stopranking to end the session.`))
+				// const embed = new MessageEmbed().setTitle('Now Ranking').setColor
 				rank(message)
 
 				rankflag = true
@@ -179,7 +184,8 @@ ${prefix}rank : Start a ranking session ()`)
 				break
 
 			case 'say':
-				message.channel.send(arg)
+				highlight.
+					message.channel.send(arg)
 				break
 
 			case 'stopallrepeat':
@@ -187,6 +193,32 @@ ${prefix}rank : Start a ranking session ()`)
 					stoprepeat = true
 				}
 				break
+			case 'test':
+				const exampleEmbed = new MessageEmbed()
+					.setColor('#0099ff')
+					.setTitle('Some title')
+					.setURL('https://discord.js.org/')
+					.setAuthor('Some name', 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
+					.setDescription('Some description here')
+					.setThumbnail('https://i.imgur.com/wSTFkRM.png')
+					.addField('Regular field title', 'Some value here')
+					.addField('Inline field title', 'Some value here')
+					.addField('Inline field title', 'Some value here')
+					.addField('Inline field title', 'Some value here')
+					.setImage('https://i.imgur.com/wSTFkRM.png')
+					.setTimestamp()
+					.setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');
+
+				message.channel.send(exampleEmbed);
+			// const embed = new Discord.MessageEmbed()
+			// 	.setTitle("title")
+			// 	.setDescription("description")
+			// 	.setAuthor(message.author)
+			// 	.setColor('0x00ff00')
+			// 	.setFooter('footer')
+			// .addField
+			// message.channel.send(embed)
+			// break
 
 			case 'uptime':
 				sendEmbed('Uptime', `${client.uptime / 1000}s`)
