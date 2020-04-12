@@ -13,10 +13,11 @@ def pad(str, length, padder=' '):
 
 def print_rank(list, color, head=''):
     if head != '':
-        cprint(head, color, attrs=['bold'])
+        # cprint(head, color, attrs=['bold'])
+        print(head)
     for i, item in enumerate(list):
-        cprint(
-            f'{INDENT}{pad(str(i + 1), len(str(len(list))))}:{INDENT}{item}', color)
+        print(
+            f'{INDENT}{pad(str(i + 1), len(str(len(list))))}:{INDENT}{item}')
 
 
 def insert_elems(start, list, index):
@@ -29,15 +30,15 @@ def insert_elems(start, list, index):
 def is_better(a, b):
     reversed = True if randint(0, 1) == 1 else False
     while True:
-        print('Which is better? ')
+        print('Which is better? ', end='')
         if not reversed:
-            print(str(a))
-            print(' or ')
-            print(str(b))
+            print(str(a), end='')
+            print(' or ', end='')
+            print(str(b), end='')
         else:
-            print(str(b))
-            print(' or ')
-            print(str(a))
+            print(str(b), end='')
+            print(' or ', end='')
+            print(str(a), end='')
         print(': ')
 
         user_input = input()
@@ -47,7 +48,7 @@ def is_better(a, b):
         elif user_input == str(b):
             return False
         else:
-            print('Invalid choice. Choose again.')
+            sys.stderr.write('Invalid choice. Choose again.')
 
 
 def rank(elems):
@@ -85,10 +86,19 @@ def askExclude():
         return []
 
 
-sys.stdout.write(['text', 'Item ranker by comparison\n'])
+print('Item ranker by comparison\n')
 
-start = int(input('Enter the first integer of the list: '))
-end = int(input('Enter the last integer of the list: '))
+while True:
+    start = int(input('Enter the first integer of the list: '))
+    end = int(input('Enter the last integer of the list: '))
+
+    if abs(start - end) > 1000:
+        print('Error: Support only 1000 items or less')
+        continue
+    if start < 0 or end < 0:
+        print('Error: Support only positive integers')
+        continue
+    break
 
 excludelist = askExclude()
 
@@ -99,7 +109,11 @@ ranklist = [n for n in range(start, end + 1)]
 print(ranklist)
 print(excludelist)
 for item in excludelist:
-    ranklist.remove(int(item))
+    try:
+        ranklist.remove(int(item))
+    except ValueError:
+        print('Exclude list not match, please enter again')
+        askExclude()
 
 
 print_rank(rank(ranklist), 'green', head='\nRanking Results:')
