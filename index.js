@@ -1,8 +1,8 @@
 const fs = require('fs');
-const highlight = require('highlight.js')
 
 // Import the discord.js module
-const { Discord, Client, MessageEmbed } = require('discord.js');
+const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager } = require('discord.js');
+// const Discord = require('discord.js')
 
 // Create an instance of a Discord client
 const client = new Client();
@@ -15,6 +15,8 @@ const client = new Client();
 client.on('ready', () => {
 	console.log('I am ready!');
 	client.user.setActivity('Ultron', { type: "WATCHING" })
+
+	mclog_channel = client.channels.resolve('699045838718238771')
 
 	// console.log(Discord.GuildManager.resolve(client.guilds))
 });
@@ -32,6 +34,15 @@ fs.readFile('token', 'utf-8', (err, data) => {
 	client.login(mytoken)
 });
 
+function getIP() {
+	let current_ip
+	var { exec } = require('child_process')
+	exec('dig +short myip.opendns.com @resolver1.opendns.com', function (err, stdout, stderr) {
+		current_ip = stdout
+	})
+	return current_ip
+}
+
 const red = 0xff0000
 const green = 0x00ff00
 const blue = 0x4287f5
@@ -46,13 +57,16 @@ function sendEmbed(title, text, type = 'info', channel = current_channel) {
 	//0x32a852
 	else if (type == 'info') embed.setColor(blue)
 	channel.send(embed);
-}
+};
 
 
-class Ranker {
-	user_id;
+// class Ranker {
+// 	user_id;
+// 	begin() {
 
-}
+// 	}
+
+// }
 
 function rank(origin_message) {
 
@@ -180,6 +194,87 @@ class RepeatSession {
 
 }
 
+//	----------------------------------------------------------------------
+//	Config Section
+// 
+//	----------------------------------------------------------------------
+
+
+const { spawn } = require("child_process");
+const pipein = spawn("sh", ["-c", "cat < ../minecraft/lab/mctodc.pipe"]);
+
+
+
+// client.guilds.resolve('#685493737039593491').channels.resolve('#699045838718238771')
+
+pipein.stdout.on("data", data => {
+	input = JSON.parse(data)
+	embed = new MessageEmbed()
+		.setTitle('Server Started')
+		.setDescription(`Minecraft server "Survival" has started, come and join!\nThe server IP is \`${getIP()}\``)
+		.setColor(blue)
+	switch (input.type) {
+		case 'log':
+			mclog_channel.send(input.content)
+		case 'chat':
+			mclog_channel.send(`${input.player}: ${input.message}`)
+	}
+});
+
+pipein.stderr.on("data", data => {
+	// sendEmbed('Error:', `\n\`\`\`${data}\`\`\``, 'error', channel = mclog_channel)
+	console.log(`stderr: ${data}`);
+});
+
+pipein.on('error', (error) => {
+	console.log(`error: ${error.message}`);
+});
+
+pipein.on("close", code => {
+	console.log(`child process (pipe) exited with code ${code}`);
+	// pass.destroy()
+});
+
+const ws = new fs.createWriteStream('../minecraft/lab/dctomc.pipe')
+
+client.on('message', message => {
+	if (!message.author.bot && message.channel == mclog_channel) {
+		let content = {
+			sender: message.author.username,
+			content: message.content
+		}
+		ws.write(JSON.stringify(content) + '\n')
+		console.log(JSON.stringify(content))
+	}
+})
+
+// // On receive input from discord
+// client.on('message', message => {
+// 	if (message.content == `${prefix}stop`) stopmorse = true
+// 	if (!current_message.author.bot) {
+// 		// Write discord input to 'pass'
+// 		pass.write(message.content + '\r\n')
+// 		console.log(`wrote ${message.content}`)
+// 	}
+// })
+
+// var net = require('net');
+
+// var server = net.createServer(function (stream) {
+// 	stream.on('data', data => {
+// 		console.log('data:', data.toString());
+// 	});
+// 	stream.on('end', () => {
+// 		server.close();
+// 	});
+// });
+
+// server.listen('/home/omsin/Servers/minecraft/lab/mctodiscord');
+
+// var stream = net.connect('/tmp/test.sock');
+// stream.write('hello');
+// stream.end();
+
 client.on('message', message => {
 	current_channel = message.channel
 	current_message = message
@@ -199,9 +294,10 @@ client.on('message', message => {
 					.setTitle(`Available Commands:`)
 					.setDescription(`Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\``)
 					.setColor(blue)
-					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`help` : Shows this message\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
+					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ip` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`help` : Shows this message\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
 					.addField('Settings', '`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix')
 					.addField('Misc', '`repeat` : Repeat your messsages\n`say` : Say your provided text once')
+					.addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot')
 				message.channel.send(embed)
 				break
 
@@ -211,6 +307,54 @@ client.on('message', message => {
 
 			case 'hello':
 				message.channel.send(`Hi! ${message.author}`)
+				break
+
+			case 'ip':
+				message.channel.send(`Current IP address is **${getIP()}**`)
+				break
+
+			case 'channel':
+				console.log(`${message.channel} with id: ${message.channel.id}`)
+				break
+
+			case 'ipannounce':
+				embed = new MessageEmbed()
+					.setTitle('CURRENT IP')
+					.setDescription(`**Current IP address is \`${getIP()}\`**`)
+					.setColor(blue)
+					.addField(` ‎`, `_Last updated: ${new Date().toLocaleString()}_`)
+
+				// console.log(client.user.lastMessage.editable)
+				// client.channels.resolve.edit(embed)
+				// client.guilds.resolve('685493737039593491').channels.resolve('685938007223566371').fetch()
+				// async function edit() {
+				// 	let fetched;
+				// 	// do {
+				// 	fetched = await message.channel.fetchMessages({ limit: 1 });
+				// 	fetched.edit('Edited')
+				// 	// message.channel.bulkDelete(fetched);
+				// 	// }
+				// 	// while (fetched.size >= 2);
+				// edit()
+
+				// client.guilds.resolve('685493737039593491').channels.resolve('700679547888205874')
+				// if (client.user.lastMessage == null) {
+				// 	const collector = new MessageCollector(message.channel, m => m.author.id === client.user.id);
+				// 	collector.on('collect', message => {
+				// 		console.log(message.content);
+				// 		message.edit(embed)
+				// 		collector.stop("Got the message");
+				// 		// message.channel.messages.resolve('700651576209047653').edit(embed)
+				// 	});
+				// }
+				// else {
+				// 	client.user.lastMessage.edit('edited')
+				// }
+
+				// message.channel.send(`**Current IP address is \`${stdout}\`**_Last updated: ${new Date().toLocaleString()}_\n${message.channel.type == 'text' ? '@everyone' : ''}`)
+				/*	if (message.channel.type == 'text') {
+						message.delete(500)
+					}*/
 				break
 
 			case 'morse':
@@ -253,7 +397,7 @@ client.on('message', message => {
 					// }
 				}
 				else {
-					sendEmbed('Error', `Usage ${prefix}prefix { new prefix }`, 'error')
+					sendEmbed('Error', `Usage \`${prefix}prefix { new prefix }\``, 'error')
 				}
 				break
 
