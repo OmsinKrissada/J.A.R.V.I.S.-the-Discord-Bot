@@ -12,10 +12,15 @@ const client = new Client();
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
  */
+var ip_address;
 client.on('ready', () => {
 	console.log('I am ready!');
 	client.user.setActivity('Ultron', { type: "WATCHING" })
-
+	let { exec } = require('child_process');
+	exec('dig +short myip.opendns.com @resolver1.opendns.com', function (err, stdout, stderr) {
+		ip_address = stdout;
+	});
+	ip_address = ip_address;
 	mclog_channel = client.channels.resolve('699045838718238771')
 
 	// console.log(Discord.GuildManager.resolve(client.guilds))
@@ -33,15 +38,6 @@ fs.readFile('token', 'utf-8', (err, data) => {
 	let mytoken = data;
 	client.login(mytoken)
 });
-
-function getIP() {
-	let current_ip
-	var { exec } = require('child_process')
-	exec('dig +short myip.opendns.com @resolver1.opendns.com', function (err, stdout, stderr) {
-		current_ip = stdout
-	})
-	return current_ip
-}
 
 const red = 0xff0000
 const green = 0x00ff00
@@ -196,12 +192,12 @@ class RepeatSession {
 
 //	----------------------------------------------------------------------
 //	Config Section
-// 
+var pathtoplugin = '../minecraft/missile_wars'
 //	----------------------------------------------------------------------
 
 
 const { spawn } = require("child_process");
-const pipein = spawn("sh", ["-c", "cat < ../minecraft/lab/mctodc.pipe"]);
+const pipein = spawn("sh", ["-c", `cat < ${pathtoplugin}/plugins/Ultron/mctodc.pipe`]);
 
 
 
@@ -209,15 +205,34 @@ const pipein = spawn("sh", ["-c", "cat < ../minecraft/lab/mctodc.pipe"]);
 
 pipein.stdout.on("data", data => {
 	input = JSON.parse(data)
-	embed = new MessageEmbed()
-		.setTitle('Server Started')
-		.setDescription(`Minecraft server "Survival" has started, come and join!\nThe server IP is \`${getIP()}\``)
-		.setColor(blue)
+
 	switch (input.type) {
 		case 'log':
-			mclog_channel.send(input.content)
+			if (input.content == 'mcready') {
+				embed = new MessageEmbed()
+					.setTitle('Server Started')
+					.setDescription(`Minecraft server has started, come and join!\nThe server IP is \`${ip_address}\``)
+					.setColor(green)
+				console.log('ready')
+				mclog_channel.send(embed)
+			}
+			else if (input.content == 'mcbye') {
+				embed = new MessageEmbed()
+					.setTitle('Server Started')
+					.setDescription(`Minecraft server has stopped, Bye!`)
+					.setColor(red)
+				console.log('stopped')
+				mclog_channel.send(embed)
+			}
+			else {
+				mclog_channel.send(input.content)
+			}
+			break
 		case 'chat':
 			mclog_channel.send(`${input.player}: ${input.message}`)
+			break
+		default:
+			console.log('Unknown type received')
 	}
 });
 
@@ -235,7 +250,7 @@ pipein.on("close", code => {
 	// pass.destroy()
 });
 
-const ws = new fs.createWriteStream('../minecraft/lab/dctomc.pipe')
+const ws = new fs.createWriteStream(`${pathtoplugin}/plugins/Ultron/dctomc.pipe`)
 
 client.on('message', message => {
 	if (!message.author.bot && message.channel == mclog_channel) {
@@ -279,11 +294,10 @@ client.on('message', message => {
 	current_channel = message.channel
 	current_message = message
 	if (message.content.startsWith(prefix) && !message.author.bot) {
-		let command = message.content.substring(prefix.length, message.content.indexOf(' ') != -1 ? message.content.indexOf(' ') : message.content.length)
-		let arg = (message.content.indexOf(' ') != -1 ? message.content.substring(message.content.indexOf(' ') + 1) : ' ').trim()
-		// message.reply('\nCommand is: ' + command + '\nArgument is: ' + arg)
+		let args = message.content.trim().split(' ')
+		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
-		switch (command) {
+		switch (args[0]) {
 			// case 'terminal':
 			// 	terminal(message)
 			// 	break
@@ -310,19 +324,27 @@ client.on('message', message => {
 				break
 
 			case 'ip':
-				message.channel.send(`Current IP address is **${getIP()}**`)
+				message.channel.send(`Current IP address is **${ip_address}**`)
 				break
 
 			case 'channel':
 				console.log(`${message.channel} with id: ${message.channel.id}`)
 				break
 
+			// case 'ignore':
+			// 	fs.writeFileSync(ignorelist.txt, arg)
+
+			// 	message.channel.send()
+			// 	break
+
 			case 'ipannounce':
 				embed = new MessageEmbed()
 					.setTitle('CURRENT IP')
-					.setDescription(`**Current IP address is \`${getIP()}\`**`)
+					.setDescription(`**Current IP address is \`${ip_address}\`**`)
 					.setColor(blue)
 					.addField(` ‎`, `_Last updated: ${new Date().toLocaleString()}_`)
+				message.channel.send(embed)
+				message.channel.send('@everyone')
 
 				// console.log(client.user.lastMessage.editable)
 				// client.channels.resolve.edit(embed)
@@ -370,9 +392,9 @@ client.on('message', message => {
 
 			case 'nick':
 				if (message.guild.dm)
-					message.guild.member(client.user).setNickname(arg)
-				if (arg != '') {
-					sendEmbed('Nickname Changed', `Nickname has changed to ${arg}`, 'success')
+					message.guild.member(client.user).setNickname(args[1])
+				if (args[1] != '') {
+					sendEmbed('Nickname Changed', `Nickname has changed to ${args[1]}`, 'success')
 				}
 				else {
 					sendEmbed('Nickname Reset', 'Nickname has reset to **J.A.R.V.I.S.**', 'success')
@@ -380,7 +402,7 @@ client.on('message', message => {
 				break
 
 			case 'prefix':
-				if (arg != '') {
+				if (args[1] != '') {
 					// if (arg == '/') {
 					// 	sendEmbed('Prefix Not Recommended', 'The prefix `/` is not recommended because it is also used for discord commands.\nType `confirm` to comfirm the change. Otherwise, the change will be reversed.')
 					// 	client.on('message', message => {
@@ -388,7 +410,7 @@ client.on('message', message => {
 					// 	})
 					// }
 					// else {
-					prefix = arg;
+					prefix = args[1];
 					fs.writeFile('prefix.txt', prefix, (err) => {
 						if (err) throw err
 					})
@@ -408,7 +430,7 @@ client.on('message', message => {
 				break
 
 			case 'repeat':
-				if (arg != '') {
+				if (args[1] != '') {
 					current_author = message.mentions.users.first()
 				}
 				else {
@@ -434,14 +456,14 @@ client.on('message', message => {
 				break
 
 			case 'say':
-				message.channel.send(arg)
+				message.channel.send(args[1])
 				break
 
 			case 'stop':
 				break
 
 			case 'stopallrepeat':
-				if (arg != '') {
+				if (args[1] != '') {
 					stoprepeat = true
 				}
 				break
