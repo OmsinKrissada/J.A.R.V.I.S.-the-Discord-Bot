@@ -1,6 +1,7 @@
 /token
 /lab.js
 /node_modules/
+/reports/
+/files/
 *.pipe
-/reports
 spare.txt

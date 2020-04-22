@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 // Import the discord.js module
-const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager } = require('discord.js');
+const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager } = require('discord.js');
 // const Discord = require('discord.js')
 
 // Create an instance of a Discord client
@@ -13,25 +13,88 @@ const client = new Client();
  * received from Discord
  */
 var ip_address;
+var database;
 client.on('ready', () => {
+
+	// Init sequence
 	console.log('I am ready!');
 	client.user.setActivity('Ultron', { type: "WATCHING" })
 	let { exec } = require('child_process');
+
+	// Get IP Address
 	exec('dig +short myip.opendns.com @resolver1.opendns.com', function (err, stdout, stderr) {
 		ip_address = stdout;
 	});
 	ip_address = ip_address;
+
+	getDatabase();
+
+
+	// Get specific channel object
 	mclog_channel = client.channels.resolve('699045838718238771')
+
+
 
 	// console.log(Discord.GuildManager.resolve(client.guilds))
 });
 
-// Read files
-fs.readFile('prefix.txt', 'utf-8', (err, data) => {
-	if (err) throw err;
-	prefix = data;
-	console.log(`Prefix has set to "${prefix}"`)
-});
+
+// Log debug info
+// client.on("debug", (e) => console.info(e));
+
+function getDatabase() {
+
+	// Check if file dir exist, if not, create them.
+	if (!fs.existsSync('./files')) {
+		fs.mkdirSync('./files')
+	}
+	// Get server data
+	fs.readFile('./files/database.json', 'utf-8', (err, filecontent) => {
+		// Create ./files/database.json if not exist/error occur
+		if (err) {
+			let default_data = { guilds: {} };
+
+			fs.writeFile('./files/database.json', JSON.stringify(default_data), (err) => { if (err) throw err; });
+			database = default_data;
+		}
+		else database = JSON.parse(filecontent);
+
+		console.log('read data: ')
+		console.log(JSON.stringify(database))
+	});
+}
+
+function setDatabase(newDataObject) {
+	fs.writeFile('./files/database.json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
+}
+
+function addGuildDefaultData(guild) {
+	database.guilds[guild.id] = {
+		name: guild.name,
+		prefix: '!'
+	}
+	setDatabase(database)
+}
+
+// Called on joining guild
+// client.on('guildCreate', guild => {
+// 	console.log('joined')
+// 	// Create new guild in database if not exist
+// 	if (!Object.keys(obj.guilds).includes(guild.id)) {
+// 		data.guilds[guild.id] = {
+// 			name: guild.name,
+// 			prefix: "!"
+// 		};
+// 		fs.writeFile('./files/database.json', JSON.stringify(data), (err) => {
+// 			if (err) throw err;
+// 		});
+
+// 	}
+// 	console.log(JSON.stringify(data))
+
+// })
+
+
 
 fs.readFile('token', 'utf-8', (err, data) => {
 	if (err) throw err;
@@ -44,7 +107,7 @@ const green = 0x00ff00
 const blue = 0x4287f5
 const yellow = 0xebc934
 
-function sendEmbed(title, text, type = 'info', channel = current_channel) {
+function sendEmbed(title, text, type = 'info', channel = current_message.channel) {
 	const embed = new MessageEmbed()
 		.setTitle(title)
 		.setDescription(text)
@@ -143,12 +206,12 @@ function morseidk() {
 		const py = spawn("python", ["morse.py"]);
 
 		py.stdout.on("data", data => {
-			sendEmbed('', `${data}\n\n`, channel = current_channel)
+			sendEmbed('', `${data}\n\n`, channel = current_message.channel)
 			console.log(`stdout: ${data}`);
 		});
 
 		py.stderr.on("data", data => {
-			sendEmbed('Error:', `\n\`\`\`${data}\`\`\``, 'error', current_channnel)
+			sendEmbed('Error:', `\n\`\`\`${data}\`\`\``, 'error', current_message.channel)
 			console.log(`stderr: ${data}`);
 			stopranking = true
 		});
@@ -290,11 +353,18 @@ client.on('message', message => {
 // stream.write('hello');
 // stream.end();
 
+var current_message
 client.on('message', message => {
-	current_channel = message.channel
-	current_message = message
-	if (message.content.startsWith(prefix) && !message.author.bot) {
-		let args = message.content.trim().split(' ')
+	current_message = message;
+
+	// If guild not exist in database, add them. 
+	if (database.guilds[message.guild.id] === undefined) {
+		addGuildDefaultData(message.guild);
+	}
+	let prefix = database.guilds[message.guild.id].prefix;
+
+	if (message.content.startsWith(prefix) && !message.author.bot && message.content.length > prefix.length) {
+		let args = message.content.substr(prefix.length).trim().split(' ')
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
 		switch (args[0]) {
@@ -308,8 +378,8 @@ client.on('message', message => {
 					.setTitle(`Available Commands:`)
 					.setDescription(`Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\``)
 					.setColor(blue)
-					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ip` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`help` : Shows this message\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
-					.addField('Settings', '`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix')
+					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`help` : Shows this message\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
+					.addField('Settings', '`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix\n`refresh` : Reload all server data from disk\n`reset` : Reset current server\'s data')
 					.addField('Misc', '`repeat` : Repeat your messsages\n`say` : Say your provided text once')
 					.addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot')
 				message.channel.send(embed)
@@ -402,7 +472,7 @@ client.on('message', message => {
 				break
 
 			case 'prefix':
-				if (args[1] != '') {
+				if (args[1] != undefined) {
 					// if (arg == '/') {
 					// 	sendEmbed('Prefix Not Recommended', 'The prefix `/` is not recommended because it is also used for discord commands.\nType `confirm` to comfirm the change. Otherwise, the change will be reversed.')
 					// 	client.on('message', message => {
@@ -410,12 +480,11 @@ client.on('message', message => {
 					// 	})
 					// }
 					// else {
-					prefix = args[1];
-					fs.writeFile('prefix.txt', prefix, (err) => {
-						if (err) throw err
-					})
-					sendEmbed('Prefix Changed', `Prefix has changed to ${prefix}`, 'success')
-					console.log(`The prefix has changed to \`${prefix}\``)
+					let new_prefix = args[1];
+					database.guilds[message.guild.id].prefix = new_prefix;
+					setDatabase(database);
+					sendEmbed('Prefix Changed', `Prefix has changed to ${new_prefix}`, 'success')
+					console.log(`The prefix has changed to \`${new_prefix}\``)
 					// }
 				}
 				else {
@@ -428,6 +497,15 @@ client.on('message', message => {
 				// const embed = new MessageEmbed().setTitle('Now Ranking').setColor
 				rank(message)
 				break
+
+			case 'refresh':
+				getDatabase();
+				message.channel.send(new MessageEmbed()
+					.setTitle('Data Refreshed')
+					.setDescription('Server database cache has refreshed from file')
+					.setColor(green)
+				);
+				break;
 
 			case 'repeat':
 				if (args[1] != '') {
@@ -455,6 +533,39 @@ client.on('message', message => {
 				}
 				break
 
+			case 'reset':
+				message.channel.send(new MessageEmbed()
+					.setTitle('Confirmation Needed')
+					.setDescription('This action will reset the current guild\'s data to default value, do you want to continue? (yes/no)')
+					.setColor(yellow)).then(() => {
+						client.user.lastMessage.react('✅');
+						client.user.lastMessage.react('❌');
+						client.user.lastMessage.awaitReactions((reaction, user) => user == message.author, { max: 1, time: 10000, errors: ['time'] })
+							.then(collected => {
+								console.log(collected.first().emoji.name)
+								if (collected.first().emoji.name == '✅') {
+									addGuildDefaultData(message.guild)
+									message.channel.send(new MessageEmbed()
+										.setTitle('Done!')
+										.setDescription('')
+										.setColor(green))
+								}
+								else {
+									message.channel.send(new MessageEmbed()
+										.setTitle('Canceled!')
+										.setDescription('')
+										.setColor(red))
+								}
+							})
+							.catch(collected => {
+								message.channel.send(new MessageEmbed()
+									.setTitle('Timeout')
+									.setDescription('Timeout, action canceled.')
+									.setColor(red));
+							});
+					});
+				break;
+
 			case 'say':
 				message.channel.send(args[1])
 				break
@@ -468,23 +579,23 @@ client.on('message', message => {
 				}
 				break
 
-			case 'test':
-				const exampleEmbed = new MessageEmbed()
-					.setColor('#0099ff')
-					.setTitle('Some title')
-					.setURL('https://discord.js.org/')
-					.setAuthor('Some name', 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
-					.setDescription('Some description here')
-					.setThumbnail('https://i.imgur.com/wSTFkRM.png')
-					.addField('Regular field title', 'Some value here')
-					.addField('Inline field title', 'Some value here')
-					.addField('Inline field title', 'Some value here')
-					.addField('Inline field title', 'Some value here')
-					.setImage('https://i.imgur.com/wSTFkRM.png')
-					.setTimestamp()
-					.setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');
+			// case 'test':
+			// 	const exampleEmbed = new MessageEmbed()
+			// 		.setColor('#0099ff')
+			// 		.setTitle('Some title')
+			// 		.setURL('https://discord.js.org/')
+			// 		.setAuthor('Some name', 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
+			// 		.setDescription('Some description here')
+			// 		.setThumbnail('https://i.imgur.com/wSTFkRM.png')
+			// 		.addField('Regular field title', 'Some value here')
+			// 		.addField('Inline field title', 'Some value here')
+			// 		.addField('Inline field title', 'Some value here')
+			// 		.addField('Inline field title', 'Some value here')
+			// 		.setImage('https://i.imgur.com/wSTFkRM.png')
+			// 		.setTimestamp()
+			// 		.setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');
 
-				message.channel.send(exampleEmbed);
+			// 	message.channel.send(exampleEmbed);
 			// const embed = new Discord.MessageEmbed()
 			// 	.setTitle("title")
 			// 	.setDescription("description")
@@ -505,7 +616,10 @@ client.on('message', message => {
 
 
 			default:
-				sendEmbed('Error', `Invalid command, try ${prefix}help for list of commands.`, 'error')
+				message.channel.send(new MessageEmbed()
+					.setTitle('Error')
+					.setDescription(`Invalid command, try ${prefix}help for list of commands.`)
+					.setColor(red))
 		}
 
 	}
