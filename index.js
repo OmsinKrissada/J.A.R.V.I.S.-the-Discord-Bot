@@ -281,7 +281,7 @@ pipein.stdout.on("data", data => {
 			}
 			else if (input.content == 'mcbye') {
 				embed = new MessageEmbed()
-					.setTitle('Server Started')
+					.setTitle('Server Stopped')
 					.setDescription(`Minecraft server has stopped, Bye!`)
 					.setColor(red)
 				console.log('stopped')
@@ -365,6 +365,7 @@ client.on('message', message => {
 
 	if (message.content.startsWith(prefix) && !message.author.bot && message.content.length > prefix.length) {
 		let args = message.content.substr(prefix.length).trim().split(' ')
+		let longarg = message.content.substr((prefix + args[0]).length)
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
 		switch (args[0]) {
@@ -462,11 +463,13 @@ client.on('message', message => {
 
 			case 'nick':
 				if (message.guild.dm)
+					message.channel.send('Nickname is not available on DM channels.')
+				else if (args[1] != undefined) {
 					message.guild.member(client.user).setNickname(args[1])
-				if (args[1] != '') {
-					sendEmbed('Nickname Changed', `Nickname has changed to ${args[1]}`, 'success')
+					sendEmbed('Nickname Changed', `Nickname has changed to **${args[1]}**`, 'success')
 				}
 				else {
+					message.guild.member(client.user).setNickname('')
 					sendEmbed('Nickname Reset', 'Nickname has reset to **J.A.R.V.I.S.**', 'success')
 				}
 				break
@@ -540,7 +543,7 @@ client.on('message', message => {
 					.setColor(yellow)).then(() => {
 						client.user.lastMessage.react('✅');
 						client.user.lastMessage.react('❌');
-						client.user.lastMessage.awaitReactions((reaction, user) => user == message.author, { max: 1, time: 10000, errors: ['time'] })
+						client.user.lastMessage.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
 							.then(collected => {
 								console.log(collected.first().emoji.name)
 								if (collected.first().emoji.name == '✅') {
@@ -567,7 +570,10 @@ client.on('message', message => {
 				break;
 
 			case 'say':
-				message.channel.send(args[1])
+				let result = '';
+				args.shift()
+				for (word in args) { result += args[word] + ' ' }
+				message.channel.send(longarg)
 				break
 
 			case 'stop':
