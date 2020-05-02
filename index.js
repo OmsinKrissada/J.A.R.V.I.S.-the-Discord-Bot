@@ -500,16 +500,7 @@ client.on('message', message => {
 				// const embed = new MessageEmbed().setTitle('Now Ranking').setColor
 				rank(message)
 				break
-
-			case 'refresh':
-				getDatabase();
-				message.channel.send(new MessageEmbed()
-					.setTitle('Data Refreshed')
-					.setDescription('Server database cache has refreshed from file')
-					.setColor(green)
-				);
-				break;
-
+				
 			case 'repeat':
 				if (args[1] != '') {
 					current_author = message.mentions.users.first()
@@ -535,6 +526,15 @@ client.on('message', message => {
 					})
 				}
 				break
+				
+			case 'reload':
+				getDatabase();
+				message.channel.send(new MessageEmbed()
+					.setTitle('Data Reloaded')
+					.setDescription('Server database cache has reloaded from file')
+					.setColor(green)
+				);
+				break;
 
 			case 'reset':
 				message.channel.send(new MessageEmbed()
