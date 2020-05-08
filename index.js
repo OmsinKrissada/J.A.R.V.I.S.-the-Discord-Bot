@@ -68,10 +68,11 @@ function setDatabase(newDataObject) {
 	fs.writeFile('./files/database.json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
 }
 
-function addGuildDefaultData(guild) {
-	database.guilds[guild.id] = {
-		name: guild.name,
-		prefix: '!'
+function addGuildDefaultData(id, name, isDM) {
+	database.guilds[id] = {
+		name: name,
+		prefix: '!',
+		dm: isDM
 	}
 	setDatabase(database)
 }
@@ -252,7 +253,7 @@ function morseidk() {
 class RepeatSession {
 
 }
-
+/*
 //	----------------------------------------------------------------------
 //	Config Section
 var pathtoplugin = '../minecraft/missile_wars'
@@ -352,21 +353,40 @@ client.on('message', message => {
 // var stream = net.connect('/tmp/test.sock');
 // stream.write('hello');
 // stream.end();
-
+*/
 var current_message
 client.on('message', message => {
 	current_message = message;
 
 	// If guild not exist in database, add them. 
-	if (database.guilds[message.guild.id] === undefined) {
-		addGuildDefaultData(message.guild);
+	let store_id;
+	if (message.guild === null) {
+		store_id = message.channel.id;
+		store_name = message.author.username;
 	}
-	let prefix = database.guilds[message.guild.id].prefix;
+	else {
+		store_id = message.guild.id;
+		store_name = message.guild.name;
+	}
+
+	if (database.guilds[store_id] === undefined) {
+		addGuildDefaultData(store_id, store_name, message.guild === null);
+	}
+	let prefix = database.guilds[store_id].prefix;
 
 	if (message.content.startsWith(prefix) && !message.author.bot && message.content.length > prefix.length) {
 		let args = message.content.substr(prefix.length).trim().split(' ')
 		let longarg = message.content.substr((prefix + args[0]).length)
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
+
+		let non_dm_command = ['ipannounce', 'nick'];
+		if (non_dm_command.includes(args[0]) && message.guild === null) {
+			message.channel.send(new MessageEmbed()
+				.setTitle('Not DM Command')
+				.setDescription('This command is not available in DM channels')
+				.setColor(red))
+			return 1;
+		}
 
 		switch (args[0]) {
 			// case 'terminal':
@@ -379,8 +399,8 @@ client.on('message', message => {
 					.setTitle(`Available Commands:`)
 					.setDescription(`Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\``)
 					.setColor(blue)
-					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`help` : Shows this message\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
-					.addField('Settings', '`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix\n`refresh` : Reload all server data from disk\n`reset` : Reset current server\'s data')
+					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
+					.addField('Settings', '`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix\n`reload` : Reload all server data from disk\n`reset` : Reset current server\'s data')
 					.addField('Misc', '`repeat` : Repeat your messsages\n`say` : Say your provided text once')
 					.addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot')
 				message.channel.send(embed)
@@ -500,7 +520,7 @@ client.on('message', message => {
 				// const embed = new MessageEmbed().setTitle('Now Ranking').setColor
 				rank(message)
 				break
-				
+
 			case 'repeat':
 				if (args[1] != '') {
 					current_author = message.mentions.users.first()
@@ -526,7 +546,7 @@ client.on('message', message => {
 					})
 				}
 				break
-				
+
 			case 'reload':
 				getDatabase();
 				message.channel.send(new MessageEmbed()
