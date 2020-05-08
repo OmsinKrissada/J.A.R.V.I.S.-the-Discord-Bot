@@ -46,14 +46,14 @@ In order to do that, please visit [Discord API Website](https://discordapp.com/d
 
 Then save your token in the main directory (where index.js is located) as a file called `token` **(without file extension)!!!**
 
-##### If you're ready, you can now run
+#### If you're ready, you can now run
 ```
 npm start
 ```
 
 **OR**
 
-##### Run using my recommendation
+#### Run using my recommendation
 I recommend using **nodemon** to restart the bot automatically whenever the code is modified.
 **Install nodemon** and other development packages from *devDependencies* by running
 ```
