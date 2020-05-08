@@ -20,23 +20,23 @@ But since it's already quite become a thing and I don't want it to just sit arou
 
 # Getting Started
 ### Installation
-1. Clone this repository and cd into it
+1. Clone this repository and cd into it.
    ```
    git clone https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot.git
    cd J.A.R.V.I.S.-the-Discord-Bot
    ```
 
-2. install all dependencies required for the bot by running (in terminal)
+2. Install dependencies required for the bot.
    ```
    npm install --production
    ```
-   More info about the discord.js library [here](https://discord.js.org/#/)
+   More info about the discord.js library [here](https://discord.js.org/#/).
 
 3. (Optional) Install **recommended packages** below:
-   * nodemon (Info [below](#run-using-my-recommendation))
-   * [Python 3.x](https://www.python.org/downloads/)
+   - nodemon (Info [below](#run-using-my-recommendation))
+   - [Python 3.x](https://www.python.org/downloads/)
 
-**Note:** In order for `Ranker` and `Morse Code Translator` to work properly, **Python 3.x is required**
+**Note:** In order for `Ranker` and `Morse Code Translator` to work properly, **Python 3.x is required**.
 
 ### Getting it online:
 
@@ -68,4 +68,4 @@ npm run dev
 ## Disclaimer:
 I'm ***not*** the author of `item-ranker.py`, credit goes to [**voidweaver**](https://github.com/voidweaver).
 
-The original source of the file is available in [this repository](https://github.com/voidweaver/item-ranker)
+The original source of the file is available in [this repository](https://github.com/voidweaver/item-ranker).
