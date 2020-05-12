@@ -8,24 +8,28 @@ const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, 
 const client = new Client();
 // const clientInformation = new Discord.clientInformation();
 
+
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
  */
 var ip_address;
 var database;
+function refreshIp() {
+	// Get IP Address
+	let { exec } = require('child_process');
+	exec('dig +short myip.opendns.com @resolver1.opendns.com', function (err, stdout, stderr) {
+		ip_address = stdout;
+	});
+	ip_address = ip_address;
+}
 client.on('ready', () => {
 
 	// Init sequence
 	console.log('I am ready!');
 	client.user.setActivity('Ultron', { type: "WATCHING" })
-	let { exec } = require('child_process');
 
-	// Get IP Address
-	exec('dig +short myip.opendns.com @resolver1.opendns.com', function (err, stdout, stderr) {
-		ip_address = stdout;
-	});
-	ip_address = ip_address;
+	refreshIp();
 
 	getDatabase();
 
@@ -77,24 +81,6 @@ function addGuildDefaultData(id, name, isDM) {
 	setDatabase(database)
 }
 
-// Called on joining guild
-// client.on('guildCreate', guild => {
-// 	console.log('joined')
-// 	// Create new guild in database if not exist
-// 	if (!Object.keys(obj.guilds).includes(guild.id)) {
-// 		data.guilds[guild.id] = {
-// 			name: guild.name,
-// 			prefix: "!"
-// 		};
-// 		fs.writeFile('./files/database.json', JSON.stringify(data), (err) => {
-// 			if (err) throw err;
-// 		});
-
-// 	}
-// 	console.log(JSON.stringify(data))
-
-// })
-
 
 
 fs.readFile('token', 'utf-8', (err, data) => {
@@ -119,14 +105,6 @@ function sendEmbed(title, text, type = 'info', channel = current_message.channel
 	channel.send(embed);
 };
 
-
-// class Ranker {
-// 	user_id;
-// 	begin() {
-
-// 	}
-
-// }
 
 function rank(origin_message) {
 
@@ -180,21 +158,6 @@ function rank(origin_message) {
 	})
 }
 
-// document.write("Entering the loop!<br /> ");
-
-// outerloop: // This is the label name
-// for (var i = 0; i < 5; i++) {
-// 	document.write("Outerloop: " + i + "<br />");
-
-// 	innerloop:
-// 	for (var j = 0; j < 5; j++) {
-// 		if (j > 3) break; // Quit the innermost loop
-// 		if (i == 2) break innerloop; // Do the same thing
-// 		if (i == 4) break outerloop; // Quit the outer loop
-// 		document.write("Innerloop: " + j + " <br />");
-// 	}
-// }
-// document.write("Exiting the loop!<br /> ");
 let stopmorse = false
 function morseidk() {
 	morse: {
@@ -429,6 +392,7 @@ client.on('message', message => {
 				break
 
 			case 'ip':
+				refreshIp();
 				message.channel.send(`Current IP address is **${ip_address}**`)
 				break
 
@@ -436,13 +400,14 @@ client.on('message', message => {
 				console.log(`${message.channel} with id: ${message.channel.id}`)
 				break
 
-			// case 'ignore':
+			// case 'ignore': // Maybe in the future
 			// 	fs.writeFileSync(ignorelist.txt, arg)
 
 			// 	message.channel.send()
 			// 	break
 
 			case 'ipannounce':
+				refreshIp();
 				embed = new MessageEmbed()
 					.setTitle('CURRENT IP')
 					.setDescription(`**Current IP address is \`${ip_address}\`**`)
@@ -508,8 +473,58 @@ client.on('message', message => {
 				}
 				break
 
+			case 'ohm':
+				switch (Math.floor(Math.random() * 10)) {
+					case 0:
+						message.reply('หอยหลอด')
+						break;
+					case 1:
+						message.reply('||%$#%@||ตลอดไป')
+						break;
+					case 2:
+						message.reply('จ๊ะะะ')
+						break;
+					case 3:
+						message.reply('!!!')
+						break;
+					case 4:
+						message.reply('เอาเถอะ!!!')
+						break;
+					case 5:
+						message.reply('ทำไมรึ')
+						break;
+					case 6:
+						message.reply('ห๊ะะ')
+						break;
+					case 7:
+						message.reply('คิดถึง||%$@||')
+						break;
+					case 8:
+						message.reply('แช่คอมในตู้เย็นสิ')
+						break;
+					case 9:
+						message.reply('เขรื่องปริ้น')
+						break;
+				}
+				break;
+
 			case 'prefix':
-				if (args[1] != undefined) {
+				if (args[1] == 'clear') {
+					if (message.guild === null) {
+						let new_prefix = '';
+						database.guilds[message.channel.id].prefix = new_prefix;
+						setDatabase(database);
+						sendEmbed('Prefix Cleared', `Prefix has cleared`, 'success')
+					}
+					else {
+						message.channel.send(new MessageEmbed()
+							.setTitle('Error')
+							.setDescription(`Blank prefix is only allowed in DM channels.`)
+							.setColor(red)
+						);
+					}
+				}
+				else if (args[1] != undefined) {
 					// if (arg == '/') {
 					// 	sendEmbed('Prefix Not Recommended', 'The prefix `/` is not recommended because it is also used for discord commands.\nType `confirm` to comfirm the change. Otherwise, the change will be reversed.')
 					// 	client.on('message', message => {
@@ -518,14 +533,18 @@ client.on('message', message => {
 					// }
 					// else {
 					let new_prefix = args[1];
-					database.guilds[message.guild.id].prefix = new_prefix;
+					database.guilds[message.guild === null ? message.channel.id : message.guild.id].prefix = new_prefix;
 					setDatabase(database);
 					sendEmbed('Prefix Changed', `Prefix has changed to ${new_prefix}`, 'success')
-					console.log(`The prefix has changed to \`${new_prefix}\``)
 					// }
 				}
 				else {
-					sendEmbed('Error', `Usage \`${prefix}prefix { new prefix }\``, 'error')
+					message.channel.send(new MessageEmbed()
+						.setTitle('Error')
+						.setDescription(`Usage \`${prefix}prefix { new prefix }\` or \`${prefix}prefix clear\``)
+						.setColor(red)
+						.setFooter('Note: Blank prefix is only allowed in DM channels.')
+					);
 				}
 				break
 
@@ -619,33 +638,6 @@ client.on('message', message => {
 				}
 				break
 
-			// case 'test':
-			// 	const exampleEmbed = new MessageEmbed()
-			// 		.setColor('#0099ff')
-			// 		.setTitle('Some title')
-			// 		.setURL('https://discord.js.org/')
-			// 		.setAuthor('Some name', 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
-			// 		.setDescription('Some description here')
-			// 		.setThumbnail('https://i.imgur.com/wSTFkRM.png')
-			// 		.addField('Regular field title', 'Some value here')
-			// 		.addField('Inline field title', 'Some value here')
-			// 		.addField('Inline field title', 'Some value here')
-			// 		.addField('Inline field title', 'Some value here')
-			// 		.setImage('https://i.imgur.com/wSTFkRM.png')
-			// 		.setTimestamp()
-			// 		.setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');
-
-			// 	message.channel.send(exampleEmbed);
-			// const embed = new Discord.MessageEmbed()
-			// 	.setTitle("title")
-			// 	.setDescription("description")
-			// 	.setAuthor(message.author)
-			// 	.setColor('0x00ff00')
-			// 	.setFooter('footer')
-			// .addField
-			// message.channel.send(embed)
-			// break
-
 			case 'uptime':
 				sendEmbed('Uptime', `${client.uptime / 1000}s`)
 				break
@@ -658,7 +650,7 @@ client.on('message', message => {
 			default:
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
-					.setDescription(`Invalid command, try ${prefix}help for list of commands.`)
+					.setDescription(`Invalid command, type \`${prefix}help\` for list of commands.`)
 					.setColor(red))
 		}
 
