@@ -23,6 +23,15 @@ function refreshIp() {
 	});
 	ip_address = ip_address;
 }
+if (!fs.existsSync('./files/logs')) {
+	fs.mkdirSync('./files/logs');
+}
+var logfile = fs.createWriteStream(`./files/logs/${new Date().toLocaleString().replace(/ |\/|,|:/g, '-')}.log`, { encoding: 'utf-8' })
+function log(message) {
+	let datetime = `[${new Date().getDate().min2()}/${new Date().getMonth().min2()}/${new Date().getFullYear().min2()}-${new Date().getHours().min2()}:${new Date().getMinutes().min2()}:${new Date().getSeconds().min2()}`;
+	logfile.write(datetime + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + ']   ' + message.content + '\n')
+
+}
 client.on('ready', () => {
 
 	// Init sequence
@@ -36,7 +45,6 @@ client.on('ready', () => {
 
 	// Get specific channel object
 	mclog_channel = client.channels.resolve('699045838718238771')
-
 
 
 	// console.log(Discord.GuildManager.resolve(client.guilds))
@@ -317,8 +325,15 @@ client.on('message', message => {
 // stream.write('hello');
 // stream.end();
 */
+
+Number.prototype.min2 = function (n) {
+	return ('0' + this).slice(-2);
+}
+
 var current_message
 client.on('message', message => {
+
+
 	current_message = message;
 
 	// If guild not exist in database, add them. 
@@ -338,6 +353,7 @@ client.on('message', message => {
 	let prefix = database.guilds[store_id].prefix;
 
 	if (message.content.startsWith(prefix) && !message.author.bot && message.content.length > prefix.length) {
+		log(message)
 		let args = message.content.substr(prefix.length).trim().split(' ')
 		let longarg = message.content.substr((prefix + args[0]).length)
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
@@ -358,9 +374,10 @@ client.on('message', message => {
 
 
 			case 'help':
+				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\`.`;
 				embed = new MessageEmbed()
 					.setTitle(`Available Commands:`)
-					.setDescription(`Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\``)
+					.setDescription(prefixmsg)
 					.setColor(blue)
 					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
 					.addField('Settings', '`backup` : Backup the database file\n`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix\n`reload` : Reload all server data from disk\n`reset` : Reset current server\'s data')
