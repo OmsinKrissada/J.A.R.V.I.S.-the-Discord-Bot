@@ -10,10 +10,12 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "discord.js": "^12.1.1",
     "highlight.js": "^9.18.1",
+    "line-reader": "^0.4.0",
+    "n-readlines": "^1.0.0",
     "python-shell": "^1.0.8"
   },
   "devDependencies": {

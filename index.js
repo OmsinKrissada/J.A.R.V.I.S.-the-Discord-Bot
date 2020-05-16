@@ -26,11 +26,32 @@ function refreshIp() {
 if (!fs.existsSync('./files/logs')) {
 	fs.mkdirSync('./files/logs');
 }
-var logfile = fs.createWriteStream(`./files/logs/${new Date().toLocaleString().replace(/ |\/|,|:/g, '-')}.log`, { encoding: 'utf-8' })
-function log(message) {
-	let datetime = `[${new Date().getDate().min2()}/${new Date().getMonth().min2()}/${new Date().getFullYear().min2()}-${new Date().getHours().min2()}:${new Date().getMinutes().min2()}:${new Date().getSeconds().min2()}`;
-	logfile.write(datetime + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + ']   ' + message.content + '\n')
 
+// rename latest.log to it's appropriate name
+if (fs.existsSync('./files/logs/latest.log')) {
+	const linereader = require('n-readlines');
+	fs.renameSync('./files/logs/latest.log', './files/logs/' + new linereader('./files/logs/latest.log').next().toString().substr(2) + '.log')
+}
+
+function getDateTimeString() {
+	let date = new Date();
+	return `${date.getDate().min2()}/${date.getMonth().min2()}/${date.getFullYear().min2()}-${date.getHours().min2()}:${date.getMinutes().min2()}:${date.getSeconds().min2()}`;
+}
+
+var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
+function log(message) {
+	let lines = message.content.split('\n')
+	let meta = '[' + getDateTimeString() + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + ']   ';
+	let indent = meta;
+	for (line of lines) {
+		let str = indent + line + '\n';
+		logfile.write(str);
+		console.log(str);
+		indent = '';
+		for (i = 1; i <= meta.length; i++) {
+			indent += ' ';
+		}
+	}
 }
 client.on('ready', () => {
 
@@ -42,6 +63,7 @@ client.on('ready', () => {
 
 	getDatabase();
 
+	logfile.write('# ' + getDateTimeString().replace(/:|\//g, '_') + '\n')
 
 	// Get specific channel object
 	mclog_channel = client.channels.resolve('699045838718238771')
@@ -175,7 +197,7 @@ function morseidk() {
 		}
 
 		const { spawn } = require("child_process");
-		const py = spawn("python", ["morse.py"]);
+		const py = spawn("python3", ["morse.py"]);
 
 		py.stdout.on("data", data => {
 			sendEmbed('', `${data}\n\n`, channel = current_message.channel)
@@ -376,7 +398,7 @@ client.on('message', message => {
 			case 'help':
 				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\`.`;
 				embed = new MessageEmbed()
-					.setTitle(`Available Commands:`)
+					.setAuthor(`Available Commands`, client.user.avatarURL())
 					.setDescription(prefixmsg)
 					.setColor(blue)
 					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
@@ -410,7 +432,12 @@ client.on('message', message => {
 
 			case 'ip':
 				refreshIp();
-				message.channel.send(`Current IP address is **${ip_address}**`)
+				message.channel.send(new MessageEmbed()
+					.setDescription(`Current IP address is **${ip_address}**`)
+					.setColor(blue)
+					.setFooter('Can\'t connect? Contact Omsin.')
+					.setTimestamp()
+				)
 				break
 
 			case 'channel':
@@ -465,6 +492,10 @@ client.on('message', message => {
 						message.delete(500)
 					}*/
 				break
+
+			case 'kong':
+				message.reply('typerace?');
+				break;
 
 			case 'morse':
 				morseidk()
@@ -558,7 +589,7 @@ client.on('message', message => {
 				else {
 					message.channel.send(new MessageEmbed()
 						.setTitle('Error')
-						.setDescription(`Usage \`${prefix}prefix { new prefix }\` or \`${prefix}prefix clear\``)
+						.setDescription(`Usage: \`${prefix}prefix {new prefix}\` or \`${prefix}prefix clear\``)
 						.setColor(red)
 						.setFooter('Note: Blank prefix is only allowed in DM channels.')
 					);
@@ -572,29 +603,69 @@ client.on('message', message => {
 				break
 
 			case 'repeat':
-				if (args[1] != '') {
-					current_author = message.mentions.users.first()
+				if (args[1] == null) {
+					message.channel.send(new MessageEmbed()
+						.setTitle('Error')
+						.setDescription(`Usage: \`${prefix}repeat me\` or \`${prefix}repeat {user}\``)
+						.setColor(red)
+					)
+					return 1;
 				}
-				else {
-					current_author = message.author
+				let current_user = args[1] == 'me' ? message.author : message.mentions.users.first();
+				if (current_user == client.user) {
+					message.channel.send(new MessageEmbed()
+						.setTitle('Error')
+						.setDescription(`Repeat to myself? It's boring...`)
+						.setColor(red)
+					)
+					return 1;
 				}
+				var repeating_user = [];
+				if (args[1] == 'stop') {
+					if (repeating_user.includes(args[2] == 'me' ? message.author.id : args[2].id)) {
+						repeating_user -= current_user;
+					}
+					else {
+						message.channel.send('The user is not being repeated.')
+					}
+					return 1;
+				}
+				repeating_user += (current_user);
+				message.channel.send(`repeating ${current_user}`)
+				const filter = message => message.author == current_user;
+				const collector = message.channel.createMessageCollector(filter);
 
-				sendEmbed('Start Repeating', `Okay, now repeating ${current_author}'s messages.`);
-				idk = function (current_author) {
-					stoprepeat = false
-					client.on('message', current_message => {
-						if (stoprepeat) {
-							return;
-						}
-						if (current_message.author == current_author) {
-							if (current_message.content.toLowerCase() == `${prefix}stop`) {
-								sendEmbed('Stopped Repeating', `Okay, stopped repeating ${current_author}`)
-								stoprepeat = true
-							}
-							else { current_message.channel.send(current_message.content) }
-						}
-					})
-				}
+				collector.on('collect', m => {
+					console.log(`Collected ${m.content}`);
+					m.channel.send(m.content);
+				});
+
+				collector.on('end', collected => {
+					console.log(`Collected ${collected.size} items`);
+				});
+				// if (args[1] != '') {
+				// 	current_author = message.mentions.users.first()
+				// }
+				// else {
+				// 	current_author = message.author
+				// }
+
+				// sendEmbed('Start Repeating', `Okay, now repeating ${current_author}'s messages.`);
+				// idk = function (current_author) {
+				// 	stoprepeat = false
+				// 	client.on('message', current_message => {
+				// 		if (stoprepeat) {
+				// 			return;
+				// 		}
+				// 		if (current_message.author == current_author) {
+				// 			if (current_message.content.toLowerCase() == `${prefix}stop`) {
+				// 				sendEmbed('Stopped Repeating', `Okay, stopped repeating ${current_author}`)
+				// 				stoprepeat = true
+				// 			}
+				// 			else { current_message.channel.send(current_message.content) }
+				// 		}
+				// 	})
+				// }
 				break
 
 			case 'reload':
@@ -647,12 +718,6 @@ client.on('message', message => {
 				break
 
 			case 'stop':
-				break
-
-			case 'stopallrepeat':
-				if (args[1] != '') {
-					stoprepeat = true
-				}
 				break
 
 			case 'uptime':
