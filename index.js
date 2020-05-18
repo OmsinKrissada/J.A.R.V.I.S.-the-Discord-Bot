@@ -352,6 +352,10 @@ Number.prototype.min2 = function (n) {
 	return ('0' + this).slice(-2);
 }
 
+function inlineCodeBlock(content) {
+	return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
+}
+
 var client_id = '<@!696973725806886963>';
 var current_message;
 client.on('message', message => {
@@ -404,7 +408,7 @@ client.on('message', message => {
 
 
 			case 'help':
-				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is \`\`${prefix.replace(/`/g, '‎`‎')}\`\`.`;
+				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is ${inlineCodeBlock(prefix)}.`;
 				embed = new MessageEmbed()
 					.setAuthor(`Available Commands`, client.user.displayAvatarURL())
 					.setDescription(prefixmsg)
@@ -591,13 +595,13 @@ client.on('message', message => {
 					let new_prefix = args[1];
 					database.guilds[message.guild === null ? message.channel.id : message.guild.id].prefix = new_prefix;
 					setDatabase(database);
-					sendEmbed('Prefix Changed', `Prefix has changed to \`\`${new_prefix.replace(/`/g, '‎`‎')}\`\``, 'success')
+					sendEmbed('Prefix Changed', `Prefix has changed to ${inlineCodeBlock(new_prefix)}`, 'success')
 					// }
 				}
 				else {
 					message.channel.send(new MessageEmbed()
 						.setTitle('Error')
-						.setDescription(`Usage: \`${prefix}prefix {new prefix}\` or \`${prefix}prefix clear\``)
+						.setDescription(`Usage: ${inlineCodeBlock(`${prefix}prefix {new prefix}`)} or ${inlineCodeBlock(`${prefix}prefix clear`)}`)
 						.setColor(red)
 						.setFooter('Note: Blank prefix is only allowed in DM channels.')
 					);
@@ -614,7 +618,7 @@ client.on('message', message => {
 				if (args[1] == null) {
 					message.channel.send(new MessageEmbed()
 						.setTitle('Error')
-						.setDescription(`Usage: \`${prefix}repeat me\` or \`${prefix}repeat {user}\``)
+						.setDescription(`Usage: ${inlineCodeBlock(`${prefix}repeat me`)} or ${inlineCodeBlock(`${prefix}repeat {user}`)}`)
 						.setColor(red)
 					)
 					return 1;
@@ -740,7 +744,7 @@ client.on('message', message => {
 			default:
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
-					.setDescription(`Invalid command, type \`${prefix}help\` for list of commands.`)
+					.setDescription(`Invalid command, type ${inlineCodeBlock(`${prefix}help`)} for list of commands.`)
 					.setColor(red))
 		}
 
