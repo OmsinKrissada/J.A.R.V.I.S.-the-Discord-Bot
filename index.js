@@ -352,7 +352,8 @@ Number.prototype.min2 = function (n) {
 	return ('0' + this).slice(-2);
 }
 
-var current_message
+var client_id = '<@!696973725806886963>';
+var current_message;
 client.on('message', message => {
 
 
@@ -374,9 +375,16 @@ client.on('message', message => {
 	}
 	let prefix = database.guilds[store_id].prefix;
 
-	if (message.content.startsWith(prefix) && !message.author.bot && message.content.length > prefix.length) {
+	if (!message.author.bot && ((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) {
 		log(message)
-		let args = message.content.substr(prefix.length).trim().split(' ')
+		let args;
+		if (message.content.startsWith(client_id)) {
+			args = message.content.substr(client_id.length).trim().split(' ')
+
+		}
+		else {
+			args = message.content.substr(prefix.length).trim().split(' ')
+		}
 		let longarg = message.content.substr((prefix + args[0]).length)
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
@@ -396,7 +404,7 @@ client.on('message', message => {
 
 
 			case 'help':
-				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\`.`;
+				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is \`\`${prefix.replace(/`/g, '‎`‎')}\`\`.`;
 				embed = new MessageEmbed()
 					.setAuthor(`Available Commands`, client.user.displayAvatarURL())
 					.setDescription(prefixmsg)
@@ -583,7 +591,7 @@ client.on('message', message => {
 					let new_prefix = args[1];
 					database.guilds[message.guild === null ? message.channel.id : message.guild.id].prefix = new_prefix;
 					setDatabase(database);
-					sendEmbed('Prefix Changed', `Prefix has changed to ${new_prefix}`, 'success')
+					sendEmbed('Prefix Changed', `Prefix has changed to \`\`${new_prefix.replace(/`/g, '‎`‎')}\`\``, 'success')
 					// }
 				}
 				else {
