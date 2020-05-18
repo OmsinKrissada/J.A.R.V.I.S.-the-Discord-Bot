@@ -398,7 +398,7 @@ client.on('message', message => {
 			case 'help':
 				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is \`${prefix == '`' ? '\`' : prefix}\`.`;
 				embed = new MessageEmbed()
-					.setAuthor(`Available Commands`, client.user.avatarURL())
+					.setAuthor(`Available Commands`, client.user.displayAvatarURL())
 					.setDescription(prefixmsg)
 					.setColor(blue)
 					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
@@ -503,7 +503,7 @@ client.on('message', message => {
 
 			case 'myid':
 				embed = new MessageEmbed()
-					.setAuthor(`Your ID is "${message.author.id}"`, message.author.avatarURL())
+					.setAuthor(`Your ID is "${message.author.id}"`, message.author.displayAvatarURL())
 					.setColor(blue)
 				message.channel.send(embed)
 				break
