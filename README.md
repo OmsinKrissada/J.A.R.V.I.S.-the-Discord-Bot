@@ -63,9 +63,3 @@ and now you can **start it** by running
 ```
 npm run dev
 ```
-
----
-## Disclaimer:
-I'm ***not*** the author of `item-ranker.py`, credit goes to [**voidweaver**](https://github.com/voidweaver).
-
-The original source of the file is available in [this repository](https://github.com/voidweaver/item-ranker).

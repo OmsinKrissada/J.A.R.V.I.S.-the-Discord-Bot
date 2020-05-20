@@ -1,3 +1,7 @@
+# DISCLAIMER:
+# This file belongs to voidweaver (https://github.com/voidweaver)
+# The source code for the file is available in https://github.com/voidweaver/item-ranker
+
 import sys
 from termcolor import cprint, colored
 from random import randint
