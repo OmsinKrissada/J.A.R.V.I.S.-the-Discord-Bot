@@ -1,12 +1,38 @@
-const fs = require('fs');
+// Init sequence
 
-// Import the discord.js module
-const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager } = require('discord.js');
-// const Discord = require('discord.js')
+// Discord
+const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment } = require('discord.js');
 
 // Create an instance of a Discord client
-const client = new Client();
+const bot = new Client();
 // const clientInformation = new Discord.clientInformation();
+const embedmsg = new MessageEmbed();
+
+const fs = require('fs');
+
+const Wolfram = require('./wolfram.js');
+
+// Start discord client
+bot.login(require("./token.json").discord)
+bot.on('ready', () => {
+
+	console.log('I am ready!');
+	bot.user.setActivity('Ultron', { type: "WATCHING" })
+
+	refreshIp();
+
+	getDatabase();
+
+	logfile.write('# ' + getDateTimeString().replace(/:|\//g, '_') + '\n')
+
+	// Get specific channel object
+	mclog_channel = bot.channels.resolve('699045838718238771')
+
+
+	// console.log(Discord.GuildManager.resolve(client.guilds))
+});
+
+
 
 
 /**
@@ -53,24 +79,7 @@ function log(message) {
 		}
 	}
 }
-client.on('ready', () => {
 
-	// Init sequence
-	console.log('I am ready!');
-	client.user.setActivity('Ultron', { type: "WATCHING" })
-
-	refreshIp();
-
-	getDatabase();
-
-	logfile.write('# ' + getDateTimeString().replace(/:|\//g, '_') + '\n')
-
-	// Get specific channel object
-	mclog_channel = client.channels.resolve('699045838718238771')
-
-
-	// console.log(Discord.GuildManager.resolve(client.guilds))
-});
 
 
 // Log debug info
@@ -112,20 +121,13 @@ function addGuildDefaultData(id, name, isDM) {
 }
 
 
-
-fs.readFile('token', 'utf-8', (err, data) => {
-	if (err) throw err;
-	let mytoken = data;
-	client.login(mytoken)
-});
-
 const red = 0xff0000
 const green = 0x00ff00
 const blue = 0x4287f5
 const yellow = 0xebc934
 
 function sendEmbed(title, text, type = 'info', channel = current_message.channel) {
-	const embed = new MessageEmbed()
+	let embed = new MessageEmbed()
 		.setTitle(title)
 		.setDescription(text)
 	if (type == 'error') embed.setColor(red)
@@ -175,7 +177,7 @@ function rank(origin_message) {
 	})
 
 	// On receive input from discord
-	client.on('message', message => {
+	bot.on('message', message => {
 		if (stopranking) {
 			sendEmbed('Ended Ranking', `Ranking started by ${origin_message.author} has ended.`, 'info', channel = origin_message.channel);
 		}
@@ -232,7 +234,7 @@ function morseidk() {
 		})
 
 		// On receive input from discord
-		client.on('message', message => {
+		bot.on('message', message => {
 			if (message.content == `${prefix}stop`) stopmorse = true
 			if (!current_message.author.bot) {
 				// Write discord input to 'pass'
@@ -358,7 +360,7 @@ function inlineCodeBlock(content) {
 
 var client_id = '<@!696973725806886963>';
 var current_message;
-client.on('message', message => {
+bot.on('message', message => {
 
 
 	current_message = message;
@@ -392,7 +394,7 @@ client.on('message', message => {
 		let longarg = message.content.substr((prefix + args[0]).length)
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
-		let non_dm_command = ['ipannounce', 'nick'];
+		let non_dm_command = ['ipannounce', 'nick', 'username'];
 		if (non_dm_command.includes(args[0]) && message.guild === null) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Not DM Command')
@@ -409,15 +411,16 @@ client.on('message', message => {
 
 			case 'help':
 				let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is ${inlineCodeBlock(prefix)}.`;
-				embed = new MessageEmbed()
-					.setAuthor(`Available Commands`, client.user.displayAvatarURL())
+
+				// .addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot')
+				message.channel.send(new MessageEmbed()
+					.setAuthor(`Available Commands`, bot.user.displayAvatarURL())
 					.setDescription(prefixmsg)
 					.setColor(blue)
 					.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
 					.addField('Settings', '`backup` : Backup the database file\n`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix\n`reload` : Reload all server data from disk\n`reset` : Reset current server\'s data')
 					.addField('Misc', '`repeat` : Repeat your messsages\n`say` : Say your provided text once')
-					// .addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot')
-				message.channel.send(embed)
+				)
 				break
 
 			case 'backup':
@@ -464,12 +467,12 @@ client.on('message', message => {
 
 			case 'ipannounce':
 				refreshIp();
-				embed = new MessageEmbed()
+				message.channel.send(new MessageEmbed()
 					.setTitle('CURRENT IP')
 					.setDescription(`**Current IP address is \`${ip_address}\`**`)
 					.setColor(blue)
 					.addField(` ‎`, `_Last updated: ${new Date().toLocaleString()}_`)
-				message.channel.send(embed)
+				)
 				message.channel.send('@everyone')
 
 				// console.log(client.user.lastMessage.editable)
@@ -514,21 +517,21 @@ client.on('message', message => {
 				break
 
 			case 'myid':
-				embed = new MessageEmbed()
+				message.channel.send(new MessageEmbed()
 					.setAuthor(`Your ID is "${message.author.id}"`, message.author.displayAvatarURL())
 					.setColor(blue)
-				message.channel.send(embed)
+				)
 				break
 
 			case 'nick':
 				if (message.guild.dm)
 					message.channel.send('Nickname is not available on DM channels.')
 				else if (args[1] != undefined) {
-					message.guild.member(client.user).setNickname(args[1])
+					message.guild.member(bot.user).setNickname(args[1])
 					sendEmbed('Nickname Changed', `Nickname has changed to **${args[1]}**`, 'success')
 				}
 				else {
-					message.guild.member(client.user).setNickname('')
+					message.guild.member(bot.user).setNickname('')
 					sendEmbed('Nickname Reset', 'Nickname has reset to **J.A.R.V.I.S.**', 'success')
 				}
 				break
@@ -624,7 +627,7 @@ client.on('message', message => {
 					return 1;
 				}
 				let current_user = args[1] == 'me' ? message.author : message.mentions.users.first();
-				if (current_user == client.user) {
+				if (current_user == bot.user) {
 					message.channel.send(new MessageEmbed()
 						.setTitle('Error')
 						.setDescription(`Repeat to myself? It's boring...`)
@@ -694,9 +697,9 @@ client.on('message', message => {
 					.setTitle('Confirmation Needed')
 					.setDescription('This action will reset the current guild\'s data to default value, do you want to continue? (yes/no)')
 					.setColor(yellow)).then(() => {
-						client.user.lastMessage.react('✅');
-						client.user.lastMessage.react('❌');
-						client.user.lastMessage.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
+						bot.user.lastMessage.react('✅');
+						bot.user.lastMessage.react('❌');
+						bot.user.lastMessage.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
 							.then(collected => {
 								console.log(collected.first().emoji.name)
 								if (collected.first().emoji.name == '✅') {
@@ -733,12 +736,98 @@ client.on('message', message => {
 				break
 
 			case 'uptime':
-				sendEmbed('Uptime', `${client.uptime / 1000}s`)
+				sendEmbed('Uptime', `${bot.uptime / 1000}s`)
 				break
+
+			case 'username':
+				let mention = message.mentions.users.first();
+				message.channel.send(`${mention}'s real username is **${mention.username}**`)
+				break;
 
 			case 'whoisironman':
 				sendEmbed('Real Ironman', 'The real ironman is Omsin.')
 				break
+
+			case 'ask':
+				{
+
+					// const timeout_time = 10000;
+					const query = args.slice(1).join(' ');
+					Wolfram.getShort(query, message);
+					// if (query.trim() == '') {
+					// 	message.channel.send(embedmsg
+					// 		.setTitle('Error')
+					// 		.setDescription('Cannot query an empty message.')
+					// 		.setColor(red));
+					// 	return;
+					// }
+					// message.channel.send(embedmsg
+					// 	.setTitle('Please choose result type ...')
+					// 	.setDescription('Valid answers are: [1] "Short", "Full", "Simple", "Spoken"')
+					// 	.setColor(yellow)
+					// ).then(() => {
+					// 	bot.user.lastMessage.delete({ timeout: timeout_time })
+					// }
+					// ).then(() => {
+					// 	bot.user.lastMessage.react('1️⃣');
+					// 	bot.user.lastMessage.react('2️⃣');
+					// 	bot.user.lastMessage.react('3️⃣');
+					// 	bot.user.lastMessage.react('4️⃣');
+					// 	bot.user.lastMessage.react('❌');
+
+					// 	let filter = (reaction, user) => {
+					// 		if (user == message.author) {
+					// 			switch (reaction.emoji.name) {
+					// 				case '1️⃣':
+					// 				case '2️⃣':
+					// 				case '3️⃣':
+					// 				case '4️⃣':
+					// 				case '❌':
+					// 					return true;
+					// 			}
+					// 		}
+					// 		return false;
+					// 	};
+
+					// 	bot.user.lastMessage.awaitReactions(filter, { max: 1, time: timeout_time, errors: ['time'] })
+					// 		.then(collected => {
+					// 			console.log(collected.first().emoji.name)
+					// 			switch (collected.first().emoji.name) {
+					// 				case '1️⃣':
+					// 					Wolfram.getShort(query, message);
+					// 					break;
+					// 				case '2️⃣':
+					// 					Wolfram.getFull(query, message);
+					// 					break;
+					// 				case '3️⃣':
+					// 					Wolfram.getSimple(query, message);
+					// 					break;
+					// 				case '4️⃣':
+					// 					Wolfram.getSpoken(query, message);
+					// 					break;
+					// 					message.channel.send()
+					// 				case '❌':
+					// 					message.channel.send(embedmsg
+					// 						.setTitle('Query Aborted')
+					// 						.setDescription('Aborted by user, action canceled.')
+					// 						.setColor(red)).then((sent_msg) => sent_msg.delete(100))
+					// 			}
+					// 		})
+					// 		.catch(collected => {
+					// 			message.channel.send(embedmsg
+					// 				.setTitle('Timed out')
+					// 				.setDescription('Timeout, action canceled.')
+					// 				.setColor(red));
+					// 			confirm_msg.delete()
+					// 		});
+					// });
+				}
+				break;
+			case 'askimg':
+				const query = args.slice(1).join(' ');
+				Wolfram.getSimple(query, message);
+				break;
+
 
 
 			default:

@@ -2,11 +2,11 @@
   "name": "jarvis",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon -e js index.js"
+    "start": "node main.js",
+    "dev": "nodemon -e js main.js"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +16,9 @@
     "highlight.js": "^9.18.1",
     "line-reader": "^0.4.0",
     "n-readlines": "^1.0.0",
-    "python-shell": "^1.0.8"
+    "python-shell": "^1.0.8",
+    "wolfram-alpha-api": "https://products.wolframalpha.com/api/libraries/javascript/wolfram-alpha-api-1.0.0-rc.1.tgz",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
