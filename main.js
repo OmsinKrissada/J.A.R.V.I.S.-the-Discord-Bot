@@ -17,13 +17,13 @@ bot.login(require("./token.json").discord)
 bot.on('ready', () => {
 
 	console.log('I am ready!');
-	bot.user.setActivity('Ultron', { type: "WATCHING" })
+	bot.user.setActivity('Ultron | !help', { type: "WATCHING" })
 
 	refreshIp();
 
 	getDatabase();
 
-	logfile.write('# ' + getDateTimeString().replace(/:|\//g, '_') + '\n')
+	logfile.write('# ' + getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
 
 	// Get specific channel object
 	mclog_channel = bot.channels.resolve('699045838718238771')
@@ -59,15 +59,14 @@ if (fs.existsSync('./files/logs/latest.log')) {
 	fs.renameSync('./files/logs/latest.log', './files/logs/' + new linereader('./files/logs/latest.log').next().toString().substr(2) + '.log')
 }
 
-function getDateTimeString() {
-	let date = new Date();
+function getDateTimeString(date) {
 	return `${date.getDate().min2()}/${date.getMonth().min2()}/${date.getFullYear().min2()}-${date.getHours().min2()}:${date.getMinutes().min2()}:${date.getSeconds().min2()}`;
 }
 
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
 function log(message) {
 	let lines = message.content.split('\n')
-	let meta = '[' + getDateTimeString() + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + ']   ';
+	let meta = '[' + getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + ']   ';
 	let indent = meta;
 	for (line of lines) {
 		let str = indent + line + '\n';
@@ -394,7 +393,7 @@ bot.on('message', message => {
 		let longarg = message.content.substr((prefix + args[0]).length)
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
-		let non_dm_command = ['ipannounce', 'nick', 'username'];
+		let non_dm_command = ['ipannounce', 'nick'];
 		if (non_dm_command.includes(args[0]) && message.guild === null) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Not DM Command')
@@ -739,9 +738,41 @@ bot.on('message', message => {
 				sendEmbed('Uptime', `${bot.uptime / 1000}s`)
 				break
 
-			case 'username':
-				let mention = message.mentions.users.first();
-				message.channel.send(`${mention}'s real username is **${mention.username}**`)
+			case 'userinfo':
+				let mention = message.mentions.users.first() == undefined ? message.author : message.mentions.users.first();
+
+
+				let embeduserinfo = new MessageEmbed();
+				embeduserinfo
+					.setTitle('User Info')
+					.setThumbnail(mention.displayAvatarURL())
+					.addField('« Username »', `${mention.username}`, true)
+					.addField('« Discriminator »', '#' + mention.discriminator, true)
+					.addField('« Display Name »', mention, true)
+					.addField('« Current Status »', message.author.presence.status.toUpperCase(), true)
+					.addField('« Bot? »', mention.bot ? 'Yes' : 'No', true)
+					.addField('« User ID »', mention.id, true)
+				if (message.guild != undefined) {
+					const rolesOfTheMember = message.guild.member(mention).roles.cache.filter(r => r.name !== '@everyone').map(role => '@' + role.name).join(', ');
+					embeduserinfo
+						.addField('« Roles »', rolesOfTheMember)
+						.setColor(message.guild.member(mention).displayHexColor)
+						.addField('« Joined Server At »', new Date(message.guild.member(mention).joinedTimestamp).toLocaleString(), true)
+						.setFooter(`Requested by ${message.author.username}`);
+				}
+				embeduserinfo
+					.addField('« Created Account At »', mention.createdAt.toLocaleString(), true)
+					.setTimestamp()
+				message.channel.send(embeduserinfo);
+
+				if (message.deletable) message.delete();
+
+				break;
+
+			case 'test':
+				const value = new Date(message.guild.member(message.author).displayHexColor);
+				// message.channel.send(`${value}`);
+				message.channel.send();
 				break;
 
 			case 'whoisironman':
@@ -753,6 +784,14 @@ bot.on('message', message => {
 
 					// const timeout_time = 10000;
 					const query = args.slice(1).join(' ');
+					if (query == '') {
+						message.channel.send(new MessageEmbed()
+							.setTitle('Error')
+							.setDescription(`Usage: ${inlineCodeBlock(`${prefix}ask {question}`)}`)
+							.setColor(red)
+						);
+						return;
+					}
 					Wolfram.getShort(query, message);
 					// if (query.trim() == '') {
 					// 	message.channel.send(embedmsg
@@ -825,6 +864,14 @@ bot.on('message', message => {
 				break;
 			case 'askimg':
 				const query = args.slice(1).join(' ');
+				if (query == '') {
+					message.channel.send(new MessageEmbed()
+						.setTitle('Error')
+						.setDescription(`Usage: ${inlineCodeBlock(`${prefix}askimg {question}`)}`)
+						.setColor(red)
+					);
+					return;
+				}
 				Wolfram.getSimple(query, message);
 				break;
 

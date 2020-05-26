@@ -12,13 +12,17 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "bufferutil": "^4.0.1",
     "discord.js": "^12.1.1",
+    "erlpack": "github:discordapp/erlpack",
     "highlight.js": "^9.18.1",
     "line-reader": "^0.4.0",
     "n-readlines": "^1.0.0",
     "python-shell": "^1.0.8",
+    "utf-8-validate": "^5.0.2",
     "wolfram-alpha-api": "https://products.wolframalpha.com/api/libraries/javascript/wolfram-alpha-api-1.0.0-rc.1.tgz",
-    "xmlhttprequest": "^1.8.0"
+    "xmlhttprequest": "^1.8.0",
+    "zlib-sync": "^0.1.6"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"

@@ -48,17 +48,17 @@ class WolframInterface {
         let output = httpGet(`https://api.wolframalpha.com/v1/result?i=${input}&appid=${token}`)
         console.log(output);
         if (output != 'Wolfram|Alpha did not understand your input') {
-            message.channel.send([`${message.author}`], new MessageEmbed()
+            message.channel.send(new MessageEmbed()
                 .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
-                .setDescription(`**Answer:** ${output}`)
+                .setDescription(`**Answer:** ${output}\n\n${message.author}`)
                 .setColor(0x00ff00)
                 .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
             );
         }
         else {
-            message.channel.send([`${message.author}`], new MessageEmbed()
+            message.channel.send(new MessageEmbed()
                 .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
-                .setDescription(`Cannot recognize your question, try with less ambiguous phrases.`)
+                .setDescription(`Cannot recognize your question, try with less ambiguous phrases.\n\n${message.author}`)
                 .setColor(0xff0000)
             );
         }
