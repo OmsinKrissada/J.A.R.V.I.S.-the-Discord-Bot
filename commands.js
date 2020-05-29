@@ -212,24 +212,33 @@ commands.myid = () => {
 }
 
 commands.history = () => {
-	message.channel.messages.fetch(args[1]).then(msg => {
-		console.log(msg);
-		console.log(msg.edits.length)
-		let embed = new MessageEmbed()
-			.setTitle('Message History: ');
-		let description = '';
-		let i = 1;
-		if (msg.edits.length > 1) {
-			msg.edits.reverse().forEach(thismsg => {
-				description += `\`[${i}] ->\` ${thismsg.content}\n`;
-				i++;
-			})
-			message.channel.send(embed.setDescription(description).setColor(blue));
-		}
-		else {
-			message.channel.send('Cannot get edit history of that message.')
-		}
-	}).catch(err => message.channel.send('Cannot find that message.'))
+	if (args[1]) {
+		message.channel.messages.fetch(args[1]).then(msg => {
+			console.log(msg);
+			console.log(msg.edits.length)
+			let embed = new MessageEmbed()
+				.setTitle('Message History: ');
+			let description = '';
+			let i = 1;
+			if (msg.edits.length > 1) {
+				msg.edits.reverse().forEach(thismsg => {
+					description += `\`[${i}] ->\` ${thismsg.content}\n`;
+					i++;
+				})
+				message.channel.send(embed.setDescription(description).setColor(blue));
+			}
+			else {
+				message.channel.send('Cannot get edit history of that message.')
+			}
+		}).catch(err => message.channel.send('Cannot find that message.'))
+	}
+	else {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription(`Usage: ${prefix}history <message id>`)
+			.setColor(red)
+		)
+	}
 }
 
 commands.purge = () => {
