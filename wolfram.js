@@ -1,6 +1,7 @@
 // import { Message } from "discord.js";
 
 const token = require('./token.json').wolfram;
+const Util = require('./Util')
 
 const WolframAlphaAPI = require('wolfram-alpha-api');
 const wa = WolframAlphaAPI(token);
@@ -51,7 +52,7 @@ class WolframInterface {
             message.channel.send(new MessageEmbed()
                 .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
                 .setDescription(`**Answer:** ${output}\n\n${message.author}`)
-                .setColor(0x00ff00)
+                .setColor(Util.green)
                 .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
             );
         }
@@ -59,7 +60,7 @@ class WolframInterface {
             message.channel.send(new MessageEmbed()
                 .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
                 .setDescription(`Cannot recognize your question, try with less ambiguous phrases.\n\n${message.author}`)
-                .setColor(0xff0000)
+                .setColor(Util.red)
             );
         }
 
@@ -97,7 +98,7 @@ class WolframInterface {
         // console.log(output);
         message.channel.send(new MessageEmbed()
             .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
-            .setColor(0x00ff00)
+            .setColor(Util.green)
             .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
             .attachFiles(img)
             .setImage('attachment://result.png')
