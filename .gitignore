@@ -6,3 +6,4 @@
 *.pipe
 spare.txt
 prefix.txt
+.node*

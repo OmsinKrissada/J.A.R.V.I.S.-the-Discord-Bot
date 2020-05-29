@@ -381,6 +381,8 @@ bot.on('message', message => {
 	let prefix = database.guilds[store_id].prefix;
 
 	if (!message.author.bot && ((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) {
+
+
 		log(message)
 		let args;
 		if (message.content.startsWith(client_id)) {
@@ -390,10 +392,10 @@ bot.on('message', message => {
 		else {
 			args = message.content.substr(prefix.length).trim().split(' ')
 		}
-		let longarg = message.content.substr((prefix + args[0]).length)
+		let longarg = args.slice(1).join(' ');
 		// message.reply('\nCommand is: ' + args.shift() + '\nArgument is: ' + args)
 
-		let non_dm_command = ['ipannounce', 'nick'];
+		let non_dm_command = ['ipannounce', 'nick', 'purge'];
 		if (non_dm_command.includes(args[0]) && message.guild === null) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Not DM Command')
@@ -401,6 +403,7 @@ bot.on('message', message => {
 				.setColor(red))
 			return 1;
 		}
+
 
 		switch (args[0]) {
 			// case 'terminal':
@@ -610,6 +613,29 @@ bot.on('message', message => {
 				}
 				break
 
+			case 'purge':
+				if (!isNaN(args[1])) {
+					if (Number.parseInt(args[1]) < 1 || Number.parseInt(args[1]) > 100) {
+						message.channel.send(new MessageEmbed()
+							.setTitle('Error')
+							.setDescription(`The amount of messages must not below than 1 nor greater than 100`)
+							.setColor(red)
+						)
+					}
+					else {
+						message.channel.bulkDelete(Number.parseInt(args[1]) + 1);
+					}
+				}
+				else {
+					message.channel.send(new MessageEmbed()
+						.setTitle('Error')
+						.setDescription(`Usage: ${prefix}purge <amount>`)
+						.setColor(red)
+					)
+				}
+
+				break;
+
 			case 'rank':
 				// message.channel.send(Discord.MessageEmbed('Now Ranking', `${ message.author } started a ranking session.\n\nType your answer into the chat. (without prefix) \nType!stopranking to end the session.`))
 				// const embed = new MessageEmbed().setTitle('Now Ranking').setColor
@@ -729,6 +755,7 @@ bot.on('message', message => {
 				args.shift()
 				for (word in args) { result += args[word] + ' ' }
 				message.channel.send(longarg)
+				if (message.deletable) message.delete()
 				break
 
 			case 'stop':
@@ -739,31 +766,112 @@ bot.on('message', message => {
 				break
 
 			case 'userinfo':
-				let mention = message.mentions.users.first() == undefined ? message.author : message.mentions.users.first();
+				let user;
+				console.log(`"${longarg}"`)
+				switch (longarg) {
+					case "":
+						message.channel.send(new MessageEmbed()
+							.setTitle(`Assumed ${inlineCodeBlock(prefix + 'userinfo me')}`)
+							.setDescription('Usage: ' + inlineCodeBlock(prefix + 'userinfo') + ' or ' + inlineCodeBlock(prefix + 'userinfo <member>'))
+							.setColor(yellow)
+						).then(msg => msg.delete({ timeout: 10000 }));
+					case 'me':
+						user = message.author;
+						break;
+					default:
+						if (message.mentions.members.first() != undefined) {
+							user = message.mentions.members.first().user;
+						}
+						else if (message.guild) {
+							try {
+								user = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg.toLowerCase()) || member.user.username.toLowerCase().includes(longarg.toLowerCase()));
+							} catch (err) { }
+							if (user.size != undefined && user.size > 0) {
+								console.log(user.size)
+								// console.log(JSON.stringify(user.toJSON(), 4))
+								if (user.size > 1) {
+									let embeduser = new MessageEmbed()
+										.setTitle('Please choose the member you refer to. (type in chat)')
+										.setColor(blue);
 
-
-				let embeduserinfo = new MessageEmbed();
-				embeduserinfo
-					.setTitle('User Info')
-					.setThumbnail(mention.displayAvatarURL())
-					.addField('« Username »', `${mention.username}`, true)
-					.addField('« Discriminator »', '#' + mention.discriminator, true)
-					.addField('« Display Name »', mention, true)
-					.addField('« Current Status »', message.author.presence.status.toUpperCase(), true)
-					.addField('« Bot? »', mention.bot ? 'Yes' : 'No', true)
-					.addField('« User ID »', mention.id, true)
-				if (message.guild != undefined) {
-					const rolesOfTheMember = message.guild.member(mention).roles.cache.filter(r => r.name !== '@everyone').map(role => '@' + role.name).join(', ');
-					embeduserinfo
-						.addField('« Roles »', rolesOfTheMember)
-						.setColor(message.guild.member(mention).displayHexColor)
-						.addField('« Joined Server At »', new Date(message.guild.member(mention).joinedTimestamp).toLocaleString(), true)
-						.setFooter(`Requested by ${message.author.username}`);
+									let str = '';
+									let i = 1;
+									user.forEach((member) => {
+										str += `[${i}] - ${member}\n\n`;
+										i++;
+									})
+									embeduser.setDescription(str);
+									console.log('sending')
+									message.channel.send(embeduser)
+										.then((confirm_msg) => {
+											message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
+												let answer_msg = collected.first();
+												if (!(answer_msg.content >= 1 && answer_msg.content <= user.size)) {
+													message.channel.send(new MessageEmbed()
+														.setDescription('Invalid answer, aborted.')
+														.setColor(red)
+													).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
+													if (answer_msg.deletable) answer_msg.delete();
+												}
+												else {
+													user = message.guild.member(Array.from(user.keys())[answer_msg.content - 1]).user;
+													console.log(user)
+													printUserInfo();
+													if (answer_msg.deletable) answer_msg.delete();
+												}
+												if (confirm_msg.deletable) confirm_msg.delete();
+											});
+										})
+									if (message.deletable) message.delete();
+									return;
+									break;
+								}
+								else {
+									user = user.first().user
+								}
+							}
+							if (message.deletable) message.delete();
+						}
 				}
-				embeduserinfo
-					.addField('« Created Account At »', mention.createdAt.toLocaleString(), true)
-					.setTimestamp()
-				message.channel.send(embeduserinfo);
+				// console.log(user)
+
+				if (!(user == null || user.size == 0)) {
+					printUserInfo();
+					return;
+				}
+				message.channel.send(new MessageEmbed()
+					.setTitle('Member Not Found')
+					.setDescription(`Cannot find the specified member: "${longarg}"`)
+					.setColor(red)
+				);
+
+
+
+
+				function printUserInfo() {
+					let embeduserinfo = new MessageEmbed();
+					embeduserinfo
+						.setTitle('User Info')
+						.setThumbnail(user.displayAvatarURL())
+						.addField('« Username »', `${user.username}`, true)
+						.addField('« Discriminator »', '#' + user.discriminator, true)
+						.addField('« Display Name »', user, true)
+						.addField('« Current Status »', user.presence.status.toUpperCase(), true)
+						.addField('« Bot? »', user.bot ? 'Yes' : 'No', true)
+						.addField('« User ID »', user.id, true)
+					if (message.guild != undefined) {
+						const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+						embeduserinfo
+							.addField('« Roles »', rolesOfTheMember)
+							.setColor(message.guild.member(user).displayHexColor)
+							.addField('« Joined Server At »', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true)
+							.setFooter(`Requested by ${message.author.username}`);
+					}
+					embeduserinfo
+						.addField('« Created Account At »', user.createdAt.toLocaleString(), true)
+						.setTimestamp()
+					message.channel.send(embeduserinfo);
+				}
 
 				if (message.deletable) message.delete();
 
