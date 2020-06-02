@@ -549,6 +549,11 @@ commands.movevoice = async () => {
 	// let origin_promise = ask_confirm('origin', origins);
 	// let dest_promise = ask_confirm('destination', dests);
 
+	let embed = new MessageEmbed()
+		.setTitle('Moved')
+		.setColor(green);
+	let description = '';
+
 	if (origin_all) {
 		ask_confirm('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
@@ -557,11 +562,21 @@ commands.movevoice = async () => {
 				.setColor(red))
 			origins.forEach((origin) => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
-					console.log('all')
-					console.log('from ' + origin.name + ' to ' + dest.name)
-					member.voice.setChannel(dest);
+					if (origin.id != dest.id) {
+						console.log('all')
+						console.log('from ' + origin.name + ' to ' + dest.name)
+						description += ` • ${member.user}: ${origin.name} ➡ ${dest.name}\n`
+						member.voice.setChannel(dest);
+					}
 				})
 			})
+			if (description != '')
+				message.channel.send(embed.setDescription(description))
+			else
+				message.channel.send(new MessageEmbed()
+					.setTitle('No Users Moved')
+					.setColor(blue)
+				)
 		})
 	}
 	else {
@@ -576,13 +591,25 @@ commands.movevoice = async () => {
 					.setDescription('**Destination Channel** Not Found')
 					.setColor(red));
 				message.guild.channels.resolve(origin).members.forEach((member) => {
-					console.log('not all')
-					console.log('from ' + origin.name + ' to ' + dest.name)
-					member.voice.setChannel(dest);
+					if (origin.id != dest.id) {
+						console.log('not all')
+						console.log('from ' + origin.name + ' to ' + dest.name)
+						description += ` • ${member.user}: ${origin.name} ➡ ${dest.name}\n`
+						member.voice.setChannel(dest);
+					}
 				})
+				if (description != '')
+					message.channel.send(embed.setDescription(description))
+				else
+					message.channel.send(new MessageEmbed()
+						.setTitle('No Users Moved')
+						.setColor(blue)
+					)
 			})
 		})
 	}
+
+
 	// let dest_promise = new Promise((resolve, reject) => {
 	// 	resolve(ask_confirm('Choose your destination voice channel. **(type number in chat)**', dests));
 	// })
