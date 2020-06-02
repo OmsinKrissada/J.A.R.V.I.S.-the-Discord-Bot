@@ -170,7 +170,12 @@ commands.nick = () => {
 }
 
 commands.invite = () => {
-	message.channel.send(bot.generateInvite(8))
+	bot.generateInvite(8).then(link => {
+		message.channel.send(new MessageEmbed()
+			.setDescription('You can invite me to your server by clicking this link. ' + link)
+			.setColor(blue)
+		)
+	})
 }
 
 
@@ -347,39 +352,11 @@ commands.userinfo = () => {
 					console.log(user.size)
 					// console.log(JSON.stringify(user.toJSON(), 4))
 					if (user.size > 1) {
-						let embeduser = new MessageEmbed()
-							.setTitle('Please choose the member you refer to. (type in chat)')
-							.setColor(blue);
-
-						let str = '';
-						let i = 1;
-						user.forEach((member) => {
-							str += `[${i}] - ${member}\n\n`;
-							i++;
+						ask_confirm('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
+							user = usr.user;
+							console.log(user)
+							printUserInfo();
 						})
-						embeduser.setDescription(str);
-						console.log('sending')
-						message.channel.send(embeduser)
-							.then((confirm_msg) => {
-								message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
-									let answer_msg = collected.first();
-									if (!(answer_msg.content >= 1 && answer_msg.content <= user.size)) {
-										message.channel.send(new MessageEmbed()
-											.setDescription('Invalid answer, aborted.')
-											.setColor(red)
-										).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
-										if (answer_msg.deletable) answer_msg.delete();
-									}
-									else {
-										user = message.guild.member(Array.from(user.keys())[answer_msg.content - 1]).user;
-										console.log(user)
-										printUserInfo();
-										if (answer_msg.deletable) answer_msg.delete();
-									}
-									if (confirm_msg.deletable) confirm_msg.delete();
-								});
-							})
-						if (message.deletable) message.delete();
 						return;
 						break;
 					}
@@ -764,7 +741,14 @@ commands.unknown = () => {
 		.setColor(red));
 }
 
-
+commands.test = () => {
+	message.channel.send('react above')
+	message.author.lastMessage.awaitReactions(() => true, { max: 1, time: 10000, errors: ['time'] })
+		.then(collected => {
+			console.log(collected.first().emoji.id)
+			message.channel.send(collected.first().emoji.toJSON())
+		}).catch(console.log('err'))
+}
 
 // Functions
 function ask_confirm(title, collection, is_delete = false) {
@@ -780,6 +764,8 @@ function ask_confirm(title, collection, is_delete = false) {
 		let str = '';
 		let i = 1;
 		collection.forEach((member) => {
+			const emoji = message.guild.emojis.cache.find(emoji => emoji.name == '1️⃣')
+			// console.log(emoji.id)
 			str += `[${i}] - ${member}\n\n`;
 			i++;
 		})
