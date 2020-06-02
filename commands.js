@@ -182,8 +182,10 @@ commands.invite = () => {
 
 // Utility commands
 
-commands.ping = () => {
-	message.reply('Pong!')
+commands.ping = async () => {
+	const m = await message.reply('Pong!')
+	message.channel.send(`Latency: ${m.createdTimestamp - message.createdTimestamp}ms`);
+	message.channel.send(`API Latency ${Math.round(bot.ws.ping)}ms`);
 }
 
 commands.ip = async () => {
@@ -281,7 +283,9 @@ commands.purge = () => {
 					.setFooter('You have 10 seconds to respond.')).then(() => {
 						confirm_msg = bot.user.lastMessage;
 						confirm_msg.react('✅');
+						console.log('tick')
 						confirm_msg.react('❌');
+						console.log('nope')
 						confirm_msg.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
 							.then(collected => {
 								console.log(collected.first().emoji.name)
@@ -608,6 +612,24 @@ commands.movevoice = async () => {
 	// })
 }
 
+commands.muteall = () => {
+	message.guild.members.cache.forEach(member => {
+		if (member.voice.channel) {
+			member.voice.setMute(true).catch()
+		}
+	})
+}
+
+commands.unmuteall = () => {
+	message.guild.members.cache.forEach(member => {
+		if (member.voice.channel) {
+			member.voice.setMute(false).catch()
+		}
+	})
+}
+
+
+
 commands.mvregex = async () => {
 	if (!(args[1] && args[2])) {
 		message.channel.send(new MessageEmbed()
@@ -745,8 +767,8 @@ commands.test = () => {
 	message.channel.send('react above')
 	message.author.lastMessage.awaitReactions(() => true, { max: 1, time: 10000, errors: ['time'] })
 		.then(collected => {
-			console.log(collected.first().emoji.id)
-			message.channel.send(collected.first().emoji.toJSON())
+			// console.log(collected.first().emoji.id)
+			message.channel.send(collected.first().emoji)
 		}).catch(console.log('err'))
 }
 
