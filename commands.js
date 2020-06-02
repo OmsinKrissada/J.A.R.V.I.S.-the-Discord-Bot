@@ -3,6 +3,7 @@ const { bot } = require('./main');
 const Util = require('./Util');
 const Wolfram = require('./wolfram.js');
 const DataManager = require('./database')
+const fs = require('fs');
 
 const red = Util.red
 const green = Util.green
@@ -16,7 +17,7 @@ var args, longarg;
 
 
 exports.commands = commands;
-exports.non_dm_command = ['ipannounce', 'nick', 'purge', 'history'];
+exports.non_dm_command = ['ipannounce', 'nick', 'purge', 'history', 'movevoice'];
 
 exports.setPrefix = function (_prefix) {
 	prefix = _prefix;
@@ -27,8 +28,8 @@ exports.setRespondMessage = function (_message) {
 }
 
 exports.setArguments = function (_args) {
-	args = _args;
-	longarg = args.slice(1).join(' ');
+	longarg = _args.slice(1).join(' ').trim();
+	args = _args.filter(arg => arg != '');
 }
 
 
@@ -168,6 +169,10 @@ commands.nick = () => {
 	}
 }
 
+commands.invite = () => {
+	message.channel.send(bot.generateInvite(8))
+}
+
 
 
 // Utility commands
@@ -212,6 +217,10 @@ commands.myid = () => {
 }
 
 commands.history = () => {
+	if (!message.guild.member(message.author).hasPermission('MANAGE_MESSAGES')) {
+		message.channel.send('⛔ You don\'t have "Manage Messages" permission. This incident will be reported. ⛔');
+		return;
+	}
 	if (args[1]) {
 		message.channel.messages.fetch(args[1]).then(msg => {
 			console.log(msg);
@@ -242,20 +251,58 @@ commands.history = () => {
 }
 
 commands.purge = () => {
+	if (!message.guild.member(message.author).hasPermission('MANAGE_MESSAGES')) {
+		message.channel.send('⛔ You don\'t have "Manage Messages" permission. This incident will be reported. ⛔');
+		return;
+	}
 	let amount = Number.parseInt(args[1]);
 	if (!isNaN(args[1])) {
 		if (amount < 1 || amount > 100) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
-				.setDescription(`The amount of messages must not below than 1 nor greater than 100`)
+				.setDescription(`The amount of messages must not below than 1 nor greater than 100.`)
 				.setColor(red)
 			)
 		}
 		// Can purge
 		else {
-			message.channel.bulkDelete(amount + 1).then(
-				message.channel.send(`Deleted ${amount} message(s).`).then(msg => msg.delete({ timeout: 5000 }))
-			)
+			let confirm_msg;
+			let exceed_three = amount > 3;
+			if (exceed_three) {
+				message.channel.send(new MessageEmbed()
+					.setTitle('Confirmation Needed')
+					.setDescription(`This action is going to delete the last **${amount}** messages.`)
+					.setColor(yellow)
+					.setFooter('You have 10 seconds to respond.')).then(() => {
+						confirm_msg = bot.user.lastMessage;
+						confirm_msg.react('✅');
+						confirm_msg.react('❌');
+						confirm_msg.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
+							.then(collected => {
+								console.log(collected.first().emoji.name)
+								if (collected.first().emoji.name == '✅') {
+									deletemsg()
+								}
+								else {
+									message.channel.send(new MessageEmbed()
+										.setDescription('❌ Canceled!')
+										.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
+									confirm_msg.delete();
+								}
+							}).catch(collected => {
+								message.channel.send(new MessageEmbed()
+									.setTitle('Timeout')
+									.setDescription('Timeout, action canceled.')
+									.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
+								confirm_msg.delete();
+							})
+					});
+			} else deletemsg();
+			function deletemsg() {
+				message.channel.bulkDelete(amount + (exceed_three ? 2 : 1)).then(
+					message.channel.send(`✅ Deleted ${amount} message${amount > 1 ? 's' : ''}.`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
+				)
+			}
 		}
 	}
 	else {
@@ -343,6 +390,7 @@ commands.userinfo = () => {
 				if (message.deletable) message.delete();
 			}
 	}
+	if (message.deletable) message.delete();
 
 	if (!(user == null || user.size == 0)) {
 		printUserInfo();
@@ -470,6 +518,165 @@ commands.repeat = () => {
 
 
 
+// Personal-use commands
+
+commands.movevoice = async () => {
+	if (!(args[1] && args[2])) {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription(`Usage: ${prefix}movevoice {origin} {destination}`)
+			.setColor(red)
+		)
+		return;
+	}
+
+	let origin_all = true;
+	// from
+	let origins = message.guild.channels.cache.filter(channel => channel.type == "voice");
+	if (args[1] != '*') {
+		origins = origins.filter(channel => channel.name.toLowerCase().includes(args[1].toLowerCase()));
+		origin_all = false;
+	}
+	// let origin_promise = new Promise((resolve, reject) => {
+	// 	resolve(ask_confirm('Choose your origin voice channel. **(type number in chat)**', origins));
+	// })
+
+	let dests = message.guild.channels.cache.filter(channel => channel.type == "voice");
+	if (args[2] != '*') {
+		dests = dests.filter(channel => channel.name.toLowerCase().includes(args[2].toLowerCase()));
+	}
+
+	// let origin_promise = ask_confirm('origin', origins);
+	// let dest_promise = ask_confirm('destination', dests);
+
+	if (origin_all) {
+		ask_confirm('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
+			if (origins.size == 0) message.channel.send(new MessageEmbed()
+				.setTitle('Error')
+				.setDescription('No Voice Channels Found')
+				.setColor(red))
+			origins.forEach((origin) => {
+				message.guild.channels.resolve(origin).members.forEach((member) => {
+					console.log('all')
+					console.log('from ' + origin.name + ' to ' + dest.name)
+					member.voice.setChannel(dest);
+				})
+			})
+		})
+	}
+	else {
+		ask_confirm('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
+			ask_confirm('destination', dests).then(dest => {
+				if (!origin) message.channel.send(new MessageEmbed()
+					.setTitle('Error')
+					.setDescription('**Origin Channel** Not Found')
+					.setColor(red));
+				if (!dest) message.channel.send(new MessageEmbed()
+					.setTitle('Error')
+					.setDescription('**Destination Channel** Not Found')
+					.setColor(red));
+				message.guild.channels.resolve(origin).members.forEach((member) => {
+					console.log('not all')
+					console.log('from ' + origin.name + ' to ' + dest.name)
+					member.voice.setChannel(dest);
+				})
+			})
+		})
+	}
+	// let dest_promise = new Promise((resolve, reject) => {
+	// 	resolve(ask_confirm('Choose your destination voice channel. **(type number in chat)**', dests));
+	// })
+
+	// origin_promise.then((origin) => {
+	// 	dest_promise.then((dest) => {
+	// 		console.log('run')
+	// 		origin.members.forEach((member) => {
+	// 			console.log('going to move from ' + origin.name + ' to ' + dest.name)
+	// 			member.voice.setChannel(dest);
+	// 		})
+	// 	})
+	// })
+
+
+
+	// message.guild.members.cache.filter(member => member.voice.channel ? member.voice.channel.id == args[1] : false).forEach(member => {
+	// 	member.voice.setChannel(args[2]);
+	// })
+}
+
+commands.mvregex = async () => {
+	if (!(args[1] && args[2])) {
+		message.channel.send(new MessageEmbed()
+			.setDescription('Channel Not Specified')
+			.setColor(red)
+		)
+		return;
+	}
+
+	let origin_all = true;
+	// from
+	let origins = message.guild.channels.cache.filter(channel => channel.type == "voice");
+	if (args[1] != '*') {
+		origins = origins.filter(channel => channel.name.match(new RegExp(args[1], 's')));
+		origin_all = false;
+	}
+	// let origin_promise = new Promise((resolve, reject) => {
+	// 	resolve(ask_confirm('Choose your origin voice channel. **(type number in chat)**', origins));
+	// })
+
+	let dests = message.guild.channels.cache.filter(channel => channel.type == "voice");
+	if (args[2] != '*') {
+		dests = dests.filter(channel => channel.name.match(new RegExp(args[2], 's')));
+	}
+
+	// let origin_promise = ask_confirm('origin', origins);
+	// let dest_promise = ask_confirm('destination', dests);
+
+	if (origin_all) {
+		ask_confirm('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
+			origins.forEach((origin) => {
+				message.guild.channels.resolve(origin).members.forEach((member) => {
+					console.log('all')
+					console.log('from ' + origin.name + ' to ' + dest.name)
+					member.voice.setChannel(dest);
+				})
+			})
+		})
+	}
+	else {
+		ask_confirm('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
+			ask_confirm('destination', dests).then(dest => {
+				message.guild.channels.resolve(origin).members.forEach((member) => {
+					console.log('not all')
+					console.log('from ' + origin.name + ' to ' + dest.name)
+					member.voice.setChannel(dest);
+				})
+			})
+		})
+	}
+	// let dest_promise = new Promise((resolve, reject) => {
+	// 	resolve(ask_confirm('Choose your destination voice channel. **(type number in chat)**', dests));
+	// })
+
+	// origin_promise.then((origin) => {
+	// 	dest_promise.then((dest) => {
+	// 		console.log('run')
+	// 		origin.members.forEach((member) => {
+	// 			console.log('going to move from ' + origin.name + ' to ' + dest.name)
+	// 			member.voice.setChannel(dest);
+	// 		})
+	// 	})
+	// })
+
+
+
+	// message.guild.members.cache.filter(member => member.voice.channel ? member.voice.channel.id == args[1] : false).forEach(member => {
+	// 	member.voice.setChannel(args[2]);
+	// })
+}
+
+
+
 // Easter Eggs commands
 
 commands.whoisironman = () => {
@@ -528,4 +735,53 @@ commands.unknown = () => {
 		.setTitle('Error')
 		.setDescription(`Invalid command, type ${Util.inlineCodeBlock(`${prefix}help`)} for list of commands.`)
 		.setColor(red));
+}
+
+
+
+// Functions
+function ask_confirm(title, collection, is_delete = false) {
+	let ask = (resolve, reject) => {
+		if (collection.size <= 1) {
+			resolve(collection.first());
+			return collection.first();
+		}
+		let embeduser = new MessageEmbed()
+			.setTitle(title)
+			.setColor(blue);
+
+		let str = '';
+		let i = 1;
+		collection.forEach((member) => {
+			str += `[${i}] - ${member}\n\n`;
+			i++;
+		})
+		embeduser.setDescription(str);
+		message.channel.send(embeduser)
+			.then((confirm_msg) => {
+				message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
+					let answer_msg = collected.first();
+					if (!(answer_msg.content >= 1 && answer_msg.content <= collection.size)) {
+						message.channel.send(new MessageEmbed()
+							.setDescription('Invalid answer, aborted.')
+							.setColor(red)
+						).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
+						if (answer_msg.deletable) answer_msg.delete();
+						if (confirm_msg.deletable) confirm_msg.delete();
+						resolve(undefined);
+						return undefined;
+					}
+					else {
+						let result = Array.from(collection.keys())[answer_msg.content - 1];
+						if (confirm_msg.deletable) confirm_msg.delete();
+						if (answer_msg.deletable) answer_msg.delete();
+						console.log(result)
+						resolve(result);
+						return result;
+					}
+				});
+			})
+		if (is_delete && message.deletable) message.delete();
+	}
+	return new Promise(ask);
 }

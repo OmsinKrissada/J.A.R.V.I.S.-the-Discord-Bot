@@ -16,6 +16,12 @@ const DataManager = require('./database');
 const alias = require('./alias.json')
 
 
+
+// Log debug info
+bot.on("debug", (e) => console.info(e));
+
+
+
 // Start discord client
 bot.login(require("./token.json").discord)
 bot.on('ready', () => {
@@ -43,6 +49,11 @@ bot.on('ready', () => {
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
  */
+
+// Check if file dir exist, if not, create them.
+if (!fs.existsSync('./files')) {
+	fs.mkdirSync('./files')
+}
 
 if (!fs.existsSync('./files/logs')) {
 	fs.mkdirSync('./files/logs');
@@ -74,8 +85,6 @@ function log(message) {
 
 
 
-// Log debug info
-// client.on("debug", (e) => console.info(e));
 
 
 
@@ -334,7 +343,15 @@ bot.on('message', message => {
 			args = message.content.substr(prefix.length).trim().split(' ')
 		}
 
-		if (Commando.non_dm_command.includes(args[0]) && message.guild === null) {
+
+
+		Commando.setPrefix(prefix);
+		Commando.setRespondMessage(message);
+		Commando.setArguments(args);
+
+		let answer = alias.hasOwnProperty(args[0].toLowerCase()) ? alias[args[0].toLowerCase()] : args[0].toLowerCase();
+
+		if (message.guild === null && Commando.non_dm_command.includes(answer)) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Not DM Command')
 				.setDescription('This command is not available in DM channels')
@@ -342,11 +359,6 @@ bot.on('message', message => {
 			return 1;
 		}
 
-		Commando.setPrefix(prefix);
-		Commando.setRespondMessage(message);
-		Commando.setArguments(args);
-
-		let answer = alias.hasOwnProperty(args[0]) ? alias[args[0]] : args[0];
 		if (Commando.commands.hasOwnProperty(answer)) {
 			Commando.commands[answer].call();
 		} else Commando.commands.unknown();

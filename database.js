@@ -5,10 +5,6 @@ exports.data = data;
 
 exports.getDatabase = () => {
 
-	// Check if file dir exist, if not, create them.
-	if (!fs.existsSync('./files')) {
-		fs.mkdirSync('./files')
-	}
 	// Get server data
 	fs.readFile('./files/database.json', 'utf-8', (err, filecontent) => {
 		// Create ./files/database.json if not exist/error occur
@@ -36,5 +32,5 @@ exports.addGuildDefaultData = (id, name, isDM) => {
 		prefix: '!',
 		dm: isDM
 	}
-	setDatabase(data)
+	this.setDatabase(data)
 }
