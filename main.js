@@ -18,7 +18,7 @@ const alias = require('./alias.json')
 
 
 // Log debug info
-bot.on("debug", (e) => console.info(e));
+// bot.on("debug", (e) => console.info(e));
 
 
 
@@ -34,6 +34,7 @@ bot.on('ready', () => {
 	DataManager.getDatabase();
 
 	logfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
+	chatlogfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
 
 	// Get specific channel object
 	mclog_channel = bot.channels.resolve('699045838718238771')
@@ -59,10 +60,20 @@ if (!fs.existsSync('./files/logs')) {
 	fs.mkdirSync('./files/logs');
 }
 
+if (!fs.existsSync('./files/chatlogs')) {
+	fs.mkdirSync('./files/chatlogs');
+}
+
 // rename latest.log to it's appropriate name
 if (fs.existsSync('./files/logs/latest.log')) {
 	const linereader = require('n-readlines');
 	fs.renameSync('./files/logs/latest.log', './files/logs/' + new linereader('./files/logs/latest.log').next().toString().substr(2) + '.log')
+}
+
+// rename latest.log to it's appropriate name
+if (fs.existsSync('./files/chatlogs/latest.log')) {
+	const linereader = require('n-readlines');
+	fs.renameSync('./files/chatlogs/latest.log', './files/chatlogs/' + new linereader('./files/chatlogs/latest.log').next().toString().substr(2) + '.log')
 }
 
 
@@ -70,11 +81,27 @@ if (fs.existsSync('./files/logs/latest.log')) {
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
 function log(message) {
 	let lines = message.content.split('\n')
-	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + ']   ';
+	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + '] ';
 	let indent = meta;
 	for (line of lines) {
 		let str = indent + line + '\n';
 		logfile.write(str);
+		console.log(str);
+		indent = '';
+		for (i = 1; i <= meta.length; i++) {
+			indent += ' ';
+		}
+	}
+}
+
+var chatlogfile = fs.createWriteStream(`./files/chatlogs/latest.log`, { encoding: 'utf-8' })
+function chatlog(message) {
+	let lines = message.content.split('\n')
+	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + message.guild === null ? '' : ('|' + message.channel.name) + '|' + message.author.username + '] ';
+	let indent = meta;
+	for (line of lines) {
+		let str = indent + line + '\n';
+		chatlogfile.write(str);
 		console.log(str);
 		indent = '';
 		for (i = 1; i <= meta.length; i++) {
@@ -311,6 +338,8 @@ var client_id = '<@!696973725806886963>';
 var current_message;
 bot.on('message', message => {
 
+	if (message.author.id != bot.user.id)
+		chatlog(message)
 
 	current_message = message;
 
