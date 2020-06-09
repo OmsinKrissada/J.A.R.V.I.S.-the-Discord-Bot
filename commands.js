@@ -628,6 +628,14 @@ commands.unmuteall = () => {
 	})
 }
 
+commands.disconnectall = () => {
+	message.guild.members.cache.forEach(member => {
+		if (member.voice.channel) {
+			message.guild.member(message.author).voice.kick().catch();
+		}
+	})
+}
+
 
 
 commands.mvregex = async () => {
