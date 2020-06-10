@@ -293,23 +293,23 @@ commands.purge = () => {
 									deletemsg()
 								}
 								else {
-									message.channel.send(new MessageEmbed()
+									confirm_msg.edit(new MessageEmbed()
 										.setDescription('❌ Canceled!')
 										.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
-									confirm_msg.delete();
+									confirm_msg.reactions.removeAll();
 								}
 							}).catch(collected => {
-								message.channel.send(new MessageEmbed()
+								confirm_msg.edit(new MessageEmbed()
 									.setTitle('Timeout')
 									.setDescription('Timeout, action canceled.')
 									.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
-								confirm_msg.delete();
+								confirm_msg.reactions.removeAll();
 							})
 					});
 			} else deletemsg();
 			function deletemsg() {
 				message.channel.bulkDelete(amount + (exceed_three ? 2 : 1)).then(
-					message.channel.send(`✅ Deleted ${amount} message${amount > 1 ? 's' : ''}.`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
+					message.channel.send(`✅ Deleted ${amount} message${amount > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
 				)
 			}
 		}
@@ -531,7 +531,7 @@ commands.movevoice = async () => {
 	// let dest_promise = ask_confirm('destination', dests);
 
 	let embed = new MessageEmbed()
-		.setTitle('Moved')
+		.setTitle(message.guild.member(message.author).displayName + ' Moved Members')
 		.setColor(green);
 	let description = '';
 
