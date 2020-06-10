@@ -27,6 +27,7 @@
 	"echo": "say",
 	"mv": "movevoice",
 	"mvchannel": "movevoice",
+	"move": "movevoice",
 	"whoisrealironman": "whoisironman",
 	"ironman": "whoisironman",
 	"ohmmy": "ohm",
