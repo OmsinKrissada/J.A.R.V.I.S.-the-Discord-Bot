@@ -26,11 +26,16 @@ exports.setDatabase = (newDataObject) => {
 	fs.writeFile('./files/database.json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
 }
 
+exports.updateDatabase = () => {
+	this.setDatabase(this.data);
+}
+
 exports.addGuildDefaultData = (id, name, isDM) => {
 	data.guilds[id] = {
 		name: name,
 		prefix: '!',
-		dm: isDM
+		dm: isDM,
+		hooks: []
 	}
 	this.setDatabase(data)
 }

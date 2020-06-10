@@ -86,7 +86,7 @@ function log(message) {
 	for (line of lines) {
 		let str = indent + line + '\n';
 		logfile.write(str);
-		console.log(str);
+		// console.log(str);
 		indent = '';
 		for (i = 1; i <= meta.length; i++) {
 			indent += ' ';
@@ -411,3 +411,19 @@ bot.on('message', message => {
 
 	}
 });
+
+
+
+// Personal-use
+
+bot.on('voiceStateUpdate', (oldState, newState) => {
+	DataManager.data.guilds[newState.guild.id].hooks.forEach(hook => {
+		if (newState.channel && newState.channel.id == hook.voice) {
+			newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: true });
+		}
+		else {
+			newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: null });
+		}
+	})
+
+})

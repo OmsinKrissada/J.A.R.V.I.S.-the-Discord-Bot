@@ -113,7 +113,7 @@ commands.prefix = () => {
 	if (args[1] == 'clear') {
 		if (message.guild === null) {
 			DataManager.data.guilds[message.channel.id].prefix = '';
-			DataManager.setDatabase(DataManager.data);
+			DataManager.updateDatabase();
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Cleared')
 				.setDescription(`Prefix has cleared`)
@@ -707,6 +707,40 @@ commands.mvregex = async () => {
 	// message.guild.members.cache.filter(member => member.voice.channel ? member.voice.channel.id == args[1] : false).forEach(member => {
 	// 	member.voice.setChannel(args[2]);
 	// })
+}
+
+commands.hook = () => {
+	if (!DataManager.data.guilds[message.guild.id].hooks) {
+		DataManager.data.guilds[message.guild.id].hooks = [];
+	}
+
+	if (args[1] == 'add') {
+		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[2], voice: args[3] });
+		DataManager.updateDatabase();
+	}
+	else if (args[1] == 'remove') {
+		DataManager.data.guilds[message.guild.id].hooks = DataManager.data.guilds[message.guild.id].hooks.filter(hook => hook.text != args[2] && hook.voice != args[2]);
+		DataManager.updateDatabase();
+	}
+	else if (args[1] == 'list') {
+		if (DataManager.data.guilds[message.guild.id].hooks.length == 0) {
+			message.channel.send('No Hooks Created');
+			return;
+		}
+		let content = '';
+		DataManager.data.guilds[message.guild.id].hooks.forEach(hook => {
+			content += `${hook.text}(text) with ${hook.voice}(voice)\n`
+		})
+		message.channel.send(new MessageEmbed()
+			.setTitle('Channel Hooks:')
+			.setDescription(content)
+			.setColor(blue)
+			.setFooter(`You can add or remove the hooks with ${prefix}hook command.`)
+		)
+	}
+	else {
+		message.channel.send('Usage command !hook add/remove/list {} {}')
+	}
 }
 
 
