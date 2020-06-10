@@ -96,18 +96,34 @@ function log(message) {
 
 var chatlogfile = fs.createWriteStream(`./files/chatlogs/latest.log`, { encoding: 'utf-8' })
 function chatlog(message) {
-	let lines = message.content.split('\n')
-	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + message.guild === null ? '' : ('|' + message.channel.name) + '|' + message.author.username + '] ';
+
+	let lines = [];
+	if (message.content != '')
+		message.content.split('\n').forEach(contentline => {
+			lines.push(contentline);
+		})
+	message.attachments.forEach(attachment => {
+		lines.push('{ Attachment URL: ' + attachment.url + ' }');
+		const { exec } = require('child_process');
+		exec('curl ' + attachment.url)
+	})
+	message.embeds.forEach(embed => {
+		JSON.stringify(embed.toJSON(), null, '  ').split('\n').forEach(embedline => {
+			lines.push(embedline);
+		})
+	})
+
+	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + (message.guild === null ? '' : ('|' + message.channel.name)) + '|' + message.author.username + '] ';
 	let indent = meta;
-	for (line of lines) {
+	lines.forEach(line => {
 		let str = indent + line + '\n';
 		chatlogfile.write(str);
 		console.log(str);
 		indent = '';
-		for (i = 1; i <= meta.length; i++) {
+		for (let i = 1; i <= meta.length; i++) {
 			indent += ' ';
 		}
-	}
+	})
 }
 
 
@@ -338,8 +354,8 @@ var client_id = '<@!696973725806886963>';
 var current_message;
 bot.on('message', message => {
 
-	if (message.author.id != bot.user.id)
-		chatlog(message)
+	// if (message.author.id != bot.user.id)
+	chatlog(message)
 
 	current_message = message;
 
