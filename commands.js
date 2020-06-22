@@ -403,10 +403,10 @@ commands.userinfo = () => {
 			.addField('User ID', user.id, true)
 		if (message.guild != undefined) { // if in a guild
 			if (message.guild.member(user)) {
-			const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
-			embeduserinfo
+				const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+				embeduserinfo
 					.addField('Roles', rolesOfTheMember)
-				.setColor(message.guild.member(user).displayHexColor)
+					.setColor(message.guild.member(user).displayHexColor)
 					.addField('Joined Server At', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true);
 			}
 			embeduserinfo
@@ -579,16 +579,16 @@ commands.movevoice = async () => {
 				// Tell the errors
 				if (!origin) {
 					message.channel.send(new MessageEmbed()
-					.setTitle('Error')
-					.setDescription('**Origin Channel** Not Found')
-					.setColor(red));
+						.setTitle('Error')
+						.setDescription('**Origin Channel** Not Found')
+						.setColor(red));
 					return;
 				}
 				if (!dest) {
 					message.channel.send(new MessageEmbed()
-					.setTitle('Error')
-					.setDescription('**Destination Channel** Not Found')
-					.setColor(red));
+						.setTitle('Error')
+						.setDescription('**Destination Channel** Not Found')
+						.setColor(red));
 					return;
 				}
 				message.guild.channels.resolve(origin).members.forEach((member) => {
