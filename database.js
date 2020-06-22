@@ -9,10 +9,11 @@ exports.getDatabase = () => {
 	fs.readFile('./files/database.json', 'utf-8', (err, filecontent) => {
 		// Create ./files/database.json if not exist/error occur
 		if (err) {
-			let default_data = { guilds: {} };
+			console.log(err);
+			// let default_data = { guilds: {} };
 
-			fs.writeFile('./files/database.json', JSON.stringify(default_data), (err) => { if (err) throw err; });
-			data = default_data;
+			// fs.writeFile('./files/database.json', JSON.stringify(default_data), (err) => { if (err) throw err; });
+			// data = default_data;
 		}
 		else data = JSON.parse(filecontent);
 		this.data = data;
