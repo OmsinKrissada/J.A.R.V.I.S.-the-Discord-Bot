@@ -700,6 +700,8 @@ commands.mvregex = async () => {
 }
 
 commands.hook = () => {
+	// hook(args[2], args[3]);
+	// function hook(text, voice) {
 	if (!DataManager.data.guilds[message.guild.id].hooks) {
 		DataManager.data.guilds[message.guild.id].hooks = [];
 	}
@@ -707,10 +709,16 @@ commands.hook = () => {
 	if (args[1] == 'add') {
 		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[2], voice: args[3] });
 		DataManager.updateDatabase();
+		message.channel.send(new MessageEmbed()
+			.setTitle('Channel Hooks:')
+			.setDescription(`Hooked \`${message.guild.channels.resolve(args[2]).name}\` with \`${message.guild.channels.resolve(args[3]).name}\`.`)
+			.setColor(green)
+		);
 	}
 	else if (args[1] == 'remove') {
 		DataManager.data.guilds[message.guild.id].hooks = DataManager.data.guilds[message.guild.id].hooks.filter(hook => hook.text != args[2] && hook.voice != args[2]);
 		DataManager.updateDatabase();
+
 	}
 	else if (args[1] == 'list') {
 		if (DataManager.data.guilds[message.guild.id].hooks.length == 0) {
@@ -719,8 +727,9 @@ commands.hook = () => {
 		}
 		let content = '';
 		DataManager.data.guilds[message.guild.id].hooks.forEach(hook => {
-			content += `${hook.text}(text) with ${hook.voice}(voice)\n`
+			content += `  **–** __\`${message.guild.channels.resolve(hook.text).name}\`__ with __\`${message.guild.channels.resolve(hook.voice).name}\`__\n`;
 		})
+		content += '\n( __text__ **with** __voice__ )';
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
 			.setDescription(content)
@@ -729,8 +738,13 @@ commands.hook = () => {
 		)
 	}
 	else {
-		message.channel.send('Usage command !hook add/remove/list {} {}')
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription('Usage: ' + Util.inlineCodeBlock(`${prefix}hook add/remove/list <text channel id> <voice channel id>`))
+			.setColor(red)
+		);
 	}
+	// }
 }
 
 
