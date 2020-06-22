@@ -13,7 +13,7 @@ const fs = require('fs');
 const Util = require('./Util');
 const Commando = require('./Commando');
 const DataManager = require('./Database');
-const alias = require('../alias.json')
+const alias = require('./alias.json')
 
 
 
@@ -163,7 +163,6 @@ bot.on('message', message => {
 		let args;
 		if (message.content.startsWith(client_id)) {
 			args = message.content.substr(client_id.length).trim().split(' ')
-
 		}
 		else {
 			args = message.content.substr(prefix.length).trim().split(' ')
@@ -175,7 +174,12 @@ bot.on('message', message => {
 		Commando.setRespondMessage(message);
 		Commando.setArguments(args);
 
-		let answer = alias.hasOwnProperty(args[0].toLowerCase()) ? alias[args[0].toLowerCase()] : args[0].toLowerCase();
+		let answer = "";
+		for (key in alias) {
+			if (key.includes(args[0].toLowerCase())) {
+				answer = key;
+			}
+		}
 
 		if (message.guild === null && Commando.non_dm_command.includes(answer)) {
 			message.channel.send(new MessageEmbed()

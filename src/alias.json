@@ -1,0 +1,60 @@
+{
+	"help": [
+		"?",
+		"what"
+	],
+	"reload": [
+		"refresh"
+	],
+	"prefix": [
+		"pre",
+		"pf"
+	],
+	"nick": [
+		"nickname",
+		"name"
+	],
+	"ip": [
+		"ipaddress"
+	],
+	"ipannounce": [
+		"announceip"
+	],
+	"myid": [
+		"id"
+	],
+	"purge": [
+		"delete",
+		"bulkdelete",
+		"del",
+		"d",
+		"infouser",
+		"who",
+		"whois"
+	],
+	"ask": [
+		"calc",
+		"calculate",
+		"wolfram",
+		"wa",
+		"wolframalpha"
+	],
+	"askimg": [
+		"askpic",
+		"image"
+	],
+	"hello": [
+		"hi"
+	],
+	"say": [
+		"echo"
+	],
+	"movevoice": [
+		"mv",
+		"mvchannel",
+		"move"
+	],
+	"whoisironman": [
+		"whoisrealironman"
+	]
+}
