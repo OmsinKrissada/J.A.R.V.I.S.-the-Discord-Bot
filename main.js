@@ -198,6 +198,10 @@ bot.on('message', message => {
 // Personal-use
 
 bot.on('voiceStateUpdate', (oldState, newState) => {
+	if (newState.member.user.bot) return;
+	if (!DataManager.data.guilds[newState.guild.id].hooks) {
+		DataManager.data.guilds[newState.guild.id].hooks = [];
+	}
 	DataManager.data.guilds[newState.guild.id].hooks.forEach(hook => {
 		if (newState.channel && newState.channel.id == hook.voice) {
 			newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: true });
