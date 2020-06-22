@@ -251,7 +251,7 @@ commands.history = () => {
 	else {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
-			.setDescription(`Usage: ${prefix}history <message id>`)
+			.setDescription('Usage: ' + Util.inlineCodeBlock(`${prefix}history <message id>`))
 			.setColor(red)
 		)
 	}
@@ -512,35 +512,39 @@ commands.movevoice = async () => {
 	}
 
 	let origin_all = true;
-	// from
+
+	// Gather origin channels
 	let origins = message.guild.channels.cache.filter(channel => channel.type == "voice");
 	if (args[1] != '*') {
 		origins = origins.filter(channel => channel.name.toLowerCase().includes(args[1].toLowerCase()));
 		origin_all = false;
 	}
-	// let origin_promise = new Promise((resolve, reject) => {
-	// 	resolve(ask_confirm('Choose your origin voice channel. **(type number in chat)**', origins));
-	// })
 
+	// Gather destination channel
 	let dests = message.guild.channels.cache.filter(channel => channel.type == "voice");
 	if (args[2] != '*') {
 		dests = dests.filter(channel => channel.name.toLowerCase().includes(args[2].toLowerCase()));
 	}
-
-	// let origin_promise = ask_confirm('origin', origins);
-	// let dest_promise = ask_confirm('destination', dests);
 
 	let embed = new MessageEmbed()
 		.setTitle(message.guild.member(message.author).displayName + ' Moved Members')
 		.setColor(green);
 	let description = '';
 
+	// Confirm destination channel
 	if (origin_all) {
 		ask_confirm('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('No Voice Channels Found')
 				.setColor(red))
+			if (!dest) {
+				message.channel.send(new MessageEmbed()
+					.setTitle('Error')
+					.setDescription('**Destination Channel** Not Found')
+					.setColor(red));
+				return;
+			}
 			origins.forEach((origin) => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					if (origin.id != dest.id) {
@@ -560,17 +564,24 @@ commands.movevoice = async () => {
 				)
 		})
 	}
-	else {
+	else { // Confirm origin channel
 		ask_confirm('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
 			ask_confirm('destination', dests).then(dest => {
-				if (!origin) message.channel.send(new MessageEmbed()
+				// Tell the errors
+				if (!origin) {
+					message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription('**Origin Channel** Not Found')
 					.setColor(red));
-				if (!dest) message.channel.send(new MessageEmbed()
+					return;
+				}
+				if (!dest) {
+					message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription('**Destination Channel** Not Found')
 					.setColor(red));
+					return;
+				}
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					if (origin.id != dest.id) {
 						console.log('not all')
@@ -589,27 +600,6 @@ commands.movevoice = async () => {
 			})
 		})
 	}
-
-
-	// let dest_promise = new Promise((resolve, reject) => {
-	// 	resolve(ask_confirm('Choose your destination voice channel. **(type number in chat)**', dests));
-	// })
-
-	// origin_promise.then((origin) => {
-	// 	dest_promise.then((dest) => {
-	// 		console.log('run')
-	// 		origin.members.forEach((member) => {
-	// 			console.log('going to move from ' + origin.name + ' to ' + dest.name)
-	// 			member.voice.setChannel(dest);
-	// 		})
-	// 	})
-	// })
-
-
-
-	// message.guild.members.cache.filter(member => member.voice.channel ? member.voice.channel.id == args[1] : false).forEach(member => {
-	// 	member.voice.setChannel(args[2]);
-	// })
 }
 
 commands.muteall = () => {
@@ -631,7 +621,7 @@ commands.unmuteall = () => {
 commands.disconnectall = () => {
 	message.guild.members.cache.forEach(member => {
 		if (member.voice.channel) {
-			message.guild.member(message.author).voice.kick().catch();
+			member.voice.kick().catch();
 		}
 	})
 }
