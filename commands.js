@@ -345,7 +345,7 @@ commands.userinfo = () => {
 			user = message.author;
 			break;
 		default:
-			if (message.mentions.members.first() != undefined) {
+			if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
 				user = message.mentions.members.first().user;
 			}
 			else if (message.guild) {
@@ -357,9 +357,9 @@ commands.userinfo = () => {
 					// console.log(JSON.stringify(user.toJSON(), 4))
 					if (user.size > 1) {
 						ask_confirm('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
-							user = usr.user;
+							user = message.guild.member(usr).user;
 							console.log(user)
-							printUserInfo();
+							printUserInfo(user);
 						})
 						return;
 						break;
@@ -368,48 +368,57 @@ commands.userinfo = () => {
 						user = user.first().user
 					}
 				}
-				if (message.deletable) message.delete();
+				// if (message.deletable) message.delete();
 			}
 	}
 	if (message.deletable) message.delete();
 
 	if (!(user == null || user.size == 0)) {
-		printUserInfo();
+		printUserInfo(user);
 		return;
+	}
+	if (bot.users.fetch(args[1]) != undefined) {
+		let is_return = true;
+		bot.users.fetch(args[1]).then(printUserInfo).catch(is_return = false)
+		if (is_return) return;
 	}
 	message.channel.send(new MessageEmbed()
 		.setTitle('Member Not Found')
 		.setDescription(`Cannot find the specified member: "${longarg}"`)
 		.setColor(red)
 	);
+	return;
 
 
-	function printUserInfo() {
+	function printUserInfo(user) {
 		let embeduserinfo = new MessageEmbed();
 		embeduserinfo
-			.setTitle('User Info')
+			.setTitle('User Info Card')
 			.setThumbnail(user.displayAvatarURL())
-			.addField('« Username »', `${user.username}`, true)
-			.addField('« Discriminator »', '#' + user.discriminator, true)
-			.addField('« Display Name »', user, true)
-			.addField('« Current Status »', user.presence.status.toUpperCase(), true)
-			.addField('« Bot? »', user.bot ? 'Yes' : 'No', true)
-			.addField('« User ID »', user.id, true)
-		if (message.guild != undefined) {
+			.addField('Username', `${user.username}`, true)
+			.addField('Discriminator', '#' + user.discriminator, true)
+			.addField('Display Name', user, true)
+			.addField('Current Status', user.presence.status.toUpperCase(), true)
+			.addField('Bot?', user.bot ? 'Yes' : 'No', true)
+			.addField('User ID', user.id, true)
+		if (message.guild != undefined) { // if in a guild
+			if (message.guild.member(user)) {
 			const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
 			embeduserinfo
-				.addField('« Roles »', rolesOfTheMember)
+					.addField('Roles', rolesOfTheMember)
 				.setColor(message.guild.member(user).displayHexColor)
-				.addField('« Joined Server At »', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true)
+					.addField('Joined Server At', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true);
+			}
+			embeduserinfo
 				.setFooter(`Requested by ${message.author.username}`);
 		}
 		embeduserinfo
-			.addField('« Created Account At »', user.createdAt.toLocaleString(), true)
+			.addField('Created Account At', user.createdAt.toLocaleString(), true)
 			.setTimestamp()
 		message.channel.send(embeduserinfo);
+		if (message.deletable) message.delete();
 	}
 
-	if (message.deletable) message.delete();
 }
 
 commands.ask = () => {
