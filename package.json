@@ -2,21 +2,20 @@
   "name": "jarvis",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "src/Main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node main.js",
-    "dev": "nodemon -e js main.js"
+    "start": "node src/Main.js",
+    "dev": "nodemon -e js src/Main.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Krissada Singhakachain",
   "license": "MIT",
   "dependencies": {
     "argv": "0.0.2",
     "bufferutil": "^4.0.1",
     "discord.js": "^12.1.1",
     "erlpack": "github:discordapp/erlpack",
-    "highlight.js": "^9.18.1",
     "line-reader": "^0.4.0",
     "n-readlines": "^1.0.0",
     "network-monitor": "^1.0.2",

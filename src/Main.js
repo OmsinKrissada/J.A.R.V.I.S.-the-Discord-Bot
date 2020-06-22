@@ -11,9 +11,9 @@ const embedmsg = new MessageEmbed();
 
 const fs = require('fs');
 const Util = require('./Util');
-const Commando = require('./commands');
-const DataManager = require('./database');
-const alias = require('./alias.json')
+const Commando = require('./Commando');
+const DataManager = require('./Database');
+const alias = require('../alias.json')
 
 
 
@@ -23,7 +23,7 @@ const alias = require('./alias.json')
 
 
 // Start discord client
-bot.login(require("./token.json").discord)
+bot.login(require("../token.json").discord)
 bot.on('ready', () => {
 
 	console.log('I am ready!');
@@ -31,7 +31,7 @@ bot.on('ready', () => {
 
 	Util.refreshIp();
 
-	DataManager.getDatabase();
+	DataManager.getOption();
 
 	logfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
 	chatlogfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
@@ -152,7 +152,7 @@ bot.on('message', message => {
 	}
 
 	if (DataManager.data.guilds[store_id] === undefined) {
-		DataManager.addGuildDefaultData(store_id, store_name, message.guild === null);
+		DataManager.addGuildDefaultOption(store_id, store_name, message.guild === null);
 	}
 	let prefix = DataManager.data.guilds[store_id].prefix;
 
@@ -212,3 +212,11 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
 	})
 
 })
+
+function unhookall() {
+
+}
+
+
+
+// process.on('exit', unhookall())

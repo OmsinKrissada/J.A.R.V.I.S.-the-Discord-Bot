@@ -1,8 +1,8 @@
 const { MessageEmbed, Message } = require('discord.js')
-const { bot } = require('./main');
+const { bot } = require('./Main');
 const Util = require('./Util');
-const Wolfram = require('./wolfram.js');
-const DataManager = require('./database')
+const Wolfram = require('./Wolfram');
+const DataManager = require('./Database')
 const fs = require('fs');
 
 const red = Util.red
@@ -68,7 +68,7 @@ commands.backup = () => {
 }
 
 commands.reload = () => {
-	DataManager.getDatabase();
+	DataManager.getOption();
 	message.channel.send(new MessageEmbed()
 		.setTitle('Data Reloaded')
 		.setDescription('Server database cache has reloaded from file')
@@ -87,7 +87,7 @@ commands.reset = () => {
 				.then(collected => {
 					console.log(collected.first().emoji.name)
 					if (collected.first().emoji.name == '✅') {
-						DataManager.addGuildDefaultData(message.guild)
+						DataManager.addGuildDefaultOption(message.guild)
 						message.channel.send(new MessageEmbed()
 							.setTitle('Done!')
 							.setDescription('')
@@ -113,7 +113,7 @@ commands.prefix = () => {
 	if (args[1] == 'clear') {
 		if (message.guild === null) {
 			DataManager.data.guilds[message.channel.id].prefix = '';
-			DataManager.updateDatabase();
+			DataManager.updateOption();
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Cleared')
 				.setDescription(`Prefix has cleared`)
@@ -131,7 +131,7 @@ commands.prefix = () => {
 	else if (args[1] != undefined) {
 		let new_prefix = args[1];
 		DataManager.data.guilds[message.guild === null ? message.channel.id : message.guild.id].prefix = new_prefix;
-		DataManager.setDatabase(DataManager.data);
+		DataManager.setOption(DataManager.data);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Prefix Changed')
 			.setDescription(`Prefix has changed to ${Util.inlineCodeBlock(new_prefix)}`)
@@ -717,7 +717,7 @@ commands.hook = () => {
 
 	if (args[1] == 'add') {
 		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[2], voice: args[3] });
-		DataManager.updateDatabase();
+		DataManager.updateOption();
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
 			.setDescription(`Hooked \`${message.guild.channels.resolve(args[2]).name}\` with \`${message.guild.channels.resolve(args[3]).name}\`.`)
@@ -726,7 +726,7 @@ commands.hook = () => {
 	}
 	else if (args[1] == 'remove') {
 		DataManager.data.guilds[message.guild.id].hooks = DataManager.data.guilds[message.guild.id].hooks.filter(hook => hook.text != args[2] && hook.voice != args[2]);
-		DataManager.updateDatabase();
+		DataManager.updateOption();
 
 	}
 	else if (args[1] == 'list') {

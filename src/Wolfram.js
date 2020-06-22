@@ -1,6 +1,6 @@
 // import { Message } from "discord.js";
 
-const token = require('./token.json').wolfram;
+const token = require('../token.json').wolfram;
 const Util = require('./Util')
 
 const WolframAlphaAPI = require('wolfram-alpha-api');

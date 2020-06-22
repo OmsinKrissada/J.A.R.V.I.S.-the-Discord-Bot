@@ -44,7 +44,7 @@ You need to get a *token* from discord to get it online.
 
 In order to do that, please visit [Discord API Website](https://discordapp.com/developers).
 
-Then save your token in the main directory (where index.js is located) as a file called `token` **(without file extension)!!!**
+Then save your token in the root directory (where `package.jaon` is located) as a file called `token` **(without file extension)!!!**
 
 #### If you're ready, you can now run
 ```
