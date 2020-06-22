@@ -6,7 +6,7 @@ exports.data = data;
 exports.getOption = () => {
 
 	// Get server data
-	fs.readFile('./files/guild_option..json', 'utf-8', (err, filecontent) => {
+	fs.readFile('./files/guild_option.json', 'utf-8', (err, filecontent) => {
 		if (err) console.log(err);
 		else data = JSON.parse(filecontent);
 		this.data = data;
@@ -17,7 +17,7 @@ exports.getOption = () => {
 }
 
 exports.setOption = (newDataObject) => {
-	fs.writeFile('./files/guild_option..json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
+	fs.writeFile('./files/guild_option.json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
 }
 
 exports.updateOption = () => {
