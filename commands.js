@@ -189,7 +189,7 @@ commands.ping = async () => {
 }
 
 commands.ip = async () => {
-	if (args[1] == 'plain') {
+	if (args[1] == 'plain' || args[1] == 'mobile' || args[1] == 'm') {
 		message.channel.send(await Util.refreshIp());
 	}
 	else {
