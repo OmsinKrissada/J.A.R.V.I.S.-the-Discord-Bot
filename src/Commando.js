@@ -536,13 +536,14 @@ commands.movevoice = async () => {
 	}
 
 	let embed = new MessageEmbed()
-		.setTitle(message.guild.member(message.author).displayName + ' Moved Members')
+		.setTitle('Members Moved:')
 		.setColor(green);
 	let description = '';
 
 	// Confirm destination channel
 	if (origin_all) {
-		ask_confirm('Choose destination channel you are refering to.\n(type in chat)', dests).then(dest => {
+		ask_confirm('Choose Destination Channel', dests).then(deststr => {
+			let dest = message.guild.channels.resolve(deststr);
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('No Voice Channels Found')
@@ -574,8 +575,10 @@ commands.movevoice = async () => {
 		})
 	}
 	else { // Confirm origin channel
-		ask_confirm('Choose origin channel you are refering to.\n(type in chat)', origins).then(origin => {
-			ask_confirm('destination', dests).then(dest => {
+		ask_confirm('Choose Origin Channel', origins).then(originstr => {
+			ask_confirm('Choose Destination Channel', dests).then(deststr => {
+				let origin = message.guild.channels.resolve(originstr);
+				let dest = message.guild.channels.resolve(deststr);
 				// Tell the errors
 				if (!origin) {
 					message.channel.send(new MessageEmbed()
