@@ -30,6 +30,28 @@ class Util {
 	min2() {
 		return ('0' + this).slice(-2);
 	}
+
+	getNumberEmoji(integer) {
+		let numberstr = {
+			'0': ':zero:',
+			'1': ':one:',
+			'2': ':two:',
+			'3': ':three:',
+			'4': ':four:',
+			'5': ':five:',
+			'6': ':six:',
+			'7': ':seven:',
+			'8': ':eight:',
+			'9': ':nine:',
+
+		};
+		let emojistr = '';
+		let digits = integer.toString().split('');
+		digits.forEach(digit => {
+			emojistr += numberstr[digit];
+		})
+		return emojistr;
+	}
 }
 
 module.exports = new Util;

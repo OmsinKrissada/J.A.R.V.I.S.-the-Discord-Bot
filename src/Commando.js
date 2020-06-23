@@ -542,7 +542,7 @@ commands.movevoice = async () => {
 
 	// Confirm destination channel
 	if (origin_all) {
-		ask_confirm('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
+		ask_confirm('Choose destination channel you are refering to.\n(type in chat)', dests).then(dest => {
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('No Voice Channels Found')
@@ -574,7 +574,7 @@ commands.movevoice = async () => {
 		})
 	}
 	else { // Confirm origin channel
-		ask_confirm('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
+		ask_confirm('Choose origin channel you are refering to.\n(type in chat)', origins).then(origin => {
 			ask_confirm('destination', dests).then(dest => {
 				// Tell the errors
 				if (!origin) {
@@ -735,10 +735,11 @@ commands.hook = () => {
 			return;
 		}
 		let content = '';
+		let count = 1;
 		DataManager.data.guilds[message.guild.id].hooks.forEach(hook => {
-			content += `  **–** __\`${message.guild.channels.resolve(hook.text).name}\`__ with __\`${message.guild.channels.resolve(hook.voice).name}\`__\n`;
+			content += `  ${Util.getNumberEmoji(count)} - :speech_balloon:\`${message.guild.channels.resolve(hook.text).name}\` :left_right_arrow: :loud_sound:\`${message.guild.channels.resolve(hook.voice).name}\`\n\n`;
+			count++;
 		})
-		content += '\n( __text__ **with** __voice__ )';
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
 			.setDescription(content)
@@ -819,12 +820,9 @@ commands.unknown = () => {
 }
 
 commands.test = () => {
-	message.channel.send('react above')
-	message.author.lastMessage.awaitReactions(() => true, { max: 1, time: 10000, errors: ['time'] })
-		.then(collected => {
-			// console.log(collected.first().emoji.id)
-			message.channel.send(collected.first().emoji)
-		}).catch(console.log('err'))
+	for (let i = 1; i <= 20; i++) {
+		message.channel.send(Util.getNumberEmoji(i))
+	}
 }
 
 // Functions
@@ -843,7 +841,7 @@ function ask_confirm(title, collection, is_delete = false) {
 		collection.forEach((member) => {
 			const emoji = message.guild.emojis.cache.find(emoji => emoji.name == '1️⃣')
 			// console.log(emoji.id)
-			str += `[${i}] - ${member}\n\n`;
+			str += `${Util.getNumberEmoji(i)} - ${member}\n\n`;
 			i++;
 		})
 		embeduser.setDescription(str);
