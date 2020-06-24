@@ -3,6 +3,7 @@ const { bot } = require('./Main');
 const Util = require('./Util');
 const Wolfram = require('./Wolfram');
 const DataManager = require('./Database')
+const alias = require('./alias.json')
 const fs = require('fs');
 
 const red = Util.red
@@ -176,6 +177,23 @@ commands.invite = () => {
 			.setColor(blue)
 		)
 	})
+}
+
+commands.alias = () => {
+	let embed = new MessageEmbed()
+		.setTitle('Available Aliases:')
+		.setColor(blue);
+	let available_alias = '';
+	for (command in alias) {
+		available_alias = '';
+		alias[command].forEach(index => {
+			available_alias += ` \`${index}\`, `
+		})
+		embed.addField(`${command}`, available_alias.slice(0, -2), true);
+		// available_alias += '\n\n';
+	}
+	console.log(available_alias)
+	message.channel.send(embed);
 }
 
 
