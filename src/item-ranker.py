@@ -5,6 +5,7 @@
 import sys
 from termcolor import cprint, colored
 from random import randint
+import json
 
 INDENT = ' ' * 2
 
@@ -20,8 +21,7 @@ def print_rank(list, color, head=''):
         # cprint(head, color, attrs=['bold'])
         print(head)
     for i, item in enumerate(list):
-        print(
-            f'{INDENT}{pad(str(i + 1), len(str(len(list))))}:{INDENT}{item}')
+        print(f'{INDENT}{pad(str(i + 1), len(str(len(list))))}: {INDENT}{item}')
 
 
 def insert_elems(start, list, index):
