@@ -577,7 +577,7 @@ commands.movevoice = async () => {
 
 	// Confirm destination channel
 	if (origin_all) {
-		ask_confirm('Choose Destination Channel', dests).then(deststr => {
+		confirm_type('Choose Destination Channel', dests).then(deststr => {
 			let dest = message.guild.channels.resolve(deststr);
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
@@ -610,8 +610,8 @@ commands.movevoice = async () => {
 		})
 	}
 	else { // Confirm origin channel
-		ask_confirm('Choose Origin Channel', origins).then(originstr => {
-			ask_confirm('Choose Destination Channel', dests).then(deststr => {
+		confirm_type('Choose Origin Channel', origins).then(originstr => {
+			confirm_type('Choose Destination Channel', dests).then(deststr => {
 				let origin = message.guild.channels.resolve(originstr);
 				let dest = message.guild.channels.resolve(deststr);
 				// Tell the errors
@@ -704,7 +704,7 @@ commands.mvregex = async () => {
 	// let dest_promise = ask_confirm('destination', dests);
 
 	if (origin_all) {
-		ask_confirm('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
+		confirm_type('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
 			origins.forEach((origin) => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('all')
@@ -715,8 +715,8 @@ commands.mvregex = async () => {
 		})
 	}
 	else {
-		ask_confirm('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
-			ask_confirm('destination', dests).then(dest => {
+		confirm_type('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
+			confirm_type('destination', dests).then(dest => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('not all')
 					console.log('from ' + origin.name + ' to ' + dest.name)
@@ -754,7 +754,7 @@ commands.hook = () => {
 	}
 
 	if (args[1] == 'add') {
-		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[2], voice: args[3] });
+		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[2], voice: args[3], type: args[4] ? args[4] : 'hard' });
 		DataManager.updateOption();
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
@@ -775,14 +775,14 @@ commands.hook = () => {
 		let content = '';
 		let count = 1;
 		DataManager.data.guilds[message.guild.id].hooks.forEach(hook => {
-			content += `  ${Util.getNumberEmoji(count)} - :speech_balloon:\`${message.guild.channels.resolve(hook.text).name}\` :left_right_arrow: :loud_sound:\`${message.guild.channels.resolve(hook.voice).name}\`\n\n`;
+			content += `  ${Util.getNumberEmoji(count)} - :speech_balloon: **${message.guild.channels.resolve(hook.text)}**  :left_right_arrow:  :loud_sound: **${message.guild.channels.resolve(hook.voice).name}**\n\n`;
 			count++;
 		})
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
 			.setDescription(content)
 			.setColor(blue)
-			.setFooter(`You can add or remove the hooks with ${prefix}hook command.`)
+			.setFooter(`You can add or remove a hook with ${prefix}hook command.`)
 		)
 	}
 	else {
@@ -864,8 +864,8 @@ commands.test = () => {
 }
 
 // Functions
-function ask_confirm(title, collection, is_delete = false) {
-	let ask = (resolve, reject) => {
+function confirm_type(title, collection, is_delete = false) {
+	let confirm = (resolve, reject) => {
 		if (collection.size <= 1) {
 			resolve(collection.first());
 			return collection.first();
@@ -877,8 +877,6 @@ function ask_confirm(title, collection, is_delete = false) {
 		let str = '';
 		let i = 1;
 		collection.forEach((member) => {
-			const emoji = message.guild.emojis.cache.find(emoji => emoji.name == '1️⃣')
-			// console.log(emoji.id)
 			str += `${Util.getNumberEmoji(i)} - ${member}\n\n`;
 			i++;
 		})
@@ -909,6 +907,9 @@ function ask_confirm(title, collection, is_delete = false) {
 			})
 		if (is_delete && message.deletable) message.delete();
 	}
+	return new Promise(confirm);
+}
+
 function confirm_click(title, description, reactions = [], timeout) {
 	let confirm = (resolve, reject) => {
 
