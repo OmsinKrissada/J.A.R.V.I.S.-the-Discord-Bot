@@ -19,7 +19,7 @@ exports.getOption = () => {
 exports.setOption = (newDataObject) => {
 	if (newDataObject == '') {
 		console.log('BadData')
-		return;
+		// return;
 	}
 	fs.writeFile('./files/guild_option.json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
 }

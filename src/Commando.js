@@ -62,7 +62,7 @@ commands.backup = () => {
 		fs.mkdirSync('./files/backups')
 	}
 	// Copy database file
-	fs.copyFileSync('./files/database.json', `./files/backups/${new Date().toLocaleString().replace(/ |\/|,|:/g, '-')}.json`)
+	fs.copyFileSync('./files/guild_option.json', `./files/backups/${new Date().toLocaleString().replace(/ |\/|,|:/g, '-')}.json`)
 	message.channel.send(new MessageEmbed()
 		.setTitle('Backup Complete')
 		.setDescription(`Done backing up to ${new Date().toLocaleString().replace(/ |\/|,|:/g, '-')}.json`)
