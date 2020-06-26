@@ -3,6 +3,7 @@ const { bot } = require('./Main');
 const Util = require('./Util');
 const Wolfram = require('./Wolfram');
 const DataManager = require('./Database')
+const Morse = require('./Morse')
 const alias = require('./alias.json')
 const fs = require('fs');
 
@@ -525,6 +526,22 @@ commands.repeat = () => {
 }
 
 
+commands.morse = () => {
+	let description = `Please choose your translation option.\n
+	1️⃣ - **English** ➡ **Morse**\n
+	2️⃣ - **Morse** ➡ **English**`;
+	confirm_click('Title here', description, ['1️⃣', '2️⃣']).then(answer => {
+		console.log(answer)
+		if (answer == 0) {
+			message.channel.send(Morse.toMorse(longarg)).catch('Result Empty');
+		}
+		else {
+			message.channel.send(Morse.toEnglish(longarg)).catch('Result Empty');
+		}
+	})
+}
+
+
 
 // Personal-use commands
 
@@ -892,5 +909,43 @@ function ask_confirm(title, collection, is_delete = false) {
 			})
 		if (is_delete && message.deletable) message.delete();
 	}
-	return new Promise(ask);
+function confirm_click(title, description, reactions = [], timeout) {
+	let confirm = (resolve, reject) => {
+
+		let embed = new MessageEmbed()
+			.setTitle(title)
+			.setDescription(description)
+			.setColor(yellow);
+		if (timeout) {
+			embed.setFooter(`You have ${timeout} seconds to respond.`);
+		}
+
+		message.channel.send(embed).then((confirm_msg) => {
+			reactions.forEach(reaction => {
+				confirm_msg.react(reaction);
+			})
+			confirm_msg.awaitReactions((reaction, user) => reactions.includes(reaction.emoji.name) && user == message.author, { max: 1, time: timeout, errors: ['time'] })
+				.then(collected => {
+					console.log(collected.first().emoji.name)
+					console.log(reactions)
+					resolve(reactions.indexOf(collected.first().emoji.name));
+				}).catch(collected => {
+					if (timeout) {
+						confirm_msg.edit(new MessageEmbed()
+							.setTitle('Timeout')
+							.setDescription('Timeout, action canceled.')
+							.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
+						confirm_msg.reactions.removeAll();
+					}
+					resolve(undefined);
+				})
+		});
+	}
+	return new Promise(confirm);
+}
+
+commands.terminate = () => {
+	message.channel.send('Terminated ' + process.pid).then(
+		process.exit()
+	);
 }
