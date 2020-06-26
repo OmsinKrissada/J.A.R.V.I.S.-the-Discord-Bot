@@ -1,17 +1,17 @@
 const { exec } = require('child_process');
 
-class Util {
+export class Util {
 
-	red = 0xff0000
-	green = 0x00ff00
-	blue = 0x4287f5
-	yellow = 0xebc934
+	static red = 0xff0000
+	static green = 0x00ff00
+	static blue = 0x4287f5
+	static yellow = 0xebc934
 
-	inlineCodeBlock(content) {
+	static inlineCodeBlock(content) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
 	}
 
-	refreshIp() {
+	static refreshIp() {
 		// Get IP 
 		return new Promise((resolve, reject) => {
 			exec('dig +short myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
@@ -23,15 +23,15 @@ class Util {
 		});
 	}
 
-	getDateTimeString(date) {
-		return `${date.getDate().min2()}/${date.getMonth().min2()}/${date.getFullYear().min2()}-${date.getHours().min2()}:${date.getMinutes().min2()}:${date.getSeconds().min2()}`;
+	static getDateTimeString(date: Date) {
+		return `${Util.min2(date.getDate())}/${Util.min2(date.getMonth())}/${Util.min2(date.getFullYear())}-${Util.min2(date.getHours())}:${Util.min2(date.getMinutes())}:${Util.min2(date.getSeconds())}`;
 	}
 
-	min2() {
-		return ('0' + this).slice(-2);
+	static min2(num: number) {
+		return ('0' + num).slice(-2);
 	}
 
-	getNumberEmoji(integer) {
+	static getNumberEmoji(integer: number) {
 		let numberstr = {
 			'0': ':zero:',
 			'1': ':one:',
@@ -53,5 +53,3 @@ class Util {
 		return emojistr;
 	}
 }
-
-module.exports = new Util;

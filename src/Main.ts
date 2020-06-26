@@ -4,16 +4,15 @@
 const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment } = require('discord.js');
 
 // Create an instance of a Discord client
-const bot = new Client();
-exports.bot = bot;
+export const bot = new Client();
 // const clientInformation = new Discord.clientInformation();
 const embedmsg = new MessageEmbed();
 
 const fs = require('fs');
-const Util = require('./Util');
-const Commando = require('./Commando');
-const DataManager = require('./Database');
-const alias = require('./alias.json')
+import * as Commando from "./Commando";
+import { Util } from "./Util";
+import { DataManager } from './DataManager';
+const alias = require('../settings/alias.json')
 
 
 
@@ -37,7 +36,7 @@ bot.on('ready', () => {
 	chatlogfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
 
 	// Get specific channel object
-	mclog_channel = bot.channels.resolve('699045838718238771')
+	// let mclog_channel = bot.channels.resolve('699045838718238771')
 
 
 	// console.log(Discord.GuildManager.resolve(client.guilds))
@@ -83,12 +82,12 @@ function log(message) {
 	let lines = message.content.split('\n')
 	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + '] ';
 	let indent = meta;
-	for (line of lines) {
+	for (let line of lines) {
 		let str = indent + line + '\n';
 		logfile.write(str);
 		// console.log(str);
 		indent = '';
-		for (i = 1; i <= meta.length; i++) {
+		for (let i = 1; i <= meta.length; i++) {
 			indent += ' ';
 		}
 	}
@@ -97,7 +96,7 @@ function log(message) {
 var chatlogfile = fs.createWriteStream(`./files/chatlogs/latest.log`, { encoding: 'utf-8' })
 function chatlog(message) {
 
-	let lines = [];
+	let lines: Array<string> = [];
 	if (message.content != '')
 		message.content.split('\n').forEach(contentline => {
 			lines.push(contentline);
@@ -127,10 +126,6 @@ function chatlog(message) {
 }
 
 
-
-Number.prototype.min2 = Util.min2;
-
-
 var client_id = '<@!696973725806886963>';
 var current_message;
 bot.on('message', message => {
@@ -141,7 +136,7 @@ bot.on('message', message => {
 	current_message = message;
 
 	// If guild not exist in database, add them. 
-	let store_id;
+	let store_id, store_name;
 	if (message.guild === null) {
 		store_id = message.channel.id;
 		store_name = message.author.username;
@@ -160,7 +155,7 @@ bot.on('message', message => {
 
 
 		log(message)
-		let args;
+		let args: Array<string>;
 		if (message.content.startsWith(client_id)) {
 			args = message.content.substr(client_id.length).trim().split(' ')
 		}
@@ -175,7 +170,7 @@ bot.on('message', message => {
 		Commando.setArguments(args);
 
 		let answer = args[0];
-		for (key in alias) {
+		for (let key in alias) {
 			if (alias[key].includes(args[0].toLowerCase())) {
 				answer = key;
 			}
@@ -190,7 +185,7 @@ bot.on('message', message => {
 		}
 
 		if (Commando.commands.hasOwnProperty(answer)) {
-			Commando.commands[answer].call();
+			Commando.commands[answer]();
 		} else Commando.commands.unknown();
 
 

@@ -1,4 +1,4 @@
-class Ranker {
+export class Ranker {
 	constructor(ownerid) {
 		console.log('gonna create')
 		this.python = require('child_process').spawn('/usr/bin/python3', ['./item-ranker.py'])
@@ -22,4 +22,3 @@ class Ranker {
 		})
 	}
 }
-module.exports = Ranker;

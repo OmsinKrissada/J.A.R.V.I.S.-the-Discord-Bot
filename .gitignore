@@ -3,6 +3,7 @@
 /node_modules/
 /reports/
 /files/
+/dist/
 *.pipe
 spare.txt
 prefix.txt
