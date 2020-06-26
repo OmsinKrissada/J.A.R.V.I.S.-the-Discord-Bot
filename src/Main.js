@@ -197,7 +197,7 @@ bot.on('message', message => {
 	}
 });
 
-
+// Commando.commands.rank()
 
 // Personal-use
 
@@ -207,11 +207,21 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
 		DataManager.data.guilds[newState.guild.id].hooks = [];
 	}
 	DataManager.data.guilds[newState.guild.id].hooks.forEach(hook => {
-		if (newState.channel && newState.channel.id == hook.voice) {
-			newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: true });
+		if (hook.type == 'hard') {
+			if (newState.channel && newState.channel.id == hook.voice) {
+				newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: true });
+			}
+			else {
+				newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: null });
+			}
 		}
-		else {
-			newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: null });
+		else if (hook.type == 'soft') {
+			if (newState.channel && newState.channel.id == hook.voice) {
+				newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { SEND_MESSAGES: true });
+			}
+			else {
+				newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { SEND_MESSAGES: null });
+			}
 		}
 	})
 
