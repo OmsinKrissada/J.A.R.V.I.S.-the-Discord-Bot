@@ -3,6 +3,7 @@ const { bot } = require('./Main');
 const Util = require('./Util');
 const Wolfram = require('./Wolfram');
 const DataManager = require('./Database')
+const Ranker = require('./Ranker')
 const Morse = require('./Morse')
 const alias = require('./alias.json')
 const fs = require('fs');
@@ -375,7 +376,7 @@ commands.userinfo = () => {
 					console.log(user.size)
 					// console.log(JSON.stringify(user.toJSON(), 4))
 					if (user.size > 1) {
-						ask_confirm('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
+						confirm_type('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
 							user = message.guild.member(usr).user;
 							console.log(user)
 							printUserInfo(user);
@@ -525,6 +526,14 @@ commands.repeat = () => {
 	});
 }
 
+commands.rank = () => {
+	console.log('Warning: This feature is not ready yet.')
+	let ranker = new Ranker('1234');
+	console.log('created')
+	ranker.python.stdout.on('data', data => {
+		message.channel.send(data.toString())
+	})
+}
 
 commands.morse = () => {
 	let description = `Please choose your translation option.\n
