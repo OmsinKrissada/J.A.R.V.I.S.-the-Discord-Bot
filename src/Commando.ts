@@ -897,7 +897,7 @@ commands.test = () => {
 
 // Functions
 function confirm_type(title: string, collection: Collection<string, any>, is_delete = false): Promise<string> {
-	let confirm = (resolve: (arg0: any) => void, reject: any) => {
+	let confirm = (resolve: (arg0: any) => void) => {
 		if (collection.size <= 1) {
 			resolve(collection.first());
 			return collection.first();
@@ -942,8 +942,8 @@ function confirm_type(title: string, collection: Collection<string, any>, is_del
 	return new Promise(confirm);
 }
 
-function confirm_click(title: string, description: string, reactions: Array<string>, timeout?: number): Promise<number | undefined> {
-	let confirm = (resolve: (arg0: number | undefined) => void, reject: any) => {
+function confirm_click(title: string, description: string, reactions: Array<EmojiResolvable>, timeout?: number): Promise<EmojiResolvable | null> {
+	let confirm = (resolve: (arg0: string | null) => void) => {
 
 		let embed = new MessageEmbed()
 			.setTitle(title)
@@ -961,8 +961,8 @@ function confirm_click(title: string, description: string, reactions: Array<stri
 				.then(collected => {
 					console.log(collected.first().emoji.name)
 					console.log(reactions)
-					resolve(reactions.indexOf(collected.first().emoji.name));
-				}).catch(collected => {
+					resolve(collected.first().emoji.name);
+				}).catch(() => {
 					if (timeout) {
 						confirm_msg.edit(new MessageEmbed()
 							.setTitle('Timeout')
@@ -970,7 +970,7 @@ function confirm_click(title: string, description: string, reactions: Array<stri
 							.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
 						confirm_msg.reactions.removeAll();
 					}
-					resolve(undefined);
+					resolve(null);
 				})
 		});
 	}
