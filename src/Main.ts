@@ -169,9 +169,9 @@ bot.on('message', message => {
 		Commando.setRespondMessage(message);
 		Commando.setArguments(args);
 
-		let answer = args[0];
+		let answer = args[0].toLowerCase();
 		for (let key in alias) {
-			if (alias[key].includes(args[0].toLowerCase())) {
+			if (alias[key].includes(args[0])) {
 				answer = key;
 			}
 		}

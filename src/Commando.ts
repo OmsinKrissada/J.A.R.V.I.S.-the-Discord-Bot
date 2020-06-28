@@ -145,7 +145,7 @@ commands.help = () => {
 		features: {
 			"info": {
 				description: "Shows information about a user or a server.",
-				usage: [`${prefix}info server {@mention|username|nickname|user_id}`, `${prefix}info user me`, `${prefix}info server`]
+				usage: [`${prefix}info user {@mention|username|nickname|user_id}`, `${prefix}info user me`, `${prefix}info server`]
 			},
 			"history": {
 				description: "Shows edit history of a message.",
