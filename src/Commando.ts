@@ -25,15 +25,15 @@ export var message: Message;
 export var args: Array<string>;
 
 export function setPrefix(_prefix: string) {
-	this.prefix = _prefix;
+	prefix = _prefix;
 }
 
 export function setRespondMessage(_message: Message) {
-	this.message = _message;
+	message = _message;
 }
 
 export function setArguments(_args: Array<string>) {
-	this.args = _args.filter(arg => arg != '');
+	args = _args.filter(arg => arg != '');
 }
 
 export function run(command: string) {
@@ -56,6 +56,26 @@ function longarg(begin_index = 1) {
 
 
 commands.help = () => {
+
+	function detailedHelp(asked_command: string) {
+		let embed = new MessageEmbed()
+			.setTitle('Command: ' + Util.inlineCodeBlock(asked_command))
+			.setColor(blue)
+		for (let category in command_info) {
+			if (command_info[category].hasOwnProperty(asked_command)) {
+				let command = command_info[category][asked_command];
+				embed.addField('Description:', command.description);
+				if (typeof command.usage == 'string') embed.addField('Usage:', Util.inlineCodeBlock(command.usage));
+				else {
+					let usagestr = '';
+					command.usage.forEach((usage: string) => usagestr += usage + '\n');
+					embed.addField('Usages:', Util.inlineCodeBlock(usagestr));
+				}
+				message.channel.send(embed);
+				validDetail = true;
+			}
+		}
+	}
 
 	let command_info: { [type: string]: { [command: string]: { [key: string]: string | Array<string> } } } = {
 		general: {
@@ -120,11 +140,7 @@ commands.help = () => {
 			"nick": {
 				description: "Changes bot's nickname.",
 				usage: [`${prefix} set {nickname}`, `${prefix} clear`]
-			},
-			"": {
-				description: "",
-				usage: `${prefix}`
-			},
+			}
 		},
 		features: {
 			"info": {
@@ -185,23 +201,7 @@ commands.help = () => {
 	let validDetail = false;
 
 	if (args[1]) {
-		let embed = new MessageEmbed()
-			.setTitle('Command: ' + Util.inlineCodeBlock(args[1]))
-			.setColor(blue)
-		for (let category in command_info) {
-			if (command_info[category].hasOwnProperty(args[1])) {
-				let command = command_info[category][args[1]];
-				embed.addField('Description:', command.description);
-				if (typeof command.usage == 'string') embed.addField('Usage:', Util.inlineCodeBlock(command.usage));
-				else {
-					let usagestr = '';
-					command.usage.forEach((usage: string) => usagestr += usage + '\n');
-					embed.addField('Usages:', Util.inlineCodeBlock(usagestr));
-				}
-				message.channel.send(embed);
-				validDetail = true;
-			}
-		}
+		detailedHelp(args[1]);
 	}
 	if (validDetail) return;
 	let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Util.inlineCodeBlock(prefix)}.`;
@@ -511,7 +511,7 @@ commands.uptime = () => {
 	)
 }
 
-commands.userinfo = () => {
+commands.info = () => {
 	if (args[1] == 'user') {
 		let user;
 		console.log(`"${longarg(2)}"`)
@@ -619,7 +619,8 @@ commands.userinfo = () => {
 		message.channel.send(embed);
 	}
 	else {
-		throw 'Invalid args';
+		setArguments(['help', 'info'])
+		run('help');
 	}
 }
 
