@@ -225,6 +225,15 @@ commands.ip = async () => {
 	if (args[1] == 'plain' || args[1] == 'mobile' || args[1] == 'm') {
 		message.channel.send(await Util.refreshIp());
 	}
+	else if (args[1] == 'announce') {
+		message.channel.send(new MessageEmbed()
+			.setTitle('CURRENT IP')
+			.setDescription(`**Current IP address is \`${await Util.refreshIp()}\`**`)
+			.setColor(blue)
+			.addField(` ‎`, `_Last updated: ${new Date().toLocaleString()}_`)
+		)
+		message.channel.send('@everyone')
+	}
 	else {
 		message.channel.send(new MessageEmbed()
 			.setDescription(`Current IP address is **${await Util.refreshIp()}**`)
@@ -233,27 +242,6 @@ commands.ip = async () => {
 			.setTimestamp()
 		);
 	}
-}
-
-commands.channel = () => {
-	console.log(`${message.channel} with id: ${message.channel.id}`)
-}
-
-commands.ipannounce = async () => {
-	message.channel.send(new MessageEmbed()
-		.setTitle('CURRENT IP')
-		.setDescription(`**Current IP address is \`${await Util.refreshIp()}\`**`)
-		.setColor(blue)
-		.addField(` ‎`, `_Last updated: ${new Date().toLocaleString()}_`)
-	)
-	message.channel.send('@everyone')
-}
-
-commands.myid = () => {
-	message.channel.send(new MessageEmbed()
-		.setAuthor(`Your ID is "${message.author.id}"`, message.author.displayAvatarURL())
-		.setColor(blue)
-	)
 }
 
 commands.history = () => {
