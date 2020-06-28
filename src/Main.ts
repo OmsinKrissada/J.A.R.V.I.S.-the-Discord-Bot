@@ -9,7 +9,7 @@ export const bot = new Client();
 const embedmsg = new MessageEmbed();
 
 const fs = require('fs');
-import { Commando } from "./Commando";
+import * as Commando from "./Commando";
 import { Util } from "./Util";
 import { DataManager } from './DataManager';
 const alias = require('../settings/alias.json')
@@ -184,15 +184,13 @@ bot.on('message', message => {
 			return 1;
 		}
 
-		if (Commando.commands.hasOwnProperty(answer)) {
-			Commando.commands[answer]();
-		} else Commando.commands.unknown();
+		Commando.run(answer);
 
 
 	}
 });
 
-// Commando.commands.rank()
+// commando.commands.rank()
 
 // Personal-use
 

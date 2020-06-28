@@ -16,28 +16,32 @@ const yellow = Util.yellow;
 interface CommandObject {
 	[key: string]: Function
 }
-const commands: CommandObject = {};
+export const commands: CommandObject = {};
 
-export class Commando {
-	static non_dm_command = ['ipannounce', 'nick', 'purge', 'history', 'movevoice', 'serverinfo'];
+export const non_dm_command = ['nick', 'purge', 'history', 'movevoice'];
 
-	static commands = commands;
-	static prefix: string;
-	static message: Message;
-	static args: Array<string>;
+export var prefix: string;
+export var message: Message;
+export var args: Array<string>;
 
-	static setPrefix = function (_prefix: string) {
-		this.prefix = _prefix;
-	}
-
-	static setRespondMessage = function (_message: Message) {
-		this.message = _message;
-	}
-
-	static setArguments = function (_args: Array<string>) {
-		this.args = _args.filter(arg => arg != '');
-	}
+export function setPrefix(_prefix: string) {
+	this.prefix = _prefix;
 }
+
+export function setRespondMessage(_message: Message) {
+	this.message = _message;
+}
+
+export function setArguments(_args: Array<string>) {
+	this.args = _args.filter(arg => arg != '');
+}
+
+export function run(command: string) {
+	if (commands.hasOwnProperty(command)) {
+		commands[command]();
+	} else commands.unknown();
+}
+
 
 function longarg(begin_index = 1) {
 	return args.slice(begin_index).join(' ').trim();
@@ -49,21 +53,176 @@ function longarg(begin_index = 1) {
 // -----------------------------------------------------------------------------------
 
 // Setting commands
-const prefix = Commando.prefix;
-const args = Commando.args;
-const message = Commando.message;
-commands.help = () => {
-	let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is ${Util.inlineCodeBlock(prefix)}.`;
 
-	// .addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot')
-	message.channel.send(new MessageEmbed()
-		.setAuthor(`Available Commands`, bot.user.displayAvatarURL())
-		.setDescription(prefixmsg)
+
+commands.help = () => {
+
+	let command_info: { [type: string]: { [command: string]: { [key: string]: string | Array<string> } } } = {
+		general: {
+			"help": {
+				description: "Shows this message.",
+				usage: `${prefix}help`
+			},
+			"invite": {
+				description: "Shows bot's invitation link.",
+				usage: `${prefix}invite`
+			},
+			"alias": {
+				description: "Shows available command aliases.",
+				usage: `${prefix}alias`
+			},
+			"ping": {
+				description: "Pings the bot",
+				usage: `${prefix}ping`
+			},
+			"ip": {
+				description: "Shows bot's current IP address.",
+				usage: [`${prefix}ip`, `${prefix}ip plain|mobile|m`, `${prefix}ip announce`]
+			},
+			"uptime": {
+				description: "Shows uptime for the bot.",
+				usage: `${prefix}uptime`
+			},
+			"hello": {
+				description: "Hi!",
+				usage: `${prefix}hello`
+			},
+			"say": {
+				description: "Repeats a text.",
+				usage: `${prefix}say {text}`
+			},
+			"repeat": {
+				description: "~~Repeats texts sends by a user.~~ **NOT READY**",
+				usage: `${prefix}repeat {user} {text}`
+			},
+			"whoisironman": {
+				description: "Let you know the true Ironman.",
+				usage: `${prefix}whoisironman`
+			},
+		},
+		settings: {
+			"backup": {
+				description: "Creates a backup of all guilds' options.",
+				usage: `${prefix}backup`
+			},
+			"reload": {
+				description: "Reloads all guilds' options.",
+				usage: `${prefix}reload`
+			},
+			"reset": {
+				description: "Resets all current guild's option to default value.",
+				usage: `${prefix}reset`
+			},
+			"prefix": {
+				description: "Changes the prefix of the bot.",
+				usage: `${prefix}prefix {prefix}`
+			},
+			"nick": {
+				description: "Changes bot's nickname.",
+				usage: [`${prefix} set {nickname}`, `${prefix} clear`]
+			},
+			"": {
+				description: "",
+				usage: `${prefix}`
+			},
+		},
+		features: {
+			"info": {
+				description: "Shows information about a user or a server.",
+				usage: [`${prefix}info server {@mention|username|nickname|user_id}`, `${prefix}info user me`, `${prefix}info server`]
+			},
+			"history": {
+				description: "Shows edit history of a message.",
+				usage: `${prefix}history {message_id}`
+			},
+			"purge": {
+				description: "Purges a number of latest message(s).",
+				usage: `${prefix}purge {amount}`
+			},
+			"movevoice": {
+				description: "Moves members from voice channels to another channel.",
+				usage: `${prefix}movevoice {origin channel} {destination channel}`
+			},
+			"mvregex": {
+				description: "Same as movevoice but chooses using RegEx.",
+				usage: `${prefix}mvregex {origin channel regex} {destination channel regex}`
+			},
+			"muteall": {
+				description: "Mutes all every in all voice channels.",
+				usage: `${prefix}muteall`
+			},
+			"unmuteall": {
+				description: "Unmutes every members in all voice channels.",
+				usage: `${prefix}unmuteall`
+			},
+			"disconnectall": {
+				description: "Disconnects every members from all voice channels.",
+				usage: `${prefix}`
+			},
+			"hook": {
+				description: "Hooks a text with a voice channel.",
+				usage: [`${prefix}hook list`, `${prefix}hook add .... I AM TOO LAZY TO DO IT NOW K? -.-`]
+			},
+			"ask": {
+				description: "Ask information from WolframAlpha.",
+				usage: `${prefix}ask {question}`
+			},
+			"askimg": {
+				description: "Ask information from WolframAlpha as an image.",
+				usage: `${prefix}askimg {question}`
+			},
+			"rank": {
+				description: "~~Ranks choices.~~ **NOT READY**",
+				usage: `${prefix}rank`
+			},
+			"morse": {
+				description: "Translates between morse code and English.",
+				usage: `${prefix}morse {text (morse code or English)}`
+			},
+		}
+	}
+
+	let validDetail = false;
+
+	if (args[1]) {
+		let embed = new MessageEmbed()
+			.setTitle('Command: ' + Util.inlineCodeBlock(args[1]))
+			.setColor(blue)
+		for (let category in command_info) {
+			if (command_info[category].hasOwnProperty(args[1])) {
+				let command = command_info[category][args[1]];
+				embed.addField('Description:', command.description);
+				if (typeof command.usage == 'string') embed.addField('Usage:', Util.inlineCodeBlock(command.usage));
+				else {
+					let usagestr = '';
+					command.usage.forEach((usage: string) => usagestr += usage + '\n');
+					embed.addField('Usages:', Util.inlineCodeBlock(usagestr));
+				}
+				message.channel.send(embed);
+				validDetail = true;
+			}
+		}
+	}
+	if (validDetail) return;
+	let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Util.inlineCodeBlock(prefix)}.`;
+
+	let embed = new MessageEmbed()
+		.setTitle(header)
+		.setDescription(`Use ${Util.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
 		.setColor(blue)
-		.addField(`General`, '`help` : Shows this message\n`ping` : Pong!\n`hello` : Hi!\n`ip` : Get my current public IP address\n`ipannounce` : Get my current public IP address and mention @everyone\n`morse` : Translate between morse code and English\n`myid` : Show your user ID\n`rank` : Start a ranking session\n`uptime` : Shows bot\'s uptime\n')
-		.addField('Settings', '`backup` : Backup the database file\n`nick` : Change bot\'s nickname\n`prefix` : Change bot\'s prefix\n`reload` : Reload all server data from disk\n`reset` : Reset current server\'s data')
-		.addField('Misc', '`repeat` : Repeat your messsages\n`say` : Say your provided text once')
-	)
+		.setAuthor('Available Commands:', bot.user.displayAvatarURL());
+
+	for (let category in command_info) {
+		let commands = '';
+		for (let command in command_info[category]) {
+			commands += Util.inlineCodeBlock(command) + ' ';
+		}
+		embed.addField(category.toLocaleUpperCase(), commands);
+	}
+	embed.addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot');
+
+	message.channel.send(embed);
+
 }
 
 commands.backup = () => {
