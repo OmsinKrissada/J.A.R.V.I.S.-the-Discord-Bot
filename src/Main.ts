@@ -1,7 +1,7 @@
 // Init sequence
 
 // Discord
-const { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment } = require('discord.js');
+import { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment } from 'discord.js';
 
 // Create an instance of a Discord client
 export const bot = new Client();
@@ -9,7 +9,7 @@ export const bot = new Client();
 const embedmsg = new MessageEmbed();
 
 const fs = require('fs');
-import * as Commando from "./Commando";
+import { Commando } from "./Commando";
 import { Util } from "./Util";
 import { DataManager } from './DataManager';
 const alias = require('../settings/alias.json')
@@ -196,7 +196,7 @@ bot.on('message', message => {
 
 // Personal-use
 
-bot.on('voiceStateUpdate', (oldState, newState) => {
+bot.on('voiceStateUpdate', (_oldState, newState) => {
 	if (newState.member.user.bot) return;
 	if (!DataManager.data.guilds[newState.guild.id].hooks) {
 		DataManager.data.guilds[newState.guild.id].hooks = [];

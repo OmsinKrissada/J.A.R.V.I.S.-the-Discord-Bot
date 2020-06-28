@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Collection, User } from 'discord.js';
+import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvable } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import { DataManager } from './DataManager'
@@ -16,24 +16,31 @@ const yellow = Util.yellow;
 interface CommandObject {
 	[key: string]: Function
 }
-export const commands: CommandObject = {};
+const commands: CommandObject = {};
 
-var prefix: string;
-var message: Message;
-var args: Array<string>, longarg: string;
-export var non_dm_command = ['ipannounce', 'nick', 'purge', 'history', 'movevoice'];
+export class Commando {
+	static non_dm_command = ['ipannounce', 'nick', 'purge', 'history', 'movevoice', 'serverinfo'];
 
-export var setPrefix = function (_prefix) {
-	prefix = _prefix;
+	static commands = commands;
+	static prefix: string;
+	static message: Message;
+	static args: Array<string>;
+
+	static setPrefix = function (_prefix: string) {
+		this.prefix = _prefix;
+	}
+
+	static setRespondMessage = function (_message: Message) {
+		this.message = _message;
+	}
+
+	static setArguments = function (_args: Array<string>) {
+		this.args = _args.filter(arg => arg != '');
+	}
 }
 
-export var setRespondMessage = function (_message) {
-	message = _message;
-}
-
-export var setArguments = function (_args) {
-	longarg = _args.slice(1).join(' ').trim();
-	args = _args.filter(arg => arg != '');
+function longarg(begin_index = 1) {
+	return args.slice(begin_index).join(' ').trim();
 }
 
 
@@ -42,7 +49,9 @@ export var setArguments = function (_args) {
 // -----------------------------------------------------------------------------------
 
 // Setting commands
-
+const prefix = Commando.prefix;
+const args = Commando.args;
+const message = Commando.message;
 commands.help = () => {
 	let prefixmsg = prefix == '' ? 'Bot currently has no prefix.' : `Current bot's prefix is ${Util.inlineCodeBlock(prefix)}.`;
 
