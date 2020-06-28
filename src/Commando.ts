@@ -356,93 +356,115 @@ commands.uptime = () => {
 }
 
 commands.userinfo = () => {
-	let user;
-	console.log(`"${longarg}"`)
-	switch (longarg) {
-		case "":
-			message.channel.send(new MessageEmbed()
-				.setTitle(`Assumed ${Util.inlineCodeBlock(prefix + 'userinfo me')}`)
-				.setDescription('Usage: ' + Util.inlineCodeBlock(prefix + 'userinfo') + ' or ' + Util.inlineCodeBlock(prefix + 'userinfo <member>'))
-				.setColor(yellow)
-			).then(msg => msg.delete({ timeout: 10000 }));
-		case 'me':
-			user = message.author;
-			break;
-		default:
-			if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
-				user = message.mentions.members.first().user;
-			}
-			else if (message.guild) {
-				try {
-					user = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg.toLowerCase()) || member.user.username.toLowerCase().includes(longarg.toLowerCase()));
-				} catch (err) { }
-				if (user.size != undefined && user.size > 0) {
-					console.log(user.size)
-					// console.log(JSON.stringify(user.toJSON(), 4))
-					if (user.size > 1) {
-						confirm_type('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
-							user = message.guild.member(usr).user;
-							console.log(user)
-							printUserInfo(user);
-						})
-						return;
-						break;
-					}
-					else {
-						user = user.first().user
-					}
+	if (args[1] == 'user') {
+		let user;
+		console.log(`"${longarg(2)}"`)
+		switch (longarg(2)) {
+			case "":
+				message.channel.send(new MessageEmbed()
+					.setTitle(`Assumed ${Util.inlineCodeBlock(prefix + 'userinfo me')}`)
+					.setDescription('Usage: ' + Util.inlineCodeBlock(prefix + 'userinfo') + ' or ' + Util.inlineCodeBlock(prefix + 'userinfo <member>'))
+					.setColor(yellow)
+				).then(msg => msg.delete({ timeout: 10000 }));
+			case 'me':
+				user = message.author;
+				break;
+			default:
+				if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
+					user = message.mentions.members.first().user;
 				}
-				// if (message.deletable) message.delete();
-			}
-	}
-	if (message.deletable) message.delete();
+				else if (message.guild) {
+					try {
+						user = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(2).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(2).toLowerCase()));
+					} catch (err) { }
+					if (user.size != undefined && user.size > 0) {
+						console.log(user.size)
+						// console.log(JSON.stringify(user.toJSON(), 4))
+						if (user.size > 1) {
+							confirm_type('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
+								user = message.guild.member(usr).user;
+								console.log(user)
+								printUserInfo(user);
+							})
+							return;
+							break;
+						}
+						else {
+							user = user.first().user
+						}
+					}
+					// if (message.deletable) message.delete();
+				}
+		}
+		if (message.deletable) message.delete();
 
-	if (!(user == null || user.size == 0)) {
-		printUserInfo(user);
+		if (!(user == null || user.size == 0)) {
+			printUserInfo(user);
+			return;
+		}
+		if (bot.users.fetch(args[2]) != undefined) {
+			let is_return = true;
+			bot.users.fetch(args[2]).then(printUserInfo).catch(() => is_return = false)
+			if (is_return) return;
+		}
+		message.channel.send(new MessageEmbed()
+			.setTitle('Member Not Found')
+			.setDescription(`Cannot find the specified member: "${longarg()}"`)
+			.setColor(red)
+		);
 		return;
-	}
-	if (bot.users.fetch(args[1]) != undefined) {
-		let is_return = true;
-		bot.users.fetch(args[1]).then(printUserInfo).catch(is_return = false)
-		if (is_return) return;
-	}
-	message.channel.send(new MessageEmbed()
-		.setTitle('Member Not Found')
-		.setDescription(`Cannot find the specified member: "${longarg}"`)
-		.setColor(red)
-	);
-	return;
 
 
-	function printUserInfo(user) {
-		let embeduserinfo = new MessageEmbed();
-		embeduserinfo
-			.setTitle('User Info Card')
-			.setThumbnail(user.displayAvatarURL())
-			.addField('Username', `${user.username}`, true)
-			.addField('Discriminator', '#' + user.discriminator, true)
-			.addField('Display Name', user, true)
-			.addField('Current Status', user.presence.status.toUpperCase(), true)
-			.addField('Bot?', user.bot ? 'Yes' : 'No', true)
-			.addField('User ID', user.id, true)
-		if (message.guild != undefined) { // if in a guild
-			if (message.guild.member(user)) {
-				const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+		function printUserInfo(user) {
+			let embeduserinfo = new MessageEmbed();
+			embeduserinfo
+				.setTitle('User Info Card')
+				.setThumbnail(user.displayAvatarURL())
+				.addField('Username', `${user.username}`, true)
+				.addField('Discriminator', '#' + user.discriminator, true)
+				.addField('Display Name', user, true)
+				.addField('Current Status', user.presence.status.toUpperCase(), true)
+				.addField('Bot?', user.bot ? 'Yes' : 'No', true)
+				.addField('User ID', user.id, true)
+			if (message.guild != undefined) { // if in a guild
+				if (message.guild.member(user)) {
+					const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+					embeduserinfo
+						.addField('Roles', rolesOfTheMember)
+						.setColor(message.guild.member(user).displayHexColor)
+						.addField('Joined Server At', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true);
+				}
 				embeduserinfo
-					.addField('Roles', rolesOfTheMember)
-					.setColor(message.guild.member(user).displayHexColor)
-					.addField('Joined Server At', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true);
+					.setFooter(`Requested by ${message.author.tag}`);
 			}
 			embeduserinfo
-				.setFooter(`Requested by ${message.author.username}`);
+				.addField('Created Account At', user.createdAt.toLocaleString(), true)
+				.setTimestamp()
+			message.channel.send(embeduserinfo);
+			if (message.deletable) message.delete();
 		}
-		embeduserinfo
-			.addField('Created Account At', user.createdAt.toLocaleString(), true)
-			.setTimestamp()
-		message.channel.send(embeduserinfo);
-		if (message.deletable) message.delete();
-	}
 
+	}
+	else if (args[1] == 'server') {
+		let guild = message.guild;
+		let embed = new MessageEmbed()
+			.setTitle('Server Info Card')
+			.setColor(blue)
+			.setThumbnail(guild.iconURL())
+			.addField('Name', guild.name, true)
+			.addField('ID', guild.id, true)
+			.addField('Owner', guild.owner, true)
+			.addField('Text Channels', guild.channels.cache.filter(channel => channel.type == "text").size, true)
+			.addField('Voice Channels', guild.channels.cache.filter(channel => channel.type == "voice").size, true)
+			.addField('Roles', guild.roles.cache.size, true)
+			.setDescription('click')
+			.setFooter(`Requested by ${message.author.tag}`)
+			.setTimestamp();
+		message.channel.send(embed);
+	}
+	else {
+		throw 'Invalid args';
+	}
 }
 
 commands.ask = () => {
@@ -483,7 +505,7 @@ commands.say = () => {
 	let result = '';
 	args.shift()
 	for (let word in args) { result += args[word] + ' ' }
-	message.channel.send(longarg)
+	message.channel.send(longarg())
 	if (message.deletable) message.delete()
 }
 
@@ -496,8 +518,8 @@ commands.repeat = () => {
 		)
 		return 1;
 	}
-	let current_user = args[1] == 'me' ? message.author.id : message.mentions.users.first().id;
-	if (current_user == bot.user) {
+	let current_user: UserResolvable = args[1] == 'me' ? message.author.id : message.mentions.users.first().id;
+	if (current_user == bot.user.id) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
 			.setDescription(`Repeat to myself? It's boring...`)
@@ -545,11 +567,11 @@ commands.morse = () => {
 	2️⃣ - **Morse** ➡ **English**`;
 	confirm_click('Title here', description, ['1️⃣', '2️⃣']).then(answer => {
 		console.log(answer)
-		if (answer == 0) {
-			message.channel.send(Morse.toMorse(longarg));
+		if (answer == '1️⃣') {
+			message.channel.send(Morse.toMorse(longarg()));
 		}
-		else {
-			message.channel.send(Morse.toEnglish(longarg));
+		if (answer == '2️⃣') {
+			message.channel.send(Morse.toEnglish(longarg()));
 		}
 	})
 }
