@@ -1,4 +1,4 @@
-const { exec } = require('child_process');
+import { exec } from 'child_process';
 
 export class Util {
 
@@ -7,13 +7,13 @@ export class Util {
 	static blue = 0x4287f5
 	static yellow = 0xebc934
 
-	static inlineCodeBlock(content) {
+	static inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
 	}
 
-	static refreshIp() {
+	static refreshIp(): Promise<string> {
 		// Get IP 
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve, _reject) => {
 			exec('dig +short myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
 				if (err) {
 					console.warn(err);
