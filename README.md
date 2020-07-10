@@ -9,9 +9,11 @@ I originally created this bot intended for my personal use.
 But since it's already quite become a thing and I don't want it to just sit around doing nothing on my hard drive, I decided to publish it, so there's a possibility that someone might find it useful (maybe for who want to get started, this could be an example).
 
 ### Core Features:
-- Ranker (I do not own this, information [below](#disclaimer))
-- Morse Code <-> English Translator
-- Link chats and player join/leave events with minecraft via a [plugin](https://github.com/OmsinKrissada/ChatLinker)
+- Simple music bot
+- Move users between voice channels.
+- Hooks text and voice channels with user presence in a specific channel or a user.
+- Provides API to WolframAlpha (with both text and image format).
+- Gets information about users or servers.
 
 *Yea, that's pretty much it. Not quite useful at the moment -.-*
 
@@ -34,9 +36,6 @@ But since it's already quite become a thing and I don't want it to just sit arou
 
 3. (Optional) Install **recommended packages** below:
    - nodemon (Info [below](#run-using-my-recommendation))
-   - [Python 3.x](https://www.python.org/downloads/)
-
-**Note:** In order for `Ranker` and `Morse Code Translator` to work properly, **Python 3.x is required**.
 
 ### Getting it online:
 
@@ -44,7 +43,13 @@ You need to get a *token* from discord to get it online.
 
 In order to do that, please visit [Discord API Website](https://discordapp.com/developers).
 
-Then save your token in the root directory (where `package.json` is located) as a file called `token` **(without file extension)!!!**
+Then save your token in the root directory (where `package.json` is located) as a file named `token.json` in the following format.
+```
+{
+   discord: "token here"
+   wolfram: "token here"
+}
+```
 
 #### If you're ready, you can now run
 ```
