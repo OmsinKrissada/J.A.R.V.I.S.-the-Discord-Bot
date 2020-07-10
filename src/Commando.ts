@@ -7,6 +7,7 @@ import * as fs from 'fs'
 import * as Wolfram from './Wolfram';
 import { Ranker } from './Ranker';
 import * as Morse from './Morse';
+import * as Music from './Music';
 
 const red = Util.red
 const green = Util.green
@@ -68,8 +69,8 @@ commands.help = () => {
 				if (typeof command.usage == 'string') embed.addField('Usage:', Util.inlineCodeBlock(command.usage));
 				else {
 					let usagestr = '';
-					command.usage.forEach((usage: string) => usagestr += usage + '\n');
-					embed.addField('Usages:', Util.inlineCodeBlock(usagestr));
+					command.usage.forEach((usage: string) => usagestr += Util.inlineCodeBlock(usage) + '\n');
+					embed.addField('Usages:', usagestr);
 				}
 				message.channel.send(embed);
 				validDetail = true;
@@ -215,9 +216,9 @@ commands.help = () => {
 	for (let category in command_info) {
 		let commands = '';
 		for (let command in command_info[category]) {
-			commands += Util.inlineCodeBlock(command) + ' ';
+			commands += Util.inlineCodeBlock(command) + ', ';
 		}
-		embed.addField(category.toLocaleUpperCase(), commands);
+		embed.addField(category.toLocaleUpperCase(), commands.slice(0, -2));
 	}
 	embed.addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot');
 
@@ -613,7 +614,6 @@ commands.info = () => {
 			.addField('Text Channels', guild.channels.cache.filter(channel => channel.type == "text").size, true)
 			.addField('Voice Channels', guild.channels.cache.filter(channel => channel.type == "voice").size, true)
 			.addField('Roles', guild.roles.cache.size, true)
-			.setDescription('click')
 			.setFooter(`Requested by ${message.author.tag}`)
 			.setTimestamp();
 		message.channel.send(embed);
@@ -652,6 +652,42 @@ commands.askimg = () => {
 
 
 
+// MUSIC !!!
+
+commands.join = () => {
+	if (!message.member.voice.channel) {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription('You must be in a voice channel to use this command.')
+			.setColor(red)
+		);
+		return;
+	}
+	Music.join(message.member.voice.channel)
+}
+
+commands.play = async () => { // Some part of code is from discord.js
+	if (!message.member.voice.channel) {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription('You must be in a voice channel to use this command.')
+			.setColor(red)
+		);
+		return;
+	}
+	Music.addQueue(message.member, longarg())
+}
+
+commands.leave = async () => {
+	Music.leave(message.guild)
+}
+
+commands.volume = async () => {
+	// message.member.voice.
+}
+
+
+
 // Not so useful commands
 
 commands.hello = () => {
@@ -659,11 +695,8 @@ commands.hello = () => {
 }
 
 commands.say = () => {
-	let result = '';
-	args.shift()
-	for (let word in args) { result += args[word] + ' ' }
-	message.channel.send(longarg())
-	if (message.deletable) message.delete()
+	message.channel.send(longarg());
+	if (message.deletable) message.delete();
 }
 
 commands.repeat = () => {
@@ -1050,9 +1083,10 @@ commands.unknown = () => {
 }
 
 commands.test = () => {
-	for (let i = 1; i <= 20; i++) {
-		message.channel.send(Util.getNumberEmoji(i))
-	}
+	message.channel.send(new MessageEmbed()
+		.setTitle('test')
+		.addField('command', "`!info`\n`!...`\n`...`")
+	)
 }
 
 // Functions
@@ -1138,6 +1172,7 @@ function confirm_click(title: string, description: string, reactions: Array<Emoj
 }
 
 commands.terminate = () => {
+	if (message.author.id != '551678168348491786') return;
 	message.channel.send('Terminated ' + process.pid).then(
 		process.exit()
 	);

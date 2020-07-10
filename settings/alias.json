@@ -15,13 +15,9 @@
 		"name"
 	],
 	"ip": [
-		"ipaddress"
-	],
-	"ipannounce": [
+		"ipaddress",
+		"ipannounce",
 		"announceip"
-	],
-	"myid": [
-		"id"
 	],
 	"purge": [
 		"delete",
@@ -29,11 +25,14 @@
 		"del",
 		"d"
 	],
-	"userinfo": [
+	"info": [
+		"userinfo",
 		"infouser",
 		"who",
 		"whois",
-		"usrinfo"
+		"usrinfo",
+		"myid",
+		"id"
 	],
 	"ask": [
 		"calc",
@@ -59,5 +58,8 @@
 	],
 	"whoisironman": [
 		"whoisrealironman"
+	],
+	"play": [
+		"p"
 	]
 }
