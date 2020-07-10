@@ -60,7 +60,7 @@ commands.help = () => {
 
 	function detailedHelp(asked_command: string) {
 		let embed = new MessageEmbed()
-			.setTitle('Command: ' + Util.inlineCodeBlock(asked_command))
+			.setTitle('Help | Command: ' + Util.inlineCodeBlock(asked_command))
 			.setColor(blue)
 		for (let category in command_info) {
 			if (command_info[category].hasOwnProperty(asked_command)) {
@@ -211,7 +211,8 @@ commands.help = () => {
 		.setTitle(header)
 		.setDescription(`Use ${Util.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
 		.setColor(blue)
-		.setAuthor('Available Commands:', bot.user.displayAvatarURL());
+		.attachFiles([{ attachment: './rainbow.png' }])
+		.setAuthor('Help | Available Commands:', 'attachment://rainbow.png');
 
 	for (let category in command_info) {
 		let commands = '';
@@ -576,6 +577,7 @@ commands.info = () => {
 			let embeduserinfo = new MessageEmbed();
 			embeduserinfo
 				.setTitle('User Info Card')
+				.setColor(blue)
 				.setThumbnail(user.displayAvatarURL())
 				.addField('Username', `${user.username}`, true)
 				.addField('Discriminator', '#' + user.discriminator, true)
@@ -678,8 +680,31 @@ commands.play = async () => { // Some part of code is from discord.js
 	Music.addQueue(message.member, longarg())
 }
 
+commands.queue = () => {
+	let content = '';
+	let i = 0;
+	Music.getQueue(message.guild).forEach(song => {
+		i++;
+		content += `${Util.getNumberEmoji(i)} **__[${song.title}](${song.url})__** requested by ${song.requester}\n\n`;
+	})
+	message.channel.send(new MessageEmbed()
+		.setTitle(content.length == 0 ? 'Queue is empty.' : 'Song Queue:')
+		.setDescription(content)
+		.setColor(blue)
+	)
+}
+
+commands.clearqueue = () => {
+	Music.clearQueue(message.guild);
+	message.channel.send(new MessageEmbed()
+		.setTitle('Queue Cleared')
+		.setDescription('Music queue for this server has been resetted.')
+		.setColor(green)
+	);
+}
+
 commands.leave = async () => {
-	Music.leave(message.guild)
+	Music.leave(message.guild);
 }
 
 commands.volume = async () => {
