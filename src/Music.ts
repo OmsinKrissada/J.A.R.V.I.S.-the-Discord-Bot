@@ -1,5 +1,6 @@
 import { Message, Guild, ChannelResolvable, VoiceConnection, VoiceChannel, GuildMember, GuildChannelResolvable, GuildMemberResolvable, TextChannel, Channel, MessageEmbed } from 'discord.js';
 import * as ytdl from 'ytdl-core';
+import { Youtube } from 'scrape-youtube';
 import { bot } from './Main';
 import { Util } from './Util';
 import { message } from './Commando';
@@ -7,6 +8,7 @@ import { message } from './Commando';
 class Song {
 	title: string;
 	url: string;
+	duration: number;
 	requester: GuildMember;
 	textChannel: TextChannel;
 	voiceChannel: VoiceChannel;
@@ -35,15 +37,19 @@ export async function join(voiceChannel: VoiceChannel) {
 	if (!getGuildData(voiceChannel.guild.id)) constructData(voiceChannel.guild.id);
 	getGuildData(voiceChannel.guild.id).connection = await voiceChannel.join();
 	getGuildData(voiceChannel.guild.id).voiceChannelID = voiceChannel.id;
-	console.log(music_data)
+	// console.log(music_data)
 }
 
-export async function leave(guild: Guild) {
+export function leave(guild: Guild) {
+	if (!getGuildData(guild.id)) constructData(guild.id);
+	if (!getGuildData(guild.id).connection) {
+		message.channel.send('i am not in a voice channel');
+		return;
+	}
+	pause(guild);
 	getGuildData(guild.id).nowplaying = null;
-	getGuildData(guild.id).connection.dispatcher.pause();
 	getGuildData(guild.id).connection.disconnect();
 	getGuildData(guild.id).connection = null;
-	console.log(music_data)
 }
 
 // export async function pause(guild:Guild) {
@@ -51,6 +57,13 @@ export async function leave(guild: Guild) {
 // }
 
 export async function play(guild: Guild) {
+
+	if (!getGuildData(guild.id)) constructData(guild.id);
+	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher && getGuildData(guild.id).connection.dispatcher.paused) {
+		resume(guild)
+		console.log('lol')
+	}
+	if (getGuildData(guild.id).queue.length <= 0) return;
 
 	let song = getGuildData(guild.id).queue.shift();
 
@@ -72,10 +85,18 @@ export async function play(guild: Guild) {
 		.setDescription('Now playing ' + `**__[${song.title}](${song.url})__**` + ' requested by ' + `${song.requester.user}`)
 		.setColor(Util.blue)
 	)
-	console.log(song)
+	// console.log(song)
 	console.log(getGuildData(requester.guild.id).connection.dispatcher.volumeDecibels)
 	console.log(getGuildData(requester.guild.id).connection.dispatcher.volumeLogarithmic)
-	console.log(dispatcher)
+	// console.log(dispatcher)
+}
+
+export function pause(guild: Guild) {
+	if (getGuildData(guild.id).connection.dispatcher) music_data[guild.id].connection.dispatcher.pause();
+}
+
+export function resume(guild: Guild) {
+	music_data[guild.id].connection.dispatcher.resume();
 }
 
 // function run() {
@@ -83,24 +104,34 @@ export async function play(guild: Guild) {
 // }
 
 export function getQueue(guild: Guild) {
+	if (!getGuildData(guild.id)) constructData(guild.id);
 	return music_data[guild.id] ? music_data[guild.id].queue : [];
 }
 
 export async function addQueue(member: GuildMember, field: string) {
+	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
+	await join(member.voice.channel);
+	play(member.guild);
+	if (field == '') return;
 
 	let song = new Song();
 	if (ytdl.validateURL(field)) {
 		// song.title = ytdl.getInfo;
-		song.title = (await ytdl.getInfo(field)).title;
+		let info = await ytdl.getInfo(field);
+		song.title = info.title;
 		song.url = field;
-		song.requester = member;
-		song.textChannel = (<TextChannel>member.lastMessage.channel);
-		song.voiceChannel = member.voice.channel;
+		song.duration = Number(info.length_seconds);
+
 	} else {
-		song.title = 'unknown';
-		song.url = 'unknown';
-		song.requester = member;
+		let youtube = new Youtube();
+		let searchResult = await youtube.searchOne(field);
+		song.title = searchResult.title;
+		song.url = searchResult.link;
+		song.duration = searchResult.duration;
 	}
+	song.requester = member;
+	song.textChannel = (<TextChannel>member.lastMessage.channel);
+	song.voiceChannel = member.voice.channel;
 
 	member.lastMessage.channel.send(new MessageEmbed()
 		.setTitle('Queue Added')
@@ -115,5 +146,6 @@ export async function addQueue(member: GuildMember, field: string) {
 }
 
 export function clearQueue(guild: Guild) {
+	if (!getGuildData(guild.id)) constructData(guild.id);
 	if (music_data[guild.id]) music_data[guild.id].queue = [];
 }

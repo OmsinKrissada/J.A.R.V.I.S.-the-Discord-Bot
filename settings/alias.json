@@ -61,5 +61,11 @@
 	],
 	"play": [
 		"p"
+	],
+	"queue": [
+		"q"
+	],
+	"nowplaying": [
+		"np"
 	]
 }

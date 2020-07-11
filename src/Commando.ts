@@ -680,6 +680,16 @@ commands.play = async () => { // Some part of code is from discord.js
 	Music.addQueue(message.member, longarg())
 }
 
+commands.pause = () => {
+	Music.pause(message.guild);
+	message.channel.send('paused')
+}
+
+commands.resume = () => {
+	Music.resume(message.guild);
+	message.channel.send('resumed')
+}
+
 commands.queue = () => {
 	let content = '';
 	let i = 0;
