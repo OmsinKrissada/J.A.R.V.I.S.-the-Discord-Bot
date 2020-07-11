@@ -660,7 +660,7 @@ commands.join = () => {
 	if (!message.member.voice.channel) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
-			.setDescription('You must be in a voice channel to use this command.')
+			.setDescription('**You must be in a voice channel** to use this command.')
 			.setColor(red)
 		);
 		return;
@@ -672,7 +672,7 @@ commands.play = async () => { // Some part of code is from discord.js
 	if (!message.member.voice.channel) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
-			.setDescription('You must be in a voice channel to use this command.')
+			.setDescription('**You must be in a voice channel** to use this command.')
 			.setColor(red)
 		);
 		return;
@@ -688,6 +688,49 @@ commands.pause = () => {
 commands.resume = () => {
 	Music.resume(message.guild);
 	message.channel.send('resumed')
+}
+
+commands.nowplaying = () => {
+	let current_song = Music.getCurrentSong(message.guild);
+	if (!current_song) {
+		message.channel.send(new MessageEmbed()
+			.setTitle('No Playing Song')
+			.setColor(blue)
+		);
+		return;
+	}
+
+	let playedTime = Math.floor(current_song.getPlayedTime(message.guild) / 1000);
+	message.channel.send(new MessageEmbed()
+		.setTitle('Now Playing:')
+		// .setDescription(content)
+		.setColor(blue)
+		.setThumbnail(current_song.thumbnail)
+		.addField('Song', `${current_song.title}`)
+		.addField('Link', current_song.url)
+		.addField('Duration', `${Util.min2(Math.floor(playedTime / 60))}:${Util.min2(playedTime % 60)}` + ' / ' + current_song.getDuration())
+		.addField('Text Channel', current_song.textChannel, true)
+		.addField('Voice Channel', current_song.voiceChannel, true)
+		.addField('Requester', `${current_song.requester}`, true)
+	);
+}
+
+commands.skip = () => {
+	Music.skip(message.guild);
+}
+
+commands.volume = () => {
+	// try {
+	Music.volume(message.guild, Number(args[1]));
+
+	// } catch (err) {
+	// 	console.log('error occured while changing the volume')
+	// }
+	message.channel.send(new MessageEmbed()
+		.setTitle('Volume Adjusted')
+		.setDescription(`Volume has adjusted to \`${Number(args[1])}\`.`)
+		.setColor(green)
+	);
 }
 
 commands.queue = () => {
