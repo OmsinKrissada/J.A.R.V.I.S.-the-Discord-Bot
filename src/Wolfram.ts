@@ -1,5 +1,7 @@
 // import { Message } from "discord.js";
 
+import { Message } from "discord.js";
+
 const token = require('../token.json').wolfram;
 const Util = require('./Util')
 
@@ -29,7 +31,7 @@ function httpGetAsync(url, callback) {
 class WolframInterface {
 
 
-    async getShort(input, message) {
+    async getShort(input: string, message: Message) {
         // console.log(`Wolfram: going to send as ${input}`)
         // let output;
         // output = await wa.getShort(input).catch(message.channel.send(new MessageEmbed()
@@ -45,8 +47,8 @@ class WolframInterface {
         //     .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
         // )
 
-        console.log(`Wolfram: going to send as ${input}`)
-        let output = httpGet(`https://api.wolframalpha.com/v1/result?i=${input}&appid=${token}`)
+        console.log(`Wolfram: going to send as ${input.replace(/\+/g, '%2B')}`)
+        let output = httpGet(`https://api.wolframalpha.com/v1/result?i=${input.replace(/\+/g, '%2B')}&appid=${token}`)
         console.log(output);
         if (output != 'Wolfram|Alpha did not understand your input') {
             message.channel.send(new MessageEmbed()
@@ -87,7 +89,7 @@ class WolframInterface {
             console.log(queryresult);
             message.channel.send(queryresult);
         })
-        message.reply(output);
+        // message.reply(output);
     }
 
     async getSimple(input, message) {
@@ -117,5 +119,5 @@ class WolframInterface {
 
 }
 
-let Wolfram = new WolframInterface;
-module.exports = Wolfram;
+export let Wolfram = new WolframInterface;
+// module.exports = Wolfram;
