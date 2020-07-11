@@ -4,8 +4,8 @@ import { Util } from './Util';
 import { DataManager } from './DataManager'
 const alias = require('../settings/alias.json');
 import * as fs from 'fs'
-import * as Wolfram from './Wolfram';
-import { Ranker } from './Ranker';
+import { Wolfram } from './Wolfram';
+// import { Ranker } from '../files/Ranker';
 import * as Morse from './Morse';
 import * as Music from './Music';
 
@@ -827,14 +827,14 @@ commands.repeat = () => {
 	});
 }
 
-commands.rank = () => {
-	console.log('Warning: This feature is not ready yet.')
-	let ranker = new Ranker('1234');
-	console.log('created')
-	ranker.python.stdout.on('data', data => {
-		message.channel.send(data.toString())
-	})
-}
+// commands.rank = () => {
+// 	console.log('Warning: This feature is not ready yet.')
+// 	let ranker = new Ranker('1234');
+// 	console.log('created')
+// 	ranker.python.stdout.on('data', data => {
+// 		message.channel.send(data.toString())
+// 	})
+// }
 
 commands.morse = () => {
 	let description = `Please choose your translation option.\n
