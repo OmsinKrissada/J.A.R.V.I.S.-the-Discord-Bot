@@ -751,7 +751,7 @@ commands.clearqueue = () => {
 	Music.clearQueue(message.guild);
 	message.channel.send(new MessageEmbed()
 		.setTitle('Queue Cleared')
-		.setDescription('Music queue for this server has been resetted.')
+		.setDescription('Music queue for this server has been reset.')
 		.setColor(green)
 	);
 }
