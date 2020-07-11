@@ -1073,7 +1073,7 @@ commands.ohm = () => {
 			message.reply('หอยหลอด')
 			break;
 		case 1:
-			message.reply('||%$#%@||ตลอดไป')
+			message.reply('I got 2060 super!')
 			break;
 		case 2:
 			message.reply('จ๊ะะะ')
@@ -1091,7 +1091,7 @@ commands.ohm = () => {
 			message.reply('ห๊ะะ')
 			break;
 		case 7:
-			message.reply('คิดถึง||%$@||')
+			message.reply('TU CLD')
 			break;
 		case 8:
 			message.reply('แช่คอมในตู้เย็นสิ')
