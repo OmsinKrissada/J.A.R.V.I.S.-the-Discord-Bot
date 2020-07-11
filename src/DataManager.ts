@@ -1,5 +1,5 @@
-const fs = require('fs')
-const { GuildResolvable } = require("discord.js")
+import * as fs from 'fs'
+import { GuildResolvable } from "discord.js"
 
 interface GuildOption {
 	[guild_id: string]: object
@@ -9,6 +9,8 @@ export class DataManager {
 	static data: GuildOption = {};
 
 	static getOption = () => {
+
+		if (!fs.existsSync('./files/guild_option.json')) fs.writeFileSync('./files/guild_option.json', '{"guilds":{}}');
 
 		// Get server data
 		fs.readFile('./files/guild_option.json', 'utf-8', (err, filecontent) => {

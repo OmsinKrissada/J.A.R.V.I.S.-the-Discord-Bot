@@ -1,7 +1,7 @@
 // Init sequence
 
 // Discord
-import { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment } from 'discord.js';
+import { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment, Message } from 'discord.js';
 
 // Create an instance of a Discord client
 export const bot = new Client();
@@ -20,7 +20,7 @@ const alias = require('../settings/alias.json')
 // bot.on("debug", (e) => console.info(e));
 
 
-
+var client_id = '';
 // Start discord client
 bot.login(require("../token.json").discord)
 bot.on('ready', () => {
@@ -33,6 +33,8 @@ bot.on('ready', () => {
 	DataManager.getOption();
 
 	logfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
+
+	client_id = `<@!${bot.user.id}>`;
 
 	// Get specific channel object
 	// let mclog_channel = bot.channels.resolve('699045838718238771')
@@ -82,14 +84,14 @@ function log(message) {
 }
 
 
-var client_id = '<@!696973725806886963>';
-var current_message;
+
+var current_message: Message;
 bot.on('message', message => {
 
 	current_message = message;
 
 	// If guild not exist in database, add them. 
-	let store_id, store_name;
+	let store_id: string, store_name: string;
 	if (message.guild === null) {
 		store_id = message.channel.id;
 		store_name = message.author.username;
