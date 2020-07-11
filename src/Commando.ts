@@ -738,10 +738,10 @@ commands.queue = () => {
 	let i = 0;
 	Music.getQueue(message.guild).forEach(song => {
 		i++;
-		content += `${Util.getNumberEmoji(i)} **__[${song.title}](${song.url})__** requested by ${song.requester}\n\n`;
+		content += `${Util.getNumberEmoji(i)} **\`${song.getDuration()}\` [${song.title}](${song.url})** [${song.requester}]\n\n`;
 	})
 	message.channel.send(new MessageEmbed()
-		.setTitle(content.length == 0 ? 'Queue is empty.' : 'Song Queue:')
+		.setTitle(content.length == 0 ? 'Empty Queue' : 'Song Queue:')
 		.setDescription(content)
 		.setColor(blue)
 	)
@@ -760,8 +760,15 @@ commands.leave = async () => {
 	Music.leave(message.guild);
 }
 
-commands.volume = async () => {
-	// message.member.voice.
+// commands.volume = async () => {
+// 	// message.member.voice.
+// }
+
+commands.rickroll = () => {
+	setPrefix(prefix);
+	setRespondMessage(message);
+	setArguments(['play', 'never', 'gonna', ' give', ' you', 'up']);
+	run('play');
 }
 
 
