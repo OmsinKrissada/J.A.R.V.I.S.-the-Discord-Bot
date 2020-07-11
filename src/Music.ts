@@ -2,6 +2,7 @@ import { Message, Guild, ChannelResolvable, VoiceConnection, VoiceChannel, Guild
 import * as ytdl from 'ytdl-core';
 import { bot } from './Main';
 import { Util } from './Util';
+import { message } from './Commando';
 
 class Song {
 	title: string;
@@ -38,10 +39,16 @@ export async function join(voiceChannel: VoiceChannel) {
 }
 
 export async function leave(guild: Guild) {
+	getGuildData(guild.id).nowplaying = null;
+	getGuildData(guild.id).connection.dispatcher.pause();
 	getGuildData(guild.id).connection.disconnect();
 	getGuildData(guild.id).connection = null;
 	console.log(music_data)
 }
+
+// export async function pause(guild:Guild) {
+// 	getGuildData(guild.id).connection.dispatcher.pause()
+// }
 
 export async function play(guild: Guild) {
 
@@ -62,8 +69,7 @@ export async function play(guild: Guild) {
 	// dispatcher.setVolume(getGuildData(requester.guild.id).volume);
 
 	song.textChannel.send(new MessageEmbed()
-		.setTitle('Now Playing:')
-		.setDescription(song.title + ' requested by ' + song.requester.user)
+		.setDescription('Now playing ' + `**__[${song.title}](${song.url})__**` + ' requested by ' + `${song.requester.user}`)
 		.setColor(Util.blue)
 	)
 	console.log(song)
@@ -75,6 +81,10 @@ export async function play(guild: Guild) {
 // function run() {
 // 	play(song, (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)))
 // }
+
+export function getQueue(guild: Guild) {
+	return music_data[guild.id] ? music_data[guild.id].queue : [];
+}
 
 export async function addQueue(member: GuildMember, field: string) {
 
@@ -94,7 +104,7 @@ export async function addQueue(member: GuildMember, field: string) {
 
 	member.lastMessage.channel.send(new MessageEmbed()
 		.setTitle('Queue Added')
-		.setDescription(song.title + ' requested by ' + song.requester.user)
+		.setDescription('Added ' + `**__[${song.title}](${song.url})__**` + ' to the queue.')
 		.setColor(Util.blue)
 	)
 
@@ -102,4 +112,8 @@ export async function addQueue(member: GuildMember, field: string) {
 	getGuildData(member.guild.id).queue.push(song);
 
 	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length == 1) play(member.guild);
+}
+
+export function clearQueue(guild: Guild) {
+	if (music_data[guild.id]) music_data[guild.id].queue = [];
 }
