@@ -211,7 +211,7 @@ commands.help = () => {
 		.setTitle(header)
 		.setDescription(`Use ${Util.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
 		.setColor(blue)
-		.attachFiles([{ attachment: './rainbow.png' }])
+		.attachFiles([{ attachment: './resources/rainbow.png' }])
 		.setAuthor('Help | Available Commands:', 'attachment://rainbow.png');
 
 	for (let category in command_info) {
@@ -221,7 +221,7 @@ commands.help = () => {
 		}
 		embed.addField(category.toLocaleUpperCase(), commands.slice(0, -2));
 	}
-	embed.addField('‏‏‎ ‎', 'For source code, please visit https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot');
+	embed.addField('‏‏‎ ‎', 'For source code, please visit [this repository](https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot "https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot").');
 
 	message.channel.send(embed);
 
