@@ -8,10 +8,17 @@ import { message } from './Commando';
 class Song {
 	title: string;
 	url: string;
+	thumbnail: string;
 	duration: number;
 	requester: GuildMember;
 	textChannel: TextChannel;
 	voiceChannel: VoiceChannel;
+	getDuration() {
+		return `${Util.min2(Math.floor(this.duration / 60))}:${Util.min2(this.duration % 60)}`;
+	}
+	getPlayedTime(guild: Guild) {
+		return getPlayedTime(guild);
+	}
 }
 
 class GuildMusicData {
@@ -19,7 +26,7 @@ class GuildMusicData {
 	connection: VoiceConnection;
 	nowplaying: Song;
 	queue: Array<Song> = [];
-	volume: 1;
+	volume: number = 0.05;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
 
@@ -75,14 +82,14 @@ export async function play(guild: Guild) {
 	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly" }))
 	getGuildData(guild.id).nowplaying = song;
 	dispatcher.on('finish', () => {
-		song.textChannel.send('finished')
 		getGuildData(guild.id).nowplaying = null;
 		if (getGuildData(guild.id).queue.length >= 1) play(guild);
+		else song.textChannel.send('Queue Ended.');
 	})
-	// dispatcher.setVolume(getGuildData(requester.guild.id).volume);
+	dispatcher.setVolume(music_data[requester.guild.id].volume);
 
 	song.textChannel.send(new MessageEmbed()
-		.setDescription('Now playing ' + `**__[${song.title}](${song.url})__**` + ' requested by ' + `${song.requester.user}`)
+		.setDescription(`Now playing ` + ` **[${song.title}](${song.url})** \`${song.getDuration()}\` ` + `[${song.requester.user}]`)
 		.setColor(Util.blue)
 	)
 	// console.log(song)
@@ -99,13 +106,29 @@ export function resume(guild: Guild) {
 	music_data[guild.id].connection.dispatcher.resume();
 }
 
-// function run() {
-// 	play(song, (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)))
-// }
+export function volume(guild: Guild, volume: number) {
+	if (!getGuildData(guild.id)) constructData(guild.id);
+	if (music_data[guild.id] && music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) music_data[guild.id].connection.dispatcher.setVolume(volume)
+	music_data[guild.id].volume = volume;
+}
+
+export function skip(guild: Guild) {
+	if (music_data[guild.id].queue.length > 0) play(guild);
+	else leave(guild);
+}
+
+export function getPlayedTime(guild) {
+	return music_data[guild.id].connection.dispatcher.streamTime;
+}
+
+export function getCurrentSong(guild: Guild) {
+	if (!getGuildData(guild.id)) constructData(guild.id);
+	return music_data[guild.id].nowplaying;
+}
 
 export function getQueue(guild: Guild) {
 	if (!getGuildData(guild.id)) constructData(guild.id);
-	return music_data[guild.id] ? music_data[guild.id].queue : [];
+	return music_data[guild.id].queue;
 }
 
 export async function addQueue(member: GuildMember, field: string) {
@@ -121,6 +144,7 @@ export async function addQueue(member: GuildMember, field: string) {
 		song.title = info.title;
 		song.url = field;
 		song.duration = Number(info.length_seconds);
+		song.thumbnail = info.thumbnail_url;
 
 	} else {
 		let youtube = new Youtube();
@@ -128,15 +152,17 @@ export async function addQueue(member: GuildMember, field: string) {
 		song.title = searchResult.title;
 		song.url = searchResult.link;
 		song.duration = searchResult.duration;
+		song.thumbnail = searchResult.thumbnail;
 	}
 	song.requester = member;
 	song.textChannel = (<TextChannel>member.lastMessage.channel);
 	song.voiceChannel = member.voice.channel;
 
 	member.lastMessage.channel.send(new MessageEmbed()
-		.setTitle('Queue Added')
-		.setDescription('Added ' + `**__[${song.title}](${song.url})__**` + ' to the queue.')
+		.setAuthor('Song Queued', member.user.displayAvatarURL())
+		.setDescription('Added ' + `**[${song.title}](${song.url})** \`${song.getDuration()}\`` + ' to the queue.')
 		.setColor(Util.blue)
+		.setThumbnail(song.thumbnail)
 	)
 
 	if (!getGuildData(member.guild.id)) constructData(member.guild.id);

@@ -67,5 +67,11 @@
 	],
 	"nowplaying": [
 		"np"
+	],
+	"skip": [
+		"s"
+	],
+	"clearqueue": [
+		"clear"
 	]
 }
