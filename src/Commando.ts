@@ -2,7 +2,7 @@ import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvabl
 import { bot } from '././Main'
 import { Util } from './Util';
 import { DataManager } from './DataManager'
-const alias = require('../settings/alias.json');
+import alias from '../settings/alias.json';
 import * as fs from 'fs'
 import { Wolfram } from './Wolfram';
 // import { Ranker } from '../files/Ranker';
@@ -72,6 +72,11 @@ commands.help = () => {
 					command.usage.forEach((usage: string) => usagestr += Util.inlineCodeBlock(usage) + '\n');
 					embed.addField('Usages:', usagestr);
 				}
+				let aliasstr = '';
+				alias[asked_command].forEach((available: string) => {
+					aliasstr += Util.inlineCodeBlock(available) + ', ';
+				});
+				embed.addField('Aliases', aliasstr.slice(0, -2));
 				message.channel.send(embed);
 				validDetail = true;
 			}
@@ -196,13 +201,65 @@ commands.help = () => {
 				description: "Translates between morse code and English.",
 				usage: `${prefix}morse {text (morse code or English)}`
 			},
+		},
+		music: {
+			"play": {
+				description: "Join the voice channel you are in then play a song.",
+				usage: `${prefix}play { song title | song url }`
+			},
+			"pause": {
+				description: "Pause playing song.",
+				usage: `${prefix}pause`
+			},
+			"resume": {
+				description: "Resumes paused song.",
+				usage: `${prefix}resume`
+			},
+			"queue": {
+				description: "Shows the music queue.",
+				usage: `${prefix}queue`
+			},
+			"nowplaying": {
+				description: "Shows information about the current song.",
+				usage: `${prefix}nowplaying`
+			},
+			"join": {
+				description: "Joins the voice channel you are in.",
+				usage: `${prefix}join`
+			},
+			"leave": {
+				description: "Disconnects from voice channel.",
+				usage: `${prefix}leave`
+			},
+			"skip": {
+				description: "Skips the current song.",
+				usage: `${prefix}skip`
+			},
+			"remove": {
+				description: "Removes a song from the queue.",
+				usage: `${prefix}remove {song position}`
+			},
+			"volume": {
+				description: "Changes the music volume. (1 - 200)",
+				usage: `${prefix}volume {volume}`
+			},
+			"rickroll": {
+				description: "Adds Never Gonna Give You Up to the music queue.",
+				usage: `${prefix}rickroll`
+			}
 		}
 	}
 
 	let validDetail = false;
 
 	if (args[1]) {
-		detailedHelp(args[1]);
+		let command = args[1].toLowerCase();
+		for (let key in alias) {
+			if (alias[key].includes(args[1])) {
+				command = key;
+			}
+		}
+		detailedHelp(command);
 	}
 	if (validDetail) return;
 	let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Util.inlineCodeBlock(prefix)}.`;
