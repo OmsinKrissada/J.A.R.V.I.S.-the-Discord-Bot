@@ -747,6 +747,24 @@ commands.queue = () => {
 	)
 }
 
+commands.remove = () => {
+	let song = Music.removeSong(message.guild, Number(args[1]) - 1);
+	if (!song) {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Song Not Found')
+			.setDescription('Please use any number displayed in ' + Util.inlineCodeBlock(prefix + 'queue') + '.')
+			.setColor(red)
+		);
+		return;
+	}
+	message.channel.send(new MessageEmbed()
+		.setTitle('Song Removed')
+		.setDescription(`Removed [${song.title}](${song.url}) requested by ${song.requester}`)
+		.setColor(green)
+	);
+
+}
+
 commands.clearqueue = () => {
 	Music.clearQueue(message.guild);
 	message.channel.send(new MessageEmbed()

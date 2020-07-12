@@ -34,21 +34,19 @@ function getGuildData(guild_id: string) {
 	return music_data[guild_id];
 }
 
-function constructData(guild_id: string) {
+export function constructData(guild_id: string) {
 	if (!music_data.hasOwnProperty(guild_id)) {
 		music_data[guild_id] = new GuildMusicData();
 	}
 }
 
 export async function join(voiceChannel: VoiceChannel) {
-	if (!getGuildData(voiceChannel.guild.id)) constructData(voiceChannel.guild.id);
 	getGuildData(voiceChannel.guild.id).connection = await voiceChannel.join();
 	getGuildData(voiceChannel.guild.id).voiceChannelID = voiceChannel.id;
 	// console.log(music_data)
 }
 
 export function leave(guild: Guild) {
-	if (!getGuildData(guild.id)) constructData(guild.id);
 	if (!getGuildData(guild.id).connection) {
 		message.channel.send('i am not in a voice channel');
 		return;
@@ -65,7 +63,6 @@ export function leave(guild: Guild) {
 
 export async function play(guild: Guild) {
 
-	if (!getGuildData(guild.id)) constructData(guild.id);
 	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher && getGuildData(guild.id).connection.dispatcher.paused) {
 		resume(guild)
 		console.log('lol')
@@ -107,7 +104,6 @@ export function resume(guild: Guild) {
 }
 
 export function volume(guild: Guild, volume: number) {
-	if (!getGuildData(guild.id)) constructData(guild.id);
 	if (music_data[guild.id] && music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) music_data[guild.id].connection.dispatcher.setVolume(volume)
 	music_data[guild.id].volume = volume;
 }
@@ -122,17 +118,14 @@ export function getPlayedTime(guild) {
 }
 
 export function getCurrentSong(guild: Guild) {
-	if (!getGuildData(guild.id)) constructData(guild.id);
 	return music_data[guild.id].nowplaying;
 }
 
 export function getQueue(guild: Guild) {
-	if (!getGuildData(guild.id)) constructData(guild.id);
 	return music_data[guild.id].queue;
 }
 
 export async function addQueue(member: GuildMember, field: string) {
-	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
 	await join(member.voice.channel);
 	if (field == '') return;
 	let song = new Song();
@@ -167,6 +160,10 @@ export async function addQueue(member: GuildMember, field: string) {
 	getGuildData(member.guild.id).queue.push(song);
 
 	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length >= 1) play(member.guild);
+}
+
+export function removeSong(guild: Guild, index: number) {
+	return music_data[guild.id].queue.splice(index, 1)[0];
 }
 
 export function clearQueue(guild: Guild) {

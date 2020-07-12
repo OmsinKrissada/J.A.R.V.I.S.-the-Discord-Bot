@@ -12,6 +12,7 @@ const fs = require('fs');
 import * as Commando from "./Commando";
 import { Util } from "./Util";
 import { DataManager } from './DataManager';
+import * as Music from './Music';
 const alias = require('../settings/alias.json')
 
 
@@ -117,6 +118,8 @@ bot.on('message', message => {
 		else {
 			args = message.content.substr(prefix.length).trim().split(' ')
 		}
+
+		Music.constructData(message.guild.id);
 
 
 
