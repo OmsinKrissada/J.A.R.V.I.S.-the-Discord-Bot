@@ -1,6 +1,6 @@
 import { Message, Guild, ChannelResolvable, VoiceConnection, VoiceChannel, GuildMember, GuildChannelResolvable, GuildMemberResolvable, TextChannel, Channel, MessageEmbed } from 'discord.js';
 import ytdl from 'ytdl-core';
-import { Youtube } from 'scrape-youtube';
+import youtube, { Youtube } from 'scrape-youtube';
 import { bot } from './Main';
 import { Util } from './Util';
 import { message } from './Commando';
@@ -89,7 +89,7 @@ export async function play(guild: Guild) {
 	dispatcher.setVolume(music_data[requester.guild.id].volume);
 
 	song.textChannel.send(new MessageEmbed()
-		.setDescription(`Now playing ` + ` **[${song.title}](${song.url})** \`${song.getDuration()}\` ` + `[${song.requester.user}]`)
+		.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${song.getDuration()}\` ` + `[${song.requester.user}]`)
 		.setColor(Util.blue)
 	)
 	// console.log(song)
@@ -114,6 +114,10 @@ export function volume(guild: Guild, volume: number) {
 export function skip(guild: Guild) {
 	if (music_data[guild.id].queue.length > 0) play(guild);
 	else leave(guild);
+}
+
+export async function search(field: string) {
+	return youtube.search(field);
 }
 
 export function getPlayedTime(guild) {
@@ -158,10 +162,11 @@ export async function addQueue(member: GuildMember, field: string) {
 		song.thumbnail = searchResult.thumbnail;
 	}
 	song.requester = member;
-	song.textChannel = (<TextChannel>member.lastMessage.channel);
+	console.log(member)
+	song.textChannel = (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID));
 	song.voiceChannel = member.voice.channel;
 
-	member.lastMessage.channel.send(new MessageEmbed()
+	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
 		.setAuthor('Song Queued', member.user.displayAvatarURL())
 		.setDescription('Added ' + `**[${song.title}](${song.url})** \`${song.getDuration()}\`` + ' to the queue.')
 		.setColor(Util.blue)

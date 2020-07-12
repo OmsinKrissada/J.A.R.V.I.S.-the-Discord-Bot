@@ -82,5 +82,10 @@
 	],
 	"leave": [
 		"disconnect"
+	],
+	"search": [
+		"youtube",
+		"find",
+		"song"
 	]
 }

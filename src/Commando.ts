@@ -223,6 +223,10 @@ commands.help = () => {
 				description: "Shows information about the current song.",
 				usage: `${prefix}nowplaying`
 			},
+			"search": {
+				description: "Searchs songs on youtube to pick.",
+				usage: `${prefix}search {song}`
+			},
 			"join": {
 				description: "Joins the voice channel you are in.",
 				usage: `${prefix}join`
@@ -772,6 +776,20 @@ commands.nowplaying = () => {
 	);
 }
 
+commands.search = async () => {
+	let searchResult = await Music.search(longarg());
+	let resultstr = [];
+	searchResult.slice(10).forEach(result => {
+		resultstr.push(`[${result.title}](${result.link})`);
+	})
+	let song = await confirm_type('Pick your song by typing the number into the chat.', resultstr, false, message.author.avatarURL());
+	// setArguments(['play', searchResult[song].link])
+	// setPrefix(prefix)
+	// setRespondMessage(message)
+	// run('play')
+	Music.addQueue(message.guild.member(message.author), searchResult[song].link);
+}
+
 commands.skip = () => {
 	Music.skip(message.guild);
 }
@@ -980,7 +998,7 @@ commands.movevoice = async () => {
 
 	// Confirm destination channel
 	if (origin_all) {
-		confirm_type('Choose Destination Channel', dests).then(deststr => {
+		confirm_type('Choose Destination Channel', dests.keyArray()).then(deststr => {
 			let dest = message.guild.channels.resolve(deststr);
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
@@ -1013,8 +1031,8 @@ commands.movevoice = async () => {
 		})
 	}
 	else { // Confirm origin channel
-		confirm_type('Choose Origin Channel', origins).then(originstr => {
-			confirm_type('Choose Destination Channel', dests).then(deststr => {
+		confirm_type('Choose Origin Channel', origins.keyArray()).then(originstr => {
+			confirm_type('Choose Destination Channel', dests.keyArray()).then(deststr => {
 				let origin = message.guild.channels.resolve(originstr);
 				let dest = message.guild.channels.resolve(deststr);
 				// Tell the errors
@@ -1107,7 +1125,7 @@ commands.mvregex = async () => {
 	// let dest_promise = ask_confirm('destination', dests);
 
 	if (origin_all) {
-		confirm_type('Choose destination channel you are refering to. *(type in chat)*', dests).then(dest => {
+		confirm_type('Choose destination channel you are refering to. *(type in chat)*', dests.keyArray()).then(dest => {
 			origins.forEach((origin) => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('all')
@@ -1118,8 +1136,8 @@ commands.mvregex = async () => {
 		})
 	}
 	else {
-		confirm_type('Choose origin channel you are refering to. *(type in chat)*', origins).then(origin => {
-			confirm_type('destination', dests).then(dest => {
+		confirm_type('Choose origin channel you are refering to. *(type in chat)*', origins.keyArray()).then(origin => {
+			confirm_type('destination', dests.keyArray()).then(dest => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('not all')
 					console.log('from ' + message.guild.channels.resolve(origin).name + ' to ' + message.guild.channels.resolve(dest).name)
@@ -1268,15 +1286,19 @@ commands.test = () => {
 }
 
 // Functions
-function confirm_type(title: string, collection: Collection<string, any>, is_delete = false): Promise<string> {
+function confirm_type(title: string, collection: Array<string>, is_delete = false, iconURL?: string): Promise<string> {
 	let confirm = (resolve: (arg0: any) => void) => {
-		if (collection.size <= 1) {
-			resolve(collection.first());
-			return collection.first();
+		if (collection.length <= 1) {
+			resolve(collection[0]);
+			return collection[0];
 		}
 		let embeduser = new MessageEmbed()
-			.setTitle(title)
 			.setColor(blue);
+		if (iconURL) {
+			embeduser.setAuthor(title, iconURL);
+		} else {
+			embeduser.setTitle(title);
+		}
 
 		let str = '';
 		let i = 1;
@@ -1289,7 +1311,7 @@ function confirm_type(title: string, collection: Collection<string, any>, is_del
 			.then((confirm_msg) => {
 				message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
 					let answer_msg = collected.first();
-					if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= collection.size)) {
+					if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= collection.length)) {
 						message.channel.send(new MessageEmbed()
 							.setDescription('Invalid answer, aborted.')
 							.setColor(red)
