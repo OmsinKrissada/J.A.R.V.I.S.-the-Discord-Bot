@@ -81,7 +81,10 @@ export async function play(guild: Guild) {
 	dispatcher.on('finish', () => {
 		getGuildData(guild.id).nowplaying = null;
 		if (getGuildData(guild.id).queue.length >= 1) play(guild);
-		else song.textChannel.send('Queue Ended.');
+		else {
+			song.textChannel.send('Queue Ended.');
+			leave(guild);
+		}
 	})
 	dispatcher.setVolume(music_data[requester.guild.id].volume);
 
@@ -144,6 +147,11 @@ export async function addQueue(member: GuildMember, field: string) {
 	} else {
 		let youtube = new Youtube();
 		let searchResult = await youtube.searchOne(field);
+		console.log(searchResult)
+		if (searchResult == null) {
+			message.channel.send('Sorry, we experienced difficulties finding your song. Try with other phrases.');
+			return;
+		}
 		song.title = searchResult.title;
 		song.url = searchResult.link;
 		song.duration = searchResult.duration;
