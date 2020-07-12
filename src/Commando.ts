@@ -777,7 +777,7 @@ commands.nowplaying = () => {
 commands.search = async () => {
 	let searchResult = await Music.search(longarg());
 	let resultstr = [];
-	searchResult.slice(10).forEach(result => {
+	searchResult.slice(0, 10).forEach(result => {
 		resultstr.push(`[${result.title}](${result.link})`);
 	})
 	let song = await confirm_type('Pick your song by typing the number into the chat.', resultstr, false, message.author.avatarURL());
