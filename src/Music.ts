@@ -134,9 +134,7 @@ export function getQueue(guild: Guild) {
 export async function addQueue(member: GuildMember, field: string) {
 	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
 	await join(member.voice.channel);
-	play(member.guild);
 	if (field == '') return;
-
 	let song = new Song();
 	if (ytdl.validateURL(field)) {
 		// song.title = ytdl.getInfo;
@@ -168,7 +166,7 @@ export async function addQueue(member: GuildMember, field: string) {
 	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
 	getGuildData(member.guild.id).queue.push(song);
 
-	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length == 1) play(member.guild);
+	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length >= 1) play(member.guild);
 }
 
 export function clearQueue(guild: Guild) {
