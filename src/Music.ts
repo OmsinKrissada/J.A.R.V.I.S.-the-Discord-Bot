@@ -146,7 +146,7 @@ export async function addQueue(member: GuildMember, field: string) {
 		song.title = info.title;
 		song.url = field;
 		song.duration = Number(info.length_seconds);
-		song.thumbnail = info.thumbnail_url;
+		song.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
 
 	} else {
 		let youtube = new Youtube();
