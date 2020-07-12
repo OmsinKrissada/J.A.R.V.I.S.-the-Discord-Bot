@@ -125,6 +125,10 @@ export function getQueue(guild: Guild) {
 	return music_data[guild.id].queue;
 }
 
+export function getVolume(guild: Guild) {
+	return music_data[guild.id].volume;
+}
+
 export async function addQueue(member: GuildMember, field: string) {
 	await join(member.voice.channel);
 	if (field == '') return;

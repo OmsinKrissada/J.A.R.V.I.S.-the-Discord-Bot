@@ -721,16 +721,34 @@ commands.skip = () => {
 
 commands.volume = () => {
 	// try {
-	Music.volume(message.guild, Number(args[1]));
+	if (args[1]) {
+		let volume = isNaN(Number(args[1])) ? -1 : Number(args[1]) / 100;
+		if (0.01 > volume || volume > 2) {
+			message.channel.send(new MessageEmbed()
+				.setTitle('Invalid Argument')
+				.setDescription('The number must fall in the range of 1 to 200.')
+				.setColor(red)
+			);
+			return;
+		}
+		Music.volume(message.guild, volume);
 
-	// } catch (err) {
-	// 	console.log('error occured while changing the volume')
-	// }
-	message.channel.send(new MessageEmbed()
-		.setTitle('Volume Adjusted')
-		.setDescription(`Volume has adjusted to \`${Number(args[1])}\`.`)
-		.setColor(green)
-	);
+		// } catch (err) {
+		// 	console.log('error occured while changing the volume')
+		// }
+		message.channel.send(new MessageEmbed()
+			.setTitle('Volume Adjusted')
+			.setDescription(`Volume has adjusted to \`${args[1]}%\`.`)
+			.setColor(green)
+		);
+	}
+	else {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Current Volume')
+			.setDescription(`The volume is at \`${Music.getVolume(message.guild) * 100}%\``)
+			.setColor(blue)
+		);
+	}
 }
 
 commands.queue = () => {

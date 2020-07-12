@@ -76,5 +76,11 @@
 	],
 	"remove": [
 		"rm"
+	],
+	"volume": [
+		"vol"
+	],
+	"leave": [
+		"disconnect"
 	]
 }
