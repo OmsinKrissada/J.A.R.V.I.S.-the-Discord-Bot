@@ -1,5 +1,5 @@
 import { Message, Guild, ChannelResolvable, VoiceConnection, VoiceChannel, GuildMember, GuildChannelResolvable, GuildMemberResolvable, TextChannel, Channel, MessageEmbed } from 'discord.js';
-import * as ytdl from 'ytdl-core';
+import ytdl from 'ytdl-core';
 import { Youtube } from 'scrape-youtube';
 import { bot } from './Main';
 import { Util } from './Util';

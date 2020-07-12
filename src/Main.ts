@@ -8,12 +8,12 @@ export const bot = new Client();
 // const clientInformation = new Discord.clientInformation();
 const embedmsg = new MessageEmbed();
 
-const fs = require('fs');
+import fs from 'fs'
 import * as Commando from "./Commando";
 import { Util } from "./Util";
 import { DataManager } from './DataManager';
 import * as Music from './Music';
-const alias = require('../settings/alias.json')
+import alias from '../settings/alias.json'
 
 
 
@@ -23,7 +23,8 @@ const alias = require('../settings/alias.json')
 
 var client_id = '';
 // Start discord client
-bot.login(require("../token.json").discord)
+import token from "../token.json"
+bot.login(token.discord)
 bot.on('ready', () => {
 
 	console.log('I am ready!');
