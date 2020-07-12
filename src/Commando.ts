@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvable } from 'discord.js';
+import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvable, GuildMember } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import { DataManager } from './DataManager'
@@ -574,9 +574,9 @@ commands.uptime = () => {
 	)
 }
 
-commands.info = () => {
+commands.info = async () => {
 	if (args[1] == 'user') {
-		let user;
+		let user: User;
 		console.log(`"${longarg(2)}"`)
 		switch (longarg(2)) {
 			case "":
@@ -592,43 +592,41 @@ commands.info = () => {
 				if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
 					user = message.mentions.members.first().user;
 				}
-				else if (message.guild) {
+				else if (message.guild) { // If not mention
+
+					let users: Array<GuildMember>;
 					try {
-						user = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(2).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(2).toLowerCase()));
+						let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(2).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(2).toLowerCase()));
+						users = userscollection.array();
 					} catch (err) { }
-					if (user.size != undefined && user.size > 0) {
-						console.log(user.size)
-						// console.log(JSON.stringify(user.toJSON(), 4))
-						if (user.size > 1) {
-							confirm_type('Please choose the member you refer to. (type in chat)', user, true).then(usr => {
-								user = message.guild.member(usr).user;
-								console.log(user)
-								printUserInfo(user);
-							})
-							return;
-							break;
-						}
-						else {
-							user = user.first().user
-						}
+
+					if (users.length && users.length > 0) {
+						let usernames = [];
+						users.forEach(user => usernames.push(`${user}`))
+						confirm_type('Please choose the member you refer to. (type in chat)', usernames).then(usr => {
+							user = message.guild.member(users[usr]).user;
+							printUserInfo(user);
+						})
+						return;
 					}
-					// if (message.deletable) message.delete();
 				}
 		}
 		if (message.deletable) message.delete();
 
-		if (!(user == null || user.size == 0)) {
-			printUserInfo(user);
-			return;
-		}
-		if (bot.users.fetch(args[2]) != undefined) {
-			let is_return = true;
-			bot.users.fetch(args[2]).then(printUserInfo).catch(() => is_return = false)
-			if (is_return) return;
+		// if (!(user == null || user.size == 0)) {
+		// 	printUserInfo(user);
+		// 	return;
+		// }
+		if (!isNaN((<any>args[2]))) {
+			try {
+				let fetcheduser = await bot.users.fetch(args[2]);
+				printUserInfo(fetcheduser);
+				return;
+			} catch (err) { }
 		}
 		message.channel.send(new MessageEmbed()
 			.setTitle('Member Not Found')
-			.setDescription(`Cannot find the specified member: "${longarg()}"`)
+			.setDescription(`Cannot find the specified member: "${longarg(2)}"`)
 			.setColor(red)
 		);
 		return;
@@ -998,7 +996,7 @@ commands.movevoice = async () => {
 
 	// Confirm destination channel
 	if (origin_all) {
-		confirm_type('Choose Destination Channel', dests.keyArray()).then(deststr => {
+		confirm_type('Choose Destination Channel', Array.from(dests.keys())).then(deststr => {
 			let dest = message.guild.channels.resolve(deststr);
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
@@ -1031,8 +1029,8 @@ commands.movevoice = async () => {
 		})
 	}
 	else { // Confirm origin channel
-		confirm_type('Choose Origin Channel', origins.keyArray()).then(originstr => {
-			confirm_type('Choose Destination Channel', dests.keyArray()).then(deststr => {
+		confirm_type('Choose Origin Channel', Array.from(origins.keys())).then(originstr => {
+			confirm_type('Choose Destination Channel', Array.from(dests.keys())).then(deststr => {
 				let origin = message.guild.channels.resolve(originstr);
 				let dest = message.guild.channels.resolve(deststr);
 				// Tell the errors
@@ -1125,7 +1123,7 @@ commands.mvregex = async () => {
 	// let dest_promise = ask_confirm('destination', dests);
 
 	if (origin_all) {
-		confirm_type('Choose destination channel you are refering to. *(type in chat)*', dests.keyArray()).then(dest => {
+		confirm_type('Choose destination channel you are refering to. *(type in chat)*', Array.from(dests.keys())).then(dest => {
 			origins.forEach((origin) => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('all')
@@ -1136,8 +1134,8 @@ commands.mvregex = async () => {
 		})
 	}
 	else {
-		confirm_type('Choose origin channel you are refering to. *(type in chat)*', origins.keyArray()).then(origin => {
-			confirm_type('destination', dests.keyArray()).then(dest => {
+		confirm_type('Choose origin channel you are refering to. *(type in chat)*', Array.from(origins.keys())).then(origin => {
+			confirm_type('destination', Array.from(dests.keys())).then(dest => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('not all')
 					console.log('from ' + message.guild.channels.resolve(origin).name + ' to ' + message.guild.channels.resolve(dest).name)
@@ -1286,11 +1284,13 @@ commands.test = () => {
 }
 
 // Functions
-function confirm_type(title: string, collection: Array<string>, is_delete = false, iconURL?: string): Promise<string> {
+function confirm_type(title: string, list: Array<string>, is_delete = false, iconURL?: string): Promise<string> {
 	let confirm = (resolve: (arg0: any) => void) => {
-		if (collection.length <= 1) {
-			resolve(collection[0]);
-			return collection[0];
+		console.log(list)
+		console.log(list.length)
+		if (list.length <= 1) {
+			resolve(list[0]);
+			return list[0];
 		}
 		let embeduser = new MessageEmbed()
 			.setColor(blue);
@@ -1302,7 +1302,7 @@ function confirm_type(title: string, collection: Array<string>, is_delete = fals
 
 		let str = '';
 		let i = 1;
-		collection.forEach((member) => {
+		list.forEach((member) => {
 			str += `${Util.getNumberEmoji(i)} - ${member}\n\n`;
 			i++;
 		})
@@ -1311,7 +1311,7 @@ function confirm_type(title: string, collection: Array<string>, is_delete = fals
 			.then((confirm_msg) => {
 				message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
 					let answer_msg = collected.first();
-					if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= collection.length)) {
+					if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
 						message.channel.send(new MessageEmbed()
 							.setDescription('Invalid answer, aborted.')
 							.setColor(red)
@@ -1322,7 +1322,7 @@ function confirm_type(title: string, collection: Array<string>, is_delete = fals
 						return undefined;
 					}
 					else {
-						let result = Array.from(collection.keys())[Number(answer_msg.content) - 1];
+						let result = Array.from(list.keys())[Number(answer_msg.content) - 1];
 						if (confirm_msg.deletable) confirm_msg.delete();
 						if (answer_msg.deletable) answer_msg.delete();
 						console.log(result)
