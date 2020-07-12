@@ -73,10 +73,12 @@ commands.help = () => {
 					embed.addField('Usages:', usagestr);
 				}
 				let aliasstr = '';
-				alias[asked_command].forEach((available: string) => {
-					aliasstr += Util.inlineCodeBlock(available) + ', ';
-				});
-				embed.addField('Aliases', aliasstr.slice(0, -2));
+				if (alias[asked_command]) {
+					alias[asked_command].forEach((available: string) => {
+						aliasstr += Util.inlineCodeBlock(available) + ', ';
+					});
+					embed.addField('Aliases', aliasstr.slice(0, -2));
+				}
 				message.channel.send(embed);
 				validDetail = true;
 			}
@@ -960,6 +962,10 @@ commands.morse = () => {
 	})
 }
 
+commands.gamemode = () => {
+	message.reply('You are fixed with gamemode `survival` in discord. Sorry for inconvenience.')
+}
+
 
 
 // Personal-use commands
@@ -1227,42 +1233,18 @@ commands.whoisironman = () => {
 }
 
 commands.ohm = () => {
-	switch (Math.floor(Math.random() * 10)) {
-		case 0:
-			message.reply('หอยหลอด')
-			break;
-		case 1:
-			message.reply('I got 2060 super!')
-			break;
-		case 2:
-			message.reply('จ๊ะะะ')
-			break;
-		case 3:
-			message.reply('!!!')
-			break;
-		case 4:
-			message.reply('เอาเถอะ!!!')
-			break;
-		case 5:
-			message.reply('ทำไมรึ')
-			break;
-		case 6:
-			message.reply('ห๊ะะ')
-			break;
-		case 7:
-			message.reply('TU CLD')
-			break;
-		case 8:
-			message.reply('แช่คอมในตู้เย็นสิ')
-			break;
-		case 9:
-			message.reply('เขรื่องปริ้น')
-			break;
-	}
+	let answers = ['หอยหลอด', 'I got 2060 super!', 'จ๊ะะะ', '!!!', 'เอาเถอะ!!!', 'ทำไมรึ', 'ห๊ะะ', 'TU CLD', 'แช่คอมในตู้เย็นสิ', 'เขรื่องปริ้น', 'yay AirPods Pro', 'I got my new keyboard!!!', 'TU CCLD', 'เออๆ ไปทำคุมองละ', 'คุมองเยอะมาก', 'ทำงานครูจิ๋มละ บาย'];
+	message.reply(answers[Math.floor(Math.random() * answers.length)])
 }
 
 commands.kong = () => {
-	message.reply('typerace?');
+	let answer = ['typerace?', 'อยากเล่นบาส'];
+	message.reply(answer[Math.floor(Math.random() * answer.length)]);
+}
+
+commands.omsin = () => {
+	let answer = ['bored', 'Today I don\'t feel like doing anything.'];
+	message.reply(answer[Math.floor(Math.random() * answer.length)]);
 }
 
 
@@ -1289,8 +1271,8 @@ function confirm_type(title: string, list: Array<string>, is_delete = false, ico
 		console.log(list)
 		console.log(list.length)
 		if (list.length <= 1) {
-			resolve(list[0]);
-			return list[0];
+			resolve([0]);
+			return 0;
 		}
 		let embeduser = new MessageEmbed()
 			.setColor(blue);

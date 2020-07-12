@@ -169,7 +169,7 @@ export async function addQueue(member: GuildMember, field: string) {
 	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
 		.setAuthor('Song Queued', member.user.displayAvatarURL())
 		.setDescription('Added ' + `**[${song.title}](${song.url})** \`${song.getDuration()}\`` + ' to the queue.')
-		.setColor(Util.blue)
+		.setColor(Util.green)
 		.setThumbnail(song.thumbnail)
 	)
 

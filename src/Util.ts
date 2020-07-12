@@ -3,10 +3,12 @@ import { exec } from 'child_process';
 export class Util {
 
 	static red = 0xff0000;
-	static green = 0x00ff00;
+	// static green = 0x00ff00;
+	static green = 0x04CF8D;
 	// static blue = 0x4287f5
 	// static blue = 0x2ec1db
-	static blue = 0x2ccae6;
+	// static blue = 0x2ccae6;
+	static blue = 0x28BAD4;
 	static yellow = 0xebc934;
 
 	static inlineCodeBlock(content: string) {
