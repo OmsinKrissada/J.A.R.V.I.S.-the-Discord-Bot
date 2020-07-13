@@ -19,7 +19,7 @@ interface CommandObject {
 }
 export const commands: CommandObject = {};
 
-export const non_dm_command = ['nick', 'purge', 'history', 'movevoice'];
+export const non_dm_command = ['nick', 'purge', 'history', 'movevoice', 'play', 'queue', 'skip', 'volume', 'remove', 'pause', 'resume', 'search', 'nowplaying', 'join', 'leave', 'rickroll'];
 
 export var prefix: string;
 export var message: Message;

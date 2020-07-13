@@ -120,8 +120,11 @@ bot.on('message', message => {
 			args = message.content.substr(prefix.length).trim().split(' ')
 		}
 
-		Music.constructData(message.guild.id);
-
+		try {
+			Music.constructData(message.guild.id);
+		} catch (err) {
+			Music.constructData(message.channel.id);
+		}
 
 
 		Commando.setPrefix(prefix);
@@ -130,7 +133,7 @@ bot.on('message', message => {
 
 		let answer = args[0].toLowerCase();
 		for (let key in alias) {
-			if (alias[key].includes(args[0])) {
+			if (alias[key].includes(answer)) {
 				answer = key;
 			}
 		}
