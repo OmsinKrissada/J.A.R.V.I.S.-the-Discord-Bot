@@ -806,6 +806,15 @@ commands.volume = () => {
 			);
 			return;
 		}
+		let oldVolume = Music.getVolume(message.guild);
+		if (oldVolume == volume) {
+			message.channel.send(new MessageEmbed()
+				.setTitle('Volume Unchanged')
+				.setDescription(`Volume has not changed since it's already at \`${args[1]}%\``)
+				.setColor(blue)
+			);
+			return;
+		}
 		Music.volume(message.guild, volume);
 
 		// } catch (err) {
@@ -813,7 +822,7 @@ commands.volume = () => {
 		// }
 		message.channel.send(new MessageEmbed()
 			.setTitle('Volume Adjusted')
-			.setDescription(`Volume has adjusted to \`${args[1]}%\`.`)
+			.setDescription(`Volume has ` + (oldVolume < volume ? 'increased' : 'decrease') + ` to \`${args[1]}%\`.`)
 			.setColor(green)
 		);
 	}

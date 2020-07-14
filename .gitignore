@@ -9,3 +9,4 @@ spare.txt
 prefix.txt
 .node*
 token.json
+deploy.sh
