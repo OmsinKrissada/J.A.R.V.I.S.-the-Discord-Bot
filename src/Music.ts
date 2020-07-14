@@ -120,7 +120,7 @@ export async function search(field: string) {
 	return youtube.search(field);
 }
 
-export function getPlayedTime(guild) {
+export function getPlayedTime(guild: Guild) {
 	return music_data[guild.id].connection.dispatcher.streamTime;
 }
 

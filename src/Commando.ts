@@ -840,13 +840,19 @@ commands.queue = () => {
 	let i = 0;
 	Music.getQueue(message.guild).forEach(song => {
 		i++;
-		content += `${Util.getNumberEmoji(i)} **\`${song.getDuration()}\` [${song.title}](${song.url})** [${song.requester}]\n\n`;
+		content += `${Util.getNumberEmoji(i)} \`${song.getDuration()}\` [${song.title}](${song.url}) [${song.requester}]\n\n`;
 	})
-	message.channel.send(new MessageEmbed()
-		.setTitle(content.length == 0 ? 'Empty Queue' : 'Song Queue:')
-		.setDescription(content)
-		.setColor(blue)
-	)
+	let embed = new MessageEmbed()
+		.setTitle('Song Queue')
+		.setColor(blue);
+
+	let currentSong = Music.getCurrentSong(message.guild);
+	if (currentSong) {
+		let playedTime = Math.floor(currentSong.getPlayedTime(message.guild) / 1000);
+		embed.addField('Now Playing 🎶', `**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}] \`${Util.min2(Math.floor(playedTime / 60))}:${Util.min2(playedTime % 60)} / ${currentSong.getDuration()}\`\n​`);
+	}
+	embed.addField('Up Coming 🔺', '​\n' + (content.length != 0 ? content : 'Empty.'));
+	message.channel.send(embed)
 }
 
 commands.remove = () => {
