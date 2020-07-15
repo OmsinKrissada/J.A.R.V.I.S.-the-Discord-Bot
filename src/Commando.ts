@@ -890,13 +890,6 @@ commands.leave = async () => {
 // 	// message.member.voice.
 // }
 
-commands.rickroll = () => {
-	setPrefix(prefix);
-	setRespondMessage(message);
-	setArguments(['play', 'never', 'gonna', ' give', ' you', 'up']);
-	run('play');
-}
-
 
 
 // Not so useful commands
@@ -979,6 +972,17 @@ commands.morse = () => {
 
 commands.gamemode = () => {
 	message.reply('You are fixed with gamemode `survival` in discord. Sorry for inconvenience.')
+}
+
+commands.rickroll = () => {
+	setPrefix(prefix);
+	setRespondMessage(message);
+	setArguments(['play', 'never', 'gonna', ' give', ' you', 'up']);
+	run('play');
+}
+
+commands.duckroll = () => {
+	message.channel.send({ files: ['./resources/duckroll.jpg'] });
 }
 
 
@@ -1248,7 +1252,7 @@ commands.whoisironman = () => {
 }
 
 commands.ohm = () => {
-	let answers = ['อดทนนนน','โดนจิ๋มดูดด้วน','หอยหลอด', 'I got 2060 super!', 'จ๊ะะะ', '!!!', 'เอาเถอะ!!!', 'ทำไมรึ', 'ห๊ะะ', 'TU CLD', 'แช่คอมในตู้เย็นสิ', 'เขรื่องปริ้น', 'yay AirPods Pro', 'I got my new keyboard!!!', 'TU CCLD', 'เออๆ ไปทำคุมองละ', 'คุมองเยอะมาก', 'ทำงานครูจิ๋มละ บาย'];
+	let answers = ['อดทนนนน', 'โดนจิ๋มดูดด้วน', 'หอยหลอด', 'I got 2060 super!', 'จ๊ะะะ', '!!!', 'เอาเถอะ!!!', 'ทำไมรึ', 'ห๊ะะ', 'TU CLD', 'แช่คอมในตู้เย็นสิ', 'เขรื่องปริ้น', 'yay AirPods Pro', 'I got my new keyboard!!!', 'TU CCLD', 'เออๆ ไปทำคุมองละ', 'คุมองเยอะมาก', 'ทำงานครูจิ๋มละ บาย'];
 	message.reply(answers[Math.floor(Math.random() * answers.length)])
 }
 
