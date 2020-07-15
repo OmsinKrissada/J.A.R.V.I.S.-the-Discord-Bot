@@ -1,15 +1,15 @@
 import { exec } from 'child_process';
+import fs from 'fs';
+import yaml from 'js-yaml';
+
+var config = yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'));
 
 export class Util {
 
-	static red = 0xff0000;
-	// static green = 0x00ff00;
-	static green = 0x04CF8D;
-	// static blue = 0x4287f5
-	// static blue = 0x2ec1db
-	// static blue = 0x2ccae6;
-	static blue = 0x28BAD4;
-	static yellow = 0xebc934;
+	static red = config['colors']['red'];
+	static green = config['colors']['green'];
+	static blue = config['colors']['blue'];
+	static yellow = config['colors']['yellow'];
 
 	static inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;

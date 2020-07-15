@@ -9,6 +9,9 @@ import { Wolfram } from './Wolfram';
 import * as Morse from './Morse';
 import * as Music from './Music';
 
+import helpDetail from '../settings/help.json';
+import responses from '../settings/responses.json';
+
 const red = Util.red
 const green = Util.green
 const blue = Util.blue
@@ -66,195 +69,27 @@ commands.help = () => {
 			if (command_info[category].hasOwnProperty(asked_command)) {
 				let command = command_info[category][asked_command];
 				embed.addField('Description:', command.description);
-				if (typeof command.usage == 'string') embed.addField('Usage:', Util.inlineCodeBlock(command.usage));
+				if (typeof command.usage == 'string') embed.addField('Usage:', Util.inlineCodeBlock(prefix + command.usage));
 				else {
 					let usagestr = '';
-					command.usage.forEach((usage: string) => usagestr += Util.inlineCodeBlock(usage) + '\n');
+					command.usage.forEach((usage: string) => usagestr += Util.inlineCodeBlock(prefix + usage) + '\n');
 					embed.addField('Usages:', usagestr);
 				}
-				let aliasstr = '';
+				let aliasstr = Util.inlineCodeBlock(asked_command) + ', ';
 				if (alias[asked_command]) {
 					alias[asked_command].forEach((available: string) => {
 						aliasstr += Util.inlineCodeBlock(available) + ', ';
 					});
-					embed.addField('Aliases', aliasstr.slice(0, -2));
 				}
+				embed.addField('Aliases', aliasstr.slice(0, -2));
 				message.channel.send(embed);
 				validDetail = true;
 			}
 		}
 	}
 
-	let command_info: { [type: string]: { [command: string]: { [key: string]: string | Array<string> } } } = {
-		general: {
-			"help": {
-				description: "Shows this message.",
-				usage: `${prefix}help`
-			},
-			"invite": {
-				description: "Shows bot's invitation link.",
-				usage: `${prefix}invite`
-			},
-			"alias": {
-				description: "Shows available command aliases.",
-				usage: `${prefix}alias`
-			},
-			"ping": {
-				description: "Pings the bot",
-				usage: `${prefix}ping`
-			},
-			"ip": {
-				description: "Shows bot's current IP address.",
-				usage: [`${prefix}ip`, `${prefix}ip plain|mobile|m`, `${prefix}ip announce`]
-			},
-			"uptime": {
-				description: "Shows uptime for the bot.",
-				usage: `${prefix}uptime`
-			},
-			"hello": {
-				description: "Hi!",
-				usage: `${prefix}hello`
-			},
-			"say": {
-				description: "Repeats a text.",
-				usage: `${prefix}say {text}`
-			},
-			"repeat": {
-				description: "~~Repeats texts sends by a user.~~ **NOT READY**",
-				usage: `${prefix}repeat {user} {text}`
-			},
-			"whoisironman": {
-				description: "Let you know the true Ironman.",
-				usage: `${prefix}whoisironman`
-			},
-		},
-		settings: {
-			"backup": {
-				description: "Creates a backup of all guilds' options.",
-				usage: `${prefix}backup`
-			},
-			"reload": {
-				description: "Reloads all guilds' options.",
-				usage: `${prefix}reload`
-			},
-			"reset": {
-				description: "Resets all current guild's option to default value.",
-				usage: `${prefix}reset`
-			},
-			"prefix": {
-				description: "Changes the prefix of the bot.",
-				usage: `${prefix}prefix {prefix}`
-			},
-			"nick": {
-				description: "Changes bot's nickname.",
-				usage: [`${prefix} set {nickname}`, `${prefix} clear`]
-			}
-		},
-		features: {
-			"info": {
-				description: "Shows information about a user or a server.",
-				usage: [`${prefix}info user {@mention|username|nickname|user_id}`, `${prefix}info user me`, `${prefix}info server`]
-			},
-			"history": {
-				description: "Shows edit history of a message.",
-				usage: `${prefix}history {message_id}`
-			},
-			"purge": {
-				description: "Purges a number of latest message(s).",
-				usage: `${prefix}purge {amount}`
-			},
-			"movevoice": {
-				description: "Moves members from voice channels to another channel.",
-				usage: `${prefix}movevoice {origin channel} {destination channel}`
-			},
-			"mvregex": {
-				description: "Same as movevoice but chooses using RegEx.",
-				usage: `${prefix}mvregex {origin channel regex} {destination channel regex}`
-			},
-			"muteall": {
-				description: "Mutes all every in all voice channels.",
-				usage: `${prefix}muteall`
-			},
-			"unmuteall": {
-				description: "Unmutes every members in all voice channels.",
-				usage: `${prefix}unmuteall`
-			},
-			"disconnectall": {
-				description: "Disconnects every members from all voice channels.",
-				usage: `${prefix}`
-			},
-			"hook": {
-				description: "Hooks a text with a voice channel.",
-				usage: [`${prefix}hook list`, `${prefix}hook add .... I AM TOO LAZY TO DO IT NOW K? -.-`]
-			},
-			"ask": {
-				description: "Ask information from WolframAlpha.",
-				usage: `${prefix}ask {question}`
-			},
-			"askimg": {
-				description: "Ask information from WolframAlpha as an image.",
-				usage: `${prefix}askimg {question}`
-			},
-			"rank": {
-				description: "~~Ranks choices.~~ **NOT READY**",
-				usage: `${prefix}rank`
-			},
-			"morse": {
-				description: "Translates between morse code and English.",
-				usage: `${prefix}morse {text (morse code or English)}`
-			},
-		},
-		music: {
-			"play": {
-				description: "Join the voice channel you are in then play a song.",
-				usage: `${prefix}play { song title | song url }`
-			},
-			"pause": {
-				description: "Pause playing song.",
-				usage: `${prefix}pause`
-			},
-			"resume": {
-				description: "Resumes paused song.",
-				usage: `${prefix}resume`
-			},
-			"queue": {
-				description: "Shows the music queue.",
-				usage: `${prefix}queue`
-			},
-			"nowplaying": {
-				description: "Shows information about the current song.",
-				usage: `${prefix}nowplaying`
-			},
-			"search": {
-				description: "Searchs songs on youtube to pick.",
-				usage: `${prefix}search {song}`
-			},
-			"join": {
-				description: "Joins the voice channel you are in.",
-				usage: `${prefix}join`
-			},
-			"leave": {
-				description: "Disconnects from voice channel.",
-				usage: `${prefix}leave`
-			},
-			"skip": {
-				description: "Skips the current song.",
-				usage: `${prefix}skip`
-			},
-			"remove": {
-				description: "Removes a song from the queue.",
-				usage: `${prefix}remove {song position}`
-			},
-			"volume": {
-				description: "Changes the music volume. (1 - 200)",
-				usage: `${prefix}volume {volume}`
-			},
-			"rickroll": {
-				description: "Adds Never Gonna Give You Up to the music queue.",
-				usage: `${prefix}rickroll`
-			}
-		}
-	}
+
+	let command_info: { [type: string]: { [command: string]: { [key: string]: string | Array<string> } } } = helpDetail;
 
 	let validDetail = false;
 
@@ -1252,17 +1087,17 @@ commands.whoisironman = () => {
 }
 
 commands.ohm = () => {
-	let answers = ['อดทนนนน', 'โดนจิ๋มดูดด้วน', 'หอยหลอด', 'I got 2060 super!', 'จ๊ะะะ', '!!!', 'เอาเถอะ!!!', 'ทำไมรึ', 'ห๊ะะ', 'TU CLD', 'แช่คอมในตู้เย็นสิ', 'เขรื่องปริ้น', 'yay AirPods Pro', 'I got my new keyboard!!!', 'TU CCLD', 'เออๆ ไปทำคุมองละ', 'คุมองเยอะมาก', 'ทำงานครูจิ๋มละ บาย'];
+	let answers = responses.ohm;
 	message.reply(answers[Math.floor(Math.random() * answers.length)])
 }
 
 commands.kong = () => {
-	let answer = ['typerace?', 'อยากเล่นบาส'];
+	let answer = responses.kong;
 	message.reply(answer[Math.floor(Math.random() * answer.length)]);
 }
 
 commands.omsin = () => {
-	let answer = ['bored', 'Today I don\'t feel like doing anything.'];
+	let answer = responses.omsin;
 	message.reply(answer[Math.floor(Math.random() * answer.length)]);
 }
 
