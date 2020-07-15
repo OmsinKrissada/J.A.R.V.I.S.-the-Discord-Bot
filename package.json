@@ -14,11 +14,13 @@
   "license": "MIT",
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
+    "@types/js-yaml": "^3.12.5",
     "argv": "0.0.2",
     "bufferutil": "^4.0.1",
     "discord.js": "^12.2.0",
     "erlpack": "github:discordapp/erlpack",
     "ffmpeg-static": "^4.2.5",
+    "js-yaml": "^3.14.0",
     "libsodium": "^0.7.6",
     "line-reader": "^0.4.0",
     "n-readlines": "^1.0.0",

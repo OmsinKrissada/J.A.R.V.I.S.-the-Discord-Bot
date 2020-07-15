@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { GuildResolvable } from "discord.js"
+import yaml from 'js-yaml';
 
 interface GuildOption {
 	[guild_id: string]: object
@@ -39,7 +39,7 @@ export class DataManager {
 	static addGuildDefaultOption = (id: string, name: string, isDM: boolean) => {
 		DataManager.data.guilds[id] = {
 			name: name,
-			prefix: '!',
+			prefix: yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'))['defaultPrefix'],
 			dm: isDM,
 			hooks: []
 		}
