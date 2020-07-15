@@ -684,9 +684,9 @@ commands.queue = () => {
 	let currentSong = Music.getCurrentSong(message.guild);
 	if (currentSong) {
 		let playedTime = Math.floor(currentSong.getPlayedTime(message.guild) / 1000);
-		embed.addField('Now Playing 🎶', `**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}] \`${Util.min2(Math.floor(playedTime / 60))}:${Util.min2(playedTime % 60)} / ${currentSong.getDuration()}\`\n​`);
+		embed.addField('​\nNow Playing 🎶', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}] \`${Util.min2(Math.floor(playedTime / 60))}:${Util.min2(playedTime % 60)} / ${currentSong.getDuration()}\`\n​`);
 	}
-	embed.addField('Up Coming 🔺', '​\n' + (content.length != 0 ? content : 'Empty.'));
+	embed.addField('Upcoming 🔺', (content.length != 0 ? '​\n' + content : 'Empty Queue'));
 	message.channel.send(embed)
 }
 
