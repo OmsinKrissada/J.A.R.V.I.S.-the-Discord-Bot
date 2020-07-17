@@ -1087,16 +1087,34 @@ commands.whoisironman = () => {
 }
 
 commands.ohm = () => {
+	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
+		message.channel.send(`Added "${longarg(1)}"`)
+		responses.ohm.push(longarg(1))
+		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
+		return;
+	}
 	let answers = responses.ohm;
 	message.reply(answers[Math.floor(Math.random() * answers.length)])
 }
 
 commands.kong = () => {
+	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
+		message.channel.send(`Added "${longarg(1)}"`)
+		responses.kong.push(longarg(1))
+		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
+		return;
+	}
 	let answer = responses.kong;
 	message.reply(answer[Math.floor(Math.random() * answer.length)]);
 }
 
 commands.omsin = () => {
+	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
+		message.channel.send(`Added "${longarg(1)}"`)
+		responses.ohm.push(longarg(1))
+		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
+		return;
+	}
 	let answer = responses.omsin;
 	message.reply(answer[Math.floor(Math.random() * answer.length)]);
 }
