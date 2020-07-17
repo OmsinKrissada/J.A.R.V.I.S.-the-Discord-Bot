@@ -1088,8 +1088,8 @@ commands.whoisironman = () => {
 
 commands.ohm = () => {
 	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
-		message.channel.send(`Added "${longarg(1)}"`)
-		responses.ohm.push(longarg(1))
+		message.channel.send(`Added "${longarg(2)}"`)
+		responses.ohm.push(longarg(2))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
@@ -1099,8 +1099,8 @@ commands.ohm = () => {
 
 commands.kong = () => {
 	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
-		message.channel.send(`Added "${longarg(1)}"`)
-		responses.kong.push(longarg(1))
+		message.channel.send(`Added "${longarg(2)}"`)
+		responses.kong.push(longarg(2))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
@@ -1110,8 +1110,8 @@ commands.kong = () => {
 
 commands.omsin = () => {
 	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
-		message.channel.send(`Added "${longarg(1)}"`)
-		responses.ohm.push(longarg(1))
+		message.channel.send(`Added "${longarg(2)}"`)
+		responses.ohm.push(longarg(2))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
