@@ -189,7 +189,7 @@ export function getQueue(guild: Guild) {
 }
 
 export function getVolume(guild: Guild) {
-	return music_data[guild.id].volume * 100;
+	return music_data[guild.id].volume;
 }
 
 export function removeSong(guild: Guild, index: number) {
