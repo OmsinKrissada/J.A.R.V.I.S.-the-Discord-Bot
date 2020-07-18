@@ -596,9 +596,9 @@ commands.nowplaying = () => {
 		return;
 	}
 
-	let secondsPlayed = Math.floor(current_song.getPlayedTime(message.guild) / 1000);
+	let secondsPlayed = Math.floor(current_song.getPlayedTime());
 	message.channel.send(new MessageEmbed()
-		.setTitle('Now Playing:')
+		.setTitle('🎧 Now Playing:')
 		// .setDescription(content)
 		.setColor(blue)
 		.setThumbnail(current_song.thumbnail)
@@ -679,15 +679,15 @@ commands.queue = () => {
 		content += `${Util.getNumberEmoji(i)} \`${Util.prettyTime(song.getDuration())}\` [${song.title}](${song.url}) [${song.requester}]\n\n`;
 	})
 	let embed = new MessageEmbed()
-		.setTitle('Song Queue')
+		.setTitle('Song Queue 🎶')
 		.setColor(blue);
 
 	let currentSong = Music.getCurrentSong(message.guild);
 	if (currentSong) {
-		let secondsPlayed = Math.floor(currentSong.getPlayedTime(message.guild) / 1000);
-		embed.addField('​\nNow Playing 🎶', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}]\n\`${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(currentSong.getDuration())}\` ${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
+		let secondsPlayed = Math.floor(currentSong.getPlayedTime());
+		embed.addField('​\n🎧 Now Playing', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}]\n${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(currentSong.getDuration())} ${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
 	}
-	embed.addField('Upcoming 🔺', (content.length != 0 ? '​\n' + content : 'Empty Queue'));
+	embed.addField('🔺 Upcoming', (content.length != 0 ? '​\n' + content : 'Empty Queue'));
 	message.channel.send(embed)
 }
 
