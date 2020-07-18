@@ -1,5 +1,5 @@
 {
-	"general": {
+	"ℹ  General": {
 		"help": {
 			"description": "Shows this message.",
 			"usage": "help"
@@ -45,7 +45,7 @@
 			"usage": "whoisironman"
 		}
 	},
-	"settings": {
+	"🛠  Settings": {
 		"backup": {
 			"description": "Creates a backup of all guilds' options.",
 			"usage": "backup"
@@ -70,7 +70,7 @@
 			]
 		}
 	},
-	"features": {
+	"💡  Features": {
 		"info": {
 			"description": "Shows information about a user or a server.",
 			"usage": [
@@ -131,7 +131,7 @@
 			"usage": "morse {text (morse code or English)}"
 		}
 	},
-	"music": {
+	"🎵  Music": {
 		"play": {
 			"description": "Join the voice channel you are in then play a song.",
 			"usage": "play { song title | song url }"
