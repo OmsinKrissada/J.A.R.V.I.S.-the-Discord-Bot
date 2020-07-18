@@ -164,8 +164,8 @@ export function skip(guild: Guild) {
 	else {
 		music_data[guild.id].connection.dispatcher.destroy();
 		music_data[guild.id].nowplaying = null;
+		leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 	}
-	leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 }
 
 export async function search(field: string) {
