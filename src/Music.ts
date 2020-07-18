@@ -16,8 +16,8 @@ class Song {
 	getDuration() {
 		return this.duration;
 	}
-	getPlayedTime(guild: Guild) {
-		return getPlayedTime(guild);
+	getPlayedTime() {
+		return getPlayedTime(this.requester.guild) / 1000;
 	}
 }
 
@@ -132,15 +132,15 @@ export async function addQueue(member: GuildMember, field: string) {
 	music.queue.forEach(song => {
 		totaltime += song.duration;
 	});
-	if (music.nowplaying) totaltime += music.nowplaying.duration;
+	if (music.nowplaying) totaltime += music.nowplaying.duration - music.nowplaying.getPlayedTime();
 
 	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
 		.setAuthor('Song Queued', member.user.displayAvatarURL())
 		.setDescription('Added ' + `**[${song.title}](${song.url})**` + ' to the queue.\n')
 		.setColor(Util.green)
-		.addField('Song Duration:', `\`${Util.prettyTime(song.getDuration())}\``, true)
-		.addField('Position in Queue:', `\`${music.nowplaying ? music.queue.length + 1 : 0}\``, true)
-		.addField('Time Before Playing:', `\`${Util.prettyTime(totaltime)}\``, true)
+		.addField('Song Duration', `\`${Util.prettyTime(song.getDuration())}\``, true)
+		.addField('Position in Queue', `\`${music.nowplaying ? music.queue.length + 1 : 0}\``, true)
+		.addField('Time Before Playing', `\`${Util.prettyTime(totaltime)}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
 
