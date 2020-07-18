@@ -86,7 +86,7 @@ export async function play(guild: Guild) {
 			leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 		}
 	})
-	dispatcher.setVolume(music_data[requester.guild.id].volume);
+	dispatcher.setVolume(music_data[requester.guild.id].volume / 100);
 
 	song.textChannel.send(new MessageEmbed()
 		.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Util.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
