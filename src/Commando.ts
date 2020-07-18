@@ -117,7 +117,7 @@ commands.help = () => {
 		for (let command in command_info[category]) {
 			commands += Util.inlineCodeBlock(command) + ', ';
 		}
-		embed.addField(category.toLocaleUpperCase(), commands.slice(0, -2));
+		embed.addField(category, commands.slice(0, -2));
 	}
 	embed.addField('‏‏‎ ‎', 'For source code, please visit [this repository](https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot "https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot").');
 
@@ -656,7 +656,7 @@ commands.volume = () => {
 		// 	console.log('error occured while changing the volume')
 		// }
 		message.channel.send(new MessageEmbed()
-			.setTitle('Volume Adjusted')
+			.setTitle('Volume Adjusted ' + (oldVolume < volume ? '🔺' : '🔻'))
 			.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 25)}**`)
 			.setColor(green)
 		);
