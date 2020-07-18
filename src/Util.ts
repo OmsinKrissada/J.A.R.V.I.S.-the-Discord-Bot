@@ -60,9 +60,9 @@ export class Util {
 	/**
 	 * 
 	 * @param percent A percentage from 0 to 100.
+	 * @param length Full length of the progress bar. (default to 30)
 	 */
-	static progressBar(percent: number): string {
-		let length = 30;
+	static progressBar(percent: number, length = 30): string {
 		let show = Math.floor(percent / 100 * length);
 		let progress = '';
 		for (let i = 0; i < show - 1; i++) {

@@ -657,7 +657,7 @@ commands.volume = () => {
 		// }
 		message.channel.send(new MessageEmbed()
 			.setTitle('Volume Adjusted')
-			.setDescription(`Volume has ` + (oldVolume < volume ? 'increased' : 'decrease') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume)}**`)
+			.setDescription(`Volume has ` + (oldVolume < volume ? 'increased' : 'decrease') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 25)}**`)
 			.setColor(green)
 		);
 	}
@@ -665,7 +665,7 @@ commands.volume = () => {
 		let volume = Music.getVolume(message.guild);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Current Volume')
-			.setDescription(`The volume is at \`${volume}%\`\n\n**${Util.progressBar(volume)}**`)
+			.setDescription(`The volume is at \`${volume}%\`\n\n**${Util.progressBar(volume, 25)}**`)
 			.setColor(blue)
 		);
 	}
