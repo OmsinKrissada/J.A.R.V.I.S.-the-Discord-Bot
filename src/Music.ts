@@ -26,7 +26,7 @@ class GuildMusicData {
 	connection: VoiceConnection;
 	nowplaying: Song;
 	queue: Array<Song> = [];
-	volume: number = 0.05;
+	volume: number = 5;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
 2
@@ -50,7 +50,11 @@ export async function join(voiceChannel: VoiceChannel) {
 
 export function leave(guild: Guild) {
 	if (!getGuildData(guild.id).connection) {
-		message.channel.send('i am not in a voice channel');
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription('I am **not** in a voice channel.')
+			.setColor(Util.red)
+		);
 		return;
 	}
 	pause(guild);
