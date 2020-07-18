@@ -14,7 +14,7 @@ class Song {
 	textChannel: TextChannel;
 	voiceChannel: VoiceChannel;
 	getDuration() {
-		return `${Util.min2(Math.floor(this.duration / 60))}:${Util.min2(this.duration % 60)}`;
+		return `${prettyTime(this.duration)}`;
 	}
 	getPlayedTime(guild: Guild) {
 		return getPlayedTime(guild);
@@ -29,6 +29,10 @@ class GuildMusicData {
 	volume: number = 0.05;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
+
+function prettyTime(seconds: number) {
+	return `${Util.min2(Math.floor(seconds / 60))}:${Util.min2(seconds % 60)}`
+}
 
 function getGuildData(guild_id: string) {
 	return music_data[guild_id];
@@ -57,15 +61,13 @@ export function leave(guild: Guild) {
 	getGuildData(guild.id).connection = null;
 }
 
-// export async function pause(guild:Guild) {
-// 	getGuildData(guild.id).connection.dispatcher.pause()
-// }
+
+let leaveTimeout: NodeJS.Timeout;
 
 export async function play(guild: Guild) {
 
 	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher && getGuildData(guild.id).connection.dispatcher.paused) {
 		resume(guild)
-		console.log('lol')
 	}
 	if (getGuildData(guild.id).queue.length <= 0) return;
 
@@ -83,7 +85,7 @@ export async function play(guild: Guild) {
 		if (getGuildData(guild.id).queue.length >= 1) play(guild);
 		else {
 			song.textChannel.send('Queue Ended.');
-			leave(guild);
+			leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 		}
 	})
 	dispatcher.setVolume(music_data[requester.guild.id].volume);
@@ -92,10 +94,57 @@ export async function play(guild: Guild) {
 		.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${song.getDuration()}\` ` + `[${song.requester.user}]`)
 		.setColor(Util.blue)
 	)
-	// console.log(song)
-	console.log(getGuildData(requester.guild.id).connection.dispatcher.volumeDecibels)
-	console.log(getGuildData(requester.guild.id).connection.dispatcher.volumeLogarithmic)
-	// console.log(dispatcher)
+}
+
+export async function addQueue(member: GuildMember, field: string) {
+	clearTimeout(leaveTimeout);
+	let music = music_data[member.guild.id];
+	await join(member.voice.channel);
+	if (field == '') return;
+	let song = new Song();
+	if (ytdl.validateURL(field)) {
+		// song.title = ytdl.getInfo;
+		let info = await ytdl.getInfo(field);
+		song.title = info.title;
+		song.url = field;
+		song.duration = Number(info.length_seconds);
+		song.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
+
+	} else {
+		let youtube = new Youtube();
+		let searchResult = await youtube.searchOne(field);
+		if (searchResult == null) {
+			message.channel.send('Sorry, we experienced difficulties finding your song. Try with other phrases.');
+			return;
+		}
+		song.title = searchResult.title;
+		song.url = searchResult.link;
+		song.duration = searchResult.duration;
+		song.thumbnail = searchResult.thumbnail;
+	}
+	song.requester = member;
+	song.textChannel = (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID));
+	song.voiceChannel = member.voice.channel;
+
+	let totaltime = 0;
+	music.queue.forEach(song => {
+		totaltime += song.duration;
+	});
+	if (music.nowplaying) totaltime += music.nowplaying.duration;
+
+	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
+		.setAuthor('Song Queued', member.user.displayAvatarURL())
+		.setDescription('Added ' + `**[${song.title}](${song.url})** \`${song.getDuration()}\`` + ' to the queue.\n')
+		.setColor(Util.green)
+		.addField('Position:', '`' + (music.nowplaying ? music.queue.length + 1 : 0) + '` songs until playing.', true)
+		.addField('Time before playing:', prettyTime(totaltime), true)
+		.setThumbnail(song.thumbnail)
+	);
+
+	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
+	getGuildData(member.guild.id).queue.push(song);
+
+	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length >= 1) play(member.guild);
 }
 
 export function pause(guild: Guild) {
@@ -113,7 +162,11 @@ export function volume(guild: Guild, volume: number) {
 
 export function skip(guild: Guild) {
 	if (music_data[guild.id].queue.length > 0) play(guild);
-	else leave(guild);
+	else {
+		music_data[guild.id].connection.dispatcher.destroy();
+		music_data[guild.id].nowplaying = null;
+	}
+	leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 }
 
 export async function search(field: string) {
@@ -134,49 +187,6 @@ export function getQueue(guild: Guild) {
 
 export function getVolume(guild: Guild) {
 	return music_data[guild.id].volume;
-}
-
-export async function addQueue(member: GuildMember, field: string) {
-	await join(member.voice.channel);
-	if (field == '') return;
-	let song = new Song();
-	if (ytdl.validateURL(field)) {
-		// song.title = ytdl.getInfo;
-		let info = await ytdl.getInfo(field);
-		song.title = info.title;
-		song.url = field;
-		song.duration = Number(info.length_seconds);
-		song.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
-
-	} else {
-		let youtube = new Youtube();
-		let searchResult = await youtube.searchOne(field);
-		console.log(searchResult)
-		if (searchResult == null) {
-			message.channel.send('Sorry, we experienced difficulties finding your song. Try with other phrases.');
-			return;
-		}
-		song.title = searchResult.title;
-		song.url = searchResult.link;
-		song.duration = searchResult.duration;
-		song.thumbnail = searchResult.thumbnail;
-	}
-	song.requester = member;
-	console.log(member)
-	song.textChannel = (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID));
-	song.voiceChannel = member.voice.channel;
-
-	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
-		.setAuthor('Song Queued', member.user.displayAvatarURL())
-		.setDescription('Added ' + `**[${song.title}](${song.url})** \`${song.getDuration()}\`` + ' to the queue.')
-		.setColor(Util.green)
-		.setThumbnail(song.thumbnail)
-	)
-
-	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
-	getGuildData(member.guild.id).queue.push(song);
-
-	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length >= 1) play(member.guild);
 }
 
 export function removeSong(guild: Guild, index: number) {
