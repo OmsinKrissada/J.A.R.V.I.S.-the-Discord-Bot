@@ -657,7 +657,7 @@ commands.volume = () => {
 		// }
 		message.channel.send(new MessageEmbed()
 			.setTitle('Volume Adjusted')
-			.setDescription(`Volume has ` + (oldVolume < volume ? 'increased' : 'decrease') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 25)}**`)
+			.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 25)}**`)
 			.setColor(green)
 		);
 	}
