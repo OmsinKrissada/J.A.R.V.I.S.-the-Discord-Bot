@@ -56,4 +56,27 @@ export class Util {
 		})
 		return emojistr;
 	}
+
+	/**
+	 * 
+	 * @param percent A percentage from 0 to 100.
+	 */
+	static progressBar(percent: number): string {
+		let length = 30;
+		let show = Math.floor(percent / 100 * length);
+		let progress = '';
+		for (let i = 0; i < show - 1; i++) {
+			progress += '─';
+		}
+		progress += '⚪'
+		for (let i = 0; i < length - show; i++) {
+			progress += '─';
+		}
+		console.log(progress)
+		return progress;
+	}
+
+	static prettyTime(seconds: number): string {
+		return `${Util.min2(Math.floor(seconds / 60))}:${Util.min2(seconds % 60)}`
+	}
 }
