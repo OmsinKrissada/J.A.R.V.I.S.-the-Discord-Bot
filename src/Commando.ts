@@ -596,7 +596,7 @@ commands.nowplaying = () => {
 		return;
 	}
 
-	let playedTime = Math.floor(current_song.getPlayedTime(message.guild) / 1000);
+	let secondsPlayed = Math.floor(current_song.getPlayedTime(message.guild) / 1000);
 	message.channel.send(new MessageEmbed()
 		.setTitle('Now Playing:')
 		// .setDescription(content)
@@ -604,7 +604,7 @@ commands.nowplaying = () => {
 		.setThumbnail(current_song.thumbnail)
 		.addField('Song', `${current_song.title}`)
 		.addField('Link', current_song.url)
-		.addField('Duration', `${Util.min2(Math.floor(playedTime / 60))}:${Util.min2(playedTime % 60)}` + ' / ' + current_song.getDuration())
+		.addField('Duration', `${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(current_song.getDuration())}\n${Util.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100))}`)
 		.addField('Text Channel', current_song.textChannel, true)
 		.addField('Voice Channel', current_song.voiceChannel, true)
 		.addField('Requester', `${current_song.requester}`, true)
@@ -632,8 +632,8 @@ commands.skip = () => {
 commands.volume = () => {
 	// try {
 	if (args[1]) {
-		let volume = isNaN(Number(args[1])) ? -1 : Number(args[1]) / 100;
-		if (0.01 > volume || volume > 2) {
+		let volume = isNaN(Number(args[1])) ? -1 : Number(args[1]);
+		if (1 > volume || volume > 200) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Invalid Argument')
 				.setDescription('The number must fall in the range of 1 to 200.')
@@ -657,14 +657,15 @@ commands.volume = () => {
 		// }
 		message.channel.send(new MessageEmbed()
 			.setTitle('Volume Adjusted')
-			.setDescription(`Volume has ` + (oldVolume < volume ? 'increased' : 'decrease') + ` to \`${args[1]}%\`.`)
+			.setDescription(`Volume has ` + (oldVolume < volume ? 'increased' : 'decrease') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume)}**`)
 			.setColor(green)
 		);
 	}
 	else {
+		let volume = Music.getVolume(message.guild);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Current Volume')
-			.setDescription(`The volume is at \`${Music.getVolume(message.guild) * 100}%\``)
+			.setDescription(`The volume is at \`${volume}%\`\n\n**${Util.progressBar(volume)}**`)
 			.setColor(blue)
 		);
 	}
@@ -675,7 +676,7 @@ commands.queue = () => {
 	let i = 0;
 	Music.getQueue(message.guild).forEach(song => {
 		i++;
-		content += `${Util.getNumberEmoji(i)} \`${song.getDuration()}\` [${song.title}](${song.url}) [${song.requester}]\n\n`;
+		content += `${Util.getNumberEmoji(i)} \`${Util.prettyTime(song.getDuration())}\` [${song.title}](${song.url}) [${song.requester}]\n\n`;
 	})
 	let embed = new MessageEmbed()
 		.setTitle('Song Queue')
@@ -683,8 +684,8 @@ commands.queue = () => {
 
 	let currentSong = Music.getCurrentSong(message.guild);
 	if (currentSong) {
-		let playedTime = Math.floor(currentSong.getPlayedTime(message.guild) / 1000);
-		embed.addField('​\nNow Playing 🎶', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}] \`${Util.min2(Math.floor(playedTime / 60))}:${Util.min2(playedTime % 60)} / ${currentSong.getDuration()}\`\n​`);
+		let secondsPlayed = Math.floor(currentSong.getPlayedTime(message.guild) / 1000);
+		embed.addField('​\nNow Playing 🎶', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}]\n\`${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(currentSong.getDuration())}\` ${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
 	}
 	embed.addField('Upcoming 🔺', (content.length != 0 ? '​\n' + content : 'Empty Queue'));
 	message.channel.send(embed)

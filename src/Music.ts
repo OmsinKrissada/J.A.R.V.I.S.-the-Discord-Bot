@@ -14,7 +14,7 @@ class Song {
 	textChannel: TextChannel;
 	voiceChannel: VoiceChannel;
 	getDuration() {
-		return `${prettyTime(this.duration)}`;
+		return this.duration;
 	}
 	getPlayedTime(guild: Guild) {
 		return getPlayedTime(guild);
@@ -29,10 +29,8 @@ class GuildMusicData {
 	volume: number = 0.05;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
+2
 
-function prettyTime(seconds: number) {
-	return `${Util.min2(Math.floor(seconds / 60))}:${Util.min2(seconds % 60)}`
-}
 
 function getGuildData(guild_id: string) {
 	return music_data[guild_id];
@@ -91,7 +89,7 @@ export async function play(guild: Guild) {
 	dispatcher.setVolume(music_data[requester.guild.id].volume);
 
 	song.textChannel.send(new MessageEmbed()
-		.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${song.getDuration()}\` ` + `[${song.requester.user}]`)
+		.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Util.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
 		.setColor(Util.blue)
 	)
 }
@@ -134,10 +132,11 @@ export async function addQueue(member: GuildMember, field: string) {
 
 	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
 		.setAuthor('Song Queued', member.user.displayAvatarURL())
-		.setDescription('Added ' + `**[${song.title}](${song.url})** \`${song.getDuration()}\`` + ' to the queue.\n')
+		.setDescription('Added ' + `**[${song.title}](${song.url})**` + ' to the queue.\n')
 		.setColor(Util.green)
-		.addField('Position:', '`' + (music.nowplaying ? music.queue.length + 1 : 0) + '` songs until playing.', true)
-		.addField('Time before playing:', prettyTime(totaltime), true)
+		.addField('Song Duration:', `\`${Util.prettyTime(song.getDuration())}\``, true)
+		.addField('Position in Queue:', `\`${music.nowplaying ? music.queue.length + 1 : 0}\``, true)
+		.addField('Time Before Playing:', `\`${Util.prettyTime(totaltime)}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
 
@@ -156,7 +155,7 @@ export function resume(guild: Guild) {
 }
 
 export function volume(guild: Guild, volume: number) {
-	if (music_data[guild.id] && music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) music_data[guild.id].connection.dispatcher.setVolume(volume)
+	if (music_data[guild.id] && music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) music_data[guild.id].connection.dispatcher.setVolume(volume / 100)
 	music_data[guild.id].volume = volume;
 }
 
@@ -186,7 +185,7 @@ export function getQueue(guild: Guild) {
 }
 
 export function getVolume(guild: Guild) {
-	return music_data[guild.id].volume;
+	return music_data[guild.id].volume * 100;
 }
 
 export function removeSong(guild: Guild, index: number) {
