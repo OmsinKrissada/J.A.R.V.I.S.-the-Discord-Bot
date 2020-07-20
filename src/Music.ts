@@ -70,7 +70,7 @@ let leaveTimeout: NodeJS.Timeout;
 export async function play(guild: Guild) {
 
 	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher && getGuildData(guild.id).connection.dispatcher.paused) {
-		resume(guild)
+		resume(guild);
 	}
 	if (getGuildData(guild.id).queue.length <= 0) return;
 
@@ -162,7 +162,9 @@ export function pause(guild: Guild) {
 }
 
 export function resume(guild: Guild) {
-	music_data[guild.id].connection.dispatcher.resume();
+	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher) {
+		music_data[guild.id].connection.dispatcher.resume();
+	}
 }
 
 export function volume(guild: Guild, volume: number) {
