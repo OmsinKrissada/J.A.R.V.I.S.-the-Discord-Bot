@@ -25,6 +25,7 @@ class GuildMusicData {
 	voiceChannelID = '';
 	connection: VoiceConnection;
 	nowplaying: Song;
+	isLooping = false;
 	queue: Array<Song> = [];
 	volume: number = 5;
 }
@@ -83,11 +84,15 @@ export async function play(guild: Guild) {
 	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly" }))
 	getGuildData(guild.id).nowplaying = song;
 	dispatcher.on('finish', () => {
-		getGuildData(guild.id).nowplaying = null;
-		if (getGuildData(guild.id).queue.length >= 1) play(guild);
-		else {
+		if (getGuildData(guild.id).isLooping) {
+			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
+			play(guild);
+		}
+		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
+		else { // Doesn't have next song
 			song.textChannel.send('Queue Ended.');
 			leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+			getGuildData(guild.id).nowplaying = null;
 		}
 	})
 	dispatcher.setVolume(music_data[requester.guild.id].volume / 100);
@@ -151,7 +156,9 @@ export async function addQueue(member: GuildMember, field: string) {
 }
 
 export function pause(guild: Guild) {
-	if (getGuildData(guild.id).connection.dispatcher) music_data[guild.id].connection.dispatcher.pause();
+	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher) {
+		music_data[guild.id].connection.dispatcher.pause();
+	}
 }
 
 export function resume(guild: Guild) {
@@ -163,13 +170,23 @@ export function volume(guild: Guild, volume: number) {
 	music_data[guild.id].volume = volume;
 }
 
-export function skip(guild: Guild) {
-	if (music_data[guild.id].queue.length > 0) play(guild);
-	else {
+export function skip(guild: Guild, respond_in: TextChannel) {
+	if (music_data[guild.id].queue.length > 0) {
+		play(guild);
+		respond_in.send('Skipped! ⏩')
+	}
+	else if (music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) {
 		music_data[guild.id].connection.dispatcher.destroy();
 		music_data[guild.id].nowplaying = null;
 		leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+		respond_in.send('Skipped! ⏩')
 	}
+}
+
+export function loop(guild: Guild) {
+	music_data[guild.id].isLooping = !music_data[guild.id].isLooping;
+	if (music_data[guild.id].isLooping) message.channel.send('Looping! 🔂');
+	else message.channel.send('Stopped Looping! ➡');
 }
 
 export async function search(field: string) {

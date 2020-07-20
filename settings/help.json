@@ -65,8 +65,8 @@
 		"nick": {
 			"description": "Changes bot's nickname.",
 			"usage": [
-				" set {nickname}",
-				" clear"
+				"nick set {nickname}",
+				"clear"
 			]
 		}
 	},
@@ -105,7 +105,7 @@
 		},
 		"disconnectall": {
 			"description": "Disconnects every members from all voice channels.",
-			"usage": ""
+			"usage": "disconnectall"
 		},
 		"hook": {
 			"description": "Hooks a text with a voice channel.",
@@ -176,9 +176,19 @@
 			"description": "Changes the music volume. (1 - 200)",
 			"usage": "volume {volume}"
 		},
+		"loop": {
+			"description": "Enable/Disable looping on current song.",
+			"usage": "loop"
+		}
+	},
+	"😂  Misc": {
 		"rickroll": {
-			"description": "Adds Never Gonna Give You Up to the music queue.",
+			"description": "Never gonna give you up. Never gonna let you down.",
 			"usage": "rickroll"
+		},
+		"duckroll": {
+			"description": "Quack!",
+			"usage": "duckroll"
 		}
 	}
 }

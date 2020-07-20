@@ -81,7 +81,8 @@
 		"vol"
 	],
 	"leave": [
-		"disconnect"
+		"disconnect",
+		"dc"
 	],
 	"search": [
 		"youtube",
