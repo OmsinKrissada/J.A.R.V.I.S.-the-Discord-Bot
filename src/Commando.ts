@@ -578,12 +578,12 @@ commands.play = async () => { // Some part of code is from discord.js
 
 commands.pause = () => {
 	Music.pause(message.guild);
-	message.channel.send('paused')
+	message.channel.send('Paused! ⏸')
 }
 
 commands.resume = () => {
 	Music.resume(message.guild);
-	message.channel.send('resumed')
+	message.channel.send('Resumed! ▶')
 }
 
 commands.nowplaying = () => {
