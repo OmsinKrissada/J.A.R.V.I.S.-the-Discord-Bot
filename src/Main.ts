@@ -1,12 +1,11 @@
 // Init sequence
 
 // Discord
-import { Client, MessageEmbed, MessageCollector, MessageManager, ChannelManager, GuildChannel, GuildManager, MessageAttachment, Message } from 'discord.js';
+import { Client, MessageEmbed } from 'discord.js';
 
 // Create an instance of a Discord client
 export const bot = new Client();
 // const clientInformation = new Discord.clientInformation();
-const embedmsg = new MessageEmbed();
 
 import fs from 'fs'
 import * as Commando from "./Commando";
@@ -87,10 +86,8 @@ function log(message) {
 
 
 
-var current_message: Message;
 bot.on('message', message => {
 
-	current_message = message;
 
 	// If guild not exist in database, add them. 
 	let store_id: string, store_name: string;
@@ -182,9 +179,6 @@ bot.on('voiceStateUpdate', (_oldState, newState) => {
 
 })
 
-function unhookall() {
-
-}
 
 
 
