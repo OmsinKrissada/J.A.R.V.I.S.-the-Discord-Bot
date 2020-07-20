@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel } from 'discord.js';
+import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import { DataManager } from './DataManager'
@@ -177,7 +177,7 @@ commands.reset = () => {
 							.setColor(red))
 					}
 				})
-				.catch(collected => {
+				.catch(() => {
 					message.channel.send(new MessageEmbed()
 						.setTitle('Timeout')
 						.setDescription('Timeout, action canceled.')
@@ -326,7 +326,7 @@ commands.history = () => {
 			else {
 				message.channel.send('Cannot get edit history of that message.')
 			}
-		}).catch(err => message.channel.send('Cannot find that message.'))
+		}).catch(() => message.channel.send('Cannot find that message.'))
 	}
 	else {
 		message.channel.send(new MessageEmbed()
@@ -383,7 +383,7 @@ commands.purge = () => {
 										.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
 									confirm_msg.reactions.removeAll();
 								}
-							}).catch(collected => {
+							}).catch(() => {
 								confirm_msg.edit(new MessageEmbed()
 									.setTitle('Timeout')
 									.setDescription('Timeout, action canceled.')
