@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvable, GuildMember } from 'discord.js';
+import { MessageEmbed, Message, Collection, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import { DataManager } from './DataManager'
@@ -626,7 +626,11 @@ commands.search = async () => {
 }
 
 commands.skip = () => {
-	Music.skip(message.guild);
+	Music.skip(message.guild, <TextChannel>message.channel)
+}
+
+commands.loop = () => {
+	Music.loop(message.guild);
 }
 
 commands.volume = () => {
