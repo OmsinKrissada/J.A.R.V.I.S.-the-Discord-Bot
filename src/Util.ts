@@ -73,7 +73,7 @@ export class Util {
 			progress += '─';
 		}
 		console.log(progress)
-		return progress;
+		return '`|' + progress + '|`';
 	}
 
 	static prettyTime(seconds: number): string {

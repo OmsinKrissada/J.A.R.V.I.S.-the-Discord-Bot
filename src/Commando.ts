@@ -604,7 +604,7 @@ commands.nowplaying = () => {
 		.setThumbnail(current_song.thumbnail)
 		.addField('Song', `${current_song.title}`)
 		.addField('Link', current_song.url)
-		.addField('Duration', `${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(current_song.getDuration())}\n${Util.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100))}`)
+		.addField('Duration', `${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(current_song.getDuration())}\n${Util.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
 		.addField('Text Channel', current_song.textChannel, true)
 		.addField('Voice Channel', current_song.voiceChannel, true)
 		.addField('Requester', `${current_song.requester}`, true)
@@ -657,7 +657,7 @@ commands.volume = () => {
 		// }
 		message.channel.send(new MessageEmbed()
 			.setTitle('Volume Adjusted ' + (oldVolume < volume ? '🔺' : '🔻'))
-			.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 25)}**`)
+			.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 31)}**`)
 			.setColor(green)
 		);
 	}
@@ -665,7 +665,7 @@ commands.volume = () => {
 		let volume = Music.getVolume(message.guild);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Current Volume')
-			.setDescription(`The volume is at \`${volume}%\`\n\n**${Util.progressBar(volume, 25)}**`)
+			.setDescription(`The volume is at \`${volume}%\`\n\n**${Util.progressBar(volume, 31)}**`)
 			.setColor(blue)
 		);
 	}
