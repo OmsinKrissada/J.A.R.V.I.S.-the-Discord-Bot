@@ -637,10 +637,10 @@ commands.volume = () => {
 	// try {
 	if (args[1]) {
 		let volume = isNaN(Number(args[1])) ? -1 : Number(args[1]);
-		if (1 > volume || volume > 200) {
+		if (0 > volume || volume > 100) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Invalid Argument')
-				.setDescription('The number must fall in the range of 1 to 200.')
+				.setDescription('The number must fall in the range of 0 to 100.')
 				.setColor(red)
 			);
 			return;
