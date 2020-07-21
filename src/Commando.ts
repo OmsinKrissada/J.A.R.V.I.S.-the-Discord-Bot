@@ -360,39 +360,21 @@ commands.purge = () => {
 		}
 		// Can purge
 		else {
-			let confirm_msg;
 			let exceed_three = amount > 3;
 			if (exceed_three) {
-				message.channel.send(new MessageEmbed()
-					.setTitle('Confirmation Needed')
-					.setDescription(`This action is going to delete the last **${amount}** messages.`)
-					.setColor(yellow)
-					.setFooter('You have 10 seconds to respond.')).then(() => {
-						confirm_msg = bot.user.lastMessage;
-						confirm_msg.react('✅');
-						console.log('tick')
-						confirm_msg.react('❌');
-						console.log('nope')
-						confirm_msg.awaitReactions((reaction: MessageReaction, user: User) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
-							.then((collected: Collection<string, MessageReaction>) => {
-								console.log(collected.first().emoji.name)
-								if (collected.first().emoji.name == '✅') {
-									deletemsg(exceed_three)
-								}
-								else {
-									confirm_msg.edit(new MessageEmbed()
-										.setDescription('❌ Canceled!')
-										.setColor(red)).then((msg: Message) => msg.delete({ timeout: 5000 }));
-									confirm_msg.reactions.removeAll();
-								}
-							}).catch(() => {
-								confirm_msg.edit(new MessageEmbed()
-									.setTitle('Timeout')
-									.setDescription('Timeout, action canceled.')
-									.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
-								confirm_msg.reactions.removeAll();
-							})
-					});
+				confirm_click('Confirmation Needed', `This action is going to delete the last **${amount}** messages.`, ['✅', '❌'], 10000).then((promise) => {
+					let response = promise[0];
+					let confirm_msg = <Message>promise[1];
+					if (response == '✅') {
+						deletemsg(exceed_three)
+					}
+					if (response == '❌') {
+						confirm_msg.edit(new MessageEmbed()
+							.setDescription('❌ Canceled!')
+							.setColor(red)).then((msg: Message) => msg.delete({ timeout: 5000 }));
+						confirm_msg.reactions.removeAll();
+					}
+				})
 			} else deletemsg(exceed_three);
 		}
 	}
@@ -634,6 +616,10 @@ commands.loop = () => {
 	Music.loop(message.guild);
 }
 
+commands.shuffle = () => {
+	Music.shuffle(message.guild);
+}
+
 commands.volume = () => {
 	// try {
 	if (args[0]) {
@@ -799,7 +785,8 @@ commands.morse = () => {
 	let description = `Please choose your translation option.\n
 	1️⃣ - **English** ➡ **Morse**\n
 	2️⃣ - **Morse** ➡ **English**`;
-	confirm_click('Title here', description, ['1️⃣', '2️⃣']).then(answer => {
+	confirm_click('Title here', description, ['1️⃣', '2️⃣']).then(promise => {
+		let answer = promise[0];
 		console.log(answer)
 		if (answer == '1️⃣') {
 			message.channel.send(Morse.toMorse(longarg(0)));
@@ -1192,39 +1179,43 @@ function confirm_type(title: string, list: Array<string>, is_delete = false, ico
 	return new Promise(confirm);
 }
 
-function confirm_click(title: string, description: string, reactions: Array<EmojiResolvable>, timeout?: number): Promise<EmojiResolvable | null> {
-	let confirm = (resolve: (arg0: string | null) => void) => {
+/**
+ * 
+ * @param reactions Reaction(s) to use as choice
+ * @param timeout Time to wait for answer (ms)
+ */
+async function confirm_click(title: string, description: string, reactions: Array<EmojiResolvable>, timeout?: number): Promise<Array<string | null | Message>> | null {
 
-		let embed = new MessageEmbed()
-			.setTitle(title)
-			.setDescription(description)
-			.setColor(yellow);
-		if (timeout) {
-			embed.setFooter(`You have ${timeout} seconds to respond.`);
-		}
-
-		message.channel.send(embed).then((confirm_msg) => {
-			reactions.forEach(reaction => {
-				confirm_msg.react(reaction);
-			})
-			confirm_msg.awaitReactions((reaction, user) => reactions.includes(reaction.emoji.name) && user == message.author, { max: 1, time: timeout, errors: ['time'] })
-				.then(collected => {
-					console.log(collected.first().emoji.name)
-					console.log(reactions)
-					resolve(collected.first().emoji.name);
-				}).catch(() => {
-					if (timeout) {
-						confirm_msg.edit(new MessageEmbed()
-							.setTitle('Timeout')
-							.setDescription('Timeout, action canceled.')
-							.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
-						confirm_msg.reactions.removeAll();
-					}
-					resolve(null);
-				})
-		});
+	let return_value: Array<string | Message>;
+	let embed = new MessageEmbed()
+		.setTitle(title)
+		.setDescription(description)
+		.setColor(yellow);
+	if (timeout) {
+		embed.setFooter(`You have ${timeout / 1000} seconds to respond.`);
 	}
-	return new Promise(confirm);
+
+	await message.channel.send(embed).then(async (confirm_msg) => {
+		reactions.forEach(reaction => {
+			confirm_msg.react(reaction);
+		})
+		await confirm_msg.awaitReactions((reaction: MessageReaction, user) => reactions.includes(reaction.emoji.name) && user == message.author, { max: 1, time: timeout, errors: ['time'] })
+			.then(collected => {
+				// console.log(collected.first().emoji.name)
+				// console.log(reactions)
+				return_value = [collected.first().emoji.name, confirm_msg];
+			}).catch(() => {
+				if (timeout) {
+					confirm_msg.edit(new MessageEmbed()
+						.setTitle('Timeout')
+						.setDescription('Timeout, action canceled.')
+						.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
+					confirm_msg.reactions.removeAll();
+				}
+				return_value = [null, confirm_msg];
+			})
+	});
+	return return_value;
 }
 
 commands.terminate = () => {
