@@ -79,4 +79,16 @@ export class Util {
 	static prettyTime(seconds: number): string {
 		return `${Util.min2(Math.floor(seconds / 60))}:${Util.min2(seconds % 60)}`
 	}
+
+	static shuffle(array: Array<any>) {
+		let shuffledArray = [];
+		while (array.length > 0) {
+			let index = Math.floor(Math.random() * array.length);
+			console.log(index)
+			shuffledArray.push(array[index]);
+			array = array.filter(item => array.indexOf(item) != index);
+		}
+		console.log(shuffledArray)
+		return shuffledArray;
+	}
 }

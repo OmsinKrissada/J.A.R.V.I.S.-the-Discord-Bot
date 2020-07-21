@@ -29,7 +29,7 @@ class GuildMusicData {
 	volume: number = 5;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
-2
+
 
 
 function getGuildData(guild_id: string) {
@@ -61,6 +61,7 @@ export function leave(guild: Guild) {
 	getGuildData(guild.id).nowplaying = null;
 	getGuildData(guild.id).connection.disconnect();
 	getGuildData(guild.id).connection = null;
+	music_data[guild.id].isLooping = false;
 }
 
 
@@ -188,6 +189,11 @@ export function loop(guild: Guild) {
 	music_data[guild.id].isLooping = !music_data[guild.id].isLooping;
 	if (music_data[guild.id].isLooping) message.channel.send('Looping! 🔂');
 	else message.channel.send('Stopped Looping! ➡');
+}
+
+export function shuffle(guild: Guild) {
+	music_data[guild.id].queue = Util.shuffle(music_data[guild.id].queue);
+	message.channel.send('Shuffled! 🔀')
 }
 
 export async function search(field: string) {
