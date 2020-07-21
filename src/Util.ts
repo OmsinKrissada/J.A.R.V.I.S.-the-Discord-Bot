@@ -77,7 +77,9 @@ export class Util {
 	}
 
 	static prettyTime(seconds: number): string {
-		return `${Util.min2(Math.floor(seconds / 60))}:${Util.min2(seconds % 60)}`
+		seconds = Math.round(seconds)
+		console.log(`${seconds} ${Math.floor(seconds / 60)}`)
+		return `${seconds / 3600 >= 1 ? Util.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${Util.min2(Math.floor(seconds / 60) % 60)}:${Util.min2(seconds % 60)}`
 	}
 
 	static shuffle(array: Array<any>) {

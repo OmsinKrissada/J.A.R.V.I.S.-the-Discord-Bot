@@ -27,6 +27,7 @@ class GuildMusicData {
 	isLooping = false;
 	queue: Array<Song> = [];
 	volume: number = 5;
+	leaveTimeout: NodeJS.Timeout;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
 
@@ -65,9 +66,10 @@ export function leave(guild: Guild) {
 }
 
 
-let leaveTimeout: NodeJS.Timeout;
 
 export async function play(guild: Guild) {
+
+	clearTimeout(music_data[guild.id].leaveTimeout);
 
 	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher && getGuildData(guild.id).connection.dispatcher.paused) {
 		resume(guild);
@@ -91,7 +93,7 @@ export async function play(guild: Guild) {
 		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
 			song.textChannel.send('Queue Ended.');
-			leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+			music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 			getGuildData(guild.id).nowplaying = null;
 		}
 	})
@@ -104,7 +106,6 @@ export async function play(guild: Guild) {
 }
 
 export async function addQueue(member: GuildMember, field: string) {
-	clearTimeout(leaveTimeout);
 	let music = music_data[member.guild.id];
 	await join(member.voice.channel);
 	if (field == '') return;
@@ -180,7 +181,7 @@ export function skip(guild: Guild, respond_in: TextChannel) {
 	else if (music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) {
 		music_data[guild.id].connection.dispatcher.destroy();
 		music_data[guild.id].nowplaying = null;
-		leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+		music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 		respond_in.send('Skipped! ⏩')
 	}
 }
