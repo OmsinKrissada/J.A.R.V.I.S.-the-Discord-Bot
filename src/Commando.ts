@@ -425,7 +425,7 @@ commands.info = async () => {
 						let usernames = [];
 						users.forEach(user => usernames.push(`${user}`))
 						confirm_type('Please choose the member you refer to. (type in chat)', usernames).then(usr => {
-							user = message.guild.member(users[usr]).user;
+							user = message.guild.member(usr.slice(2, -1)).user;
 							printUserInfo(user);
 						})
 						return;
@@ -846,6 +846,7 @@ commands.movevoice = async () => {
 	// Confirm destination channel
 	if (origin_all) {
 		confirm_type('Choose Destination Channel', Array.from(dests.keys())).then(deststr => {
+			console.log(deststr)
 			let dest = message.guild.channels.resolve(deststr);
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
 				.setTitle('Error')
@@ -1132,8 +1133,8 @@ function confirm_type(title: string, list: Array<string>, is_delete = false, ico
 		console.log(list)
 		console.log(list.length)
 		if (list.length <= 1) {
-			resolve([0]);
-			return 0;
+			resolve(list[0]);
+			return list[0];
 		}
 		let embeduser = new MessageEmbed()
 			.setColor(blue);
@@ -1169,8 +1170,8 @@ function confirm_type(title: string, list: Array<string>, is_delete = false, ico
 						if (confirm_msg.deletable) confirm_msg.delete();
 						if (answer_msg.deletable) answer_msg.delete();
 						console.log(result)
-						resolve(result);
-						return result;
+						resolve(list[result]);
+						return list[result];
 					}
 				});
 			})
