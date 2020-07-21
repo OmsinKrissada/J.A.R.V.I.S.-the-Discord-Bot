@@ -173,7 +173,7 @@
 			"usage": "remove {song position}"
 		},
 		"volume": {
-			"description": "Changes the music volume. (1 - 200)",
+			"description": "Changes the music volume. (0 - 100)",
 			"usage": "volume {volume}"
 		},
 		"loop": {

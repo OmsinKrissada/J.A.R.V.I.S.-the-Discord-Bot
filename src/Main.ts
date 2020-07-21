@@ -1,7 +1,7 @@
 // Init sequence
 
 // Discord
-import { Client, MessageEmbed } from 'discord.js';
+import { Client, MessageEmbed, Message } from 'discord.js';
 
 // Create an instance of a Discord client
 export const bot = new Client();
@@ -69,7 +69,7 @@ if (fs.existsSync('./files/logs/latest.log')) {
 
 
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
-function log(message) {
+function log(message: Message): void {
 	let lines = message.content.split('\n')
 	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + '] ';
 	let indent = meta;
