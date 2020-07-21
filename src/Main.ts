@@ -123,11 +123,6 @@ bot.on('message', message => {
 			Music.constructData(message.channel.id);
 		}
 
-
-		Commando.setPrefix(prefix);
-		Commando.setRespondMessage(message);
-		Commando.setArguments(args);
-
 		let answer = args[0].toLowerCase();
 		for (let key in alias) {
 			if (alias[key].includes(answer)) {
@@ -143,7 +138,7 @@ bot.on('message', message => {
 			return 1;
 		}
 
-		Commando.run(answer);
+		Commando.run(answer, args.slice(1), message);
 
 
 	}

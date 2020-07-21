@@ -24,23 +24,19 @@ export const commands: CommandObject = {};
 
 export const non_dm_command: Array<string> = ['nick', 'purge', 'history', 'movevoice', 'play', 'queue', 'skip', 'volume', 'remove', 'pause', 'resume', 'search', 'nowplaying', 'join', 'leave', 'rickroll'];
 
-export var prefix: string;
 export var message: Message;
 export var args: Array<string>;
+export var prefix: string;
 
-export function setPrefix(_prefix: string) {
-	prefix = _prefix;
-}
-
-export function setRespondMessage(_message: Message) {
-	message = _message;
-}
-
-export function setArguments(_args: Array<string>) {
-	args = _args.filter(arg => arg != '');
-}
-
-export function run(command: string) {
+/**
+ * 
+ * @param command Command to run
+ * @param args Array of arguments to apply to this command
+ */
+export function run(command: string, argument_array: Array<string>, user_message: Message) {
+	args = argument_array;
+	message = user_message;
+	prefix = DataManager.data.guilds[message.guild.id].prefix;
 	if (commands.hasOwnProperty(command)) {
 		commands[command]();
 	} else commands.unknown();
@@ -98,10 +94,10 @@ commands.help = () => {
 	} = helpDetail;
 
 	let validDetail = false;
-	if (args[1]) {
-		let command = args[1].toLowerCase();
+	if (args[0]) {
+		let command = args[0].toLowerCase();
 		for (let key in alias) {
-			if (alias[key].includes(args[1])) {
+			if (alias[key].includes(args[0])) {
 				command = key;
 			}
 		}
@@ -193,7 +189,7 @@ commands.reset = () => {
 }
 
 commands.prefix = () => {
-	if (args[1] == 'clear') {
+	if (args[0] == 'clear') {
 		if (message.guild === null) {
 			DataManager.data.guilds[message.channel.id].prefix = '';
 			DataManager.updateOption();
@@ -211,8 +207,8 @@ commands.prefix = () => {
 			);
 		}
 	}
-	else if (args[1] != undefined) {
-		let new_prefix = args[1];
+	else if (args[0] != undefined) {
+		let new_prefix = args[0];
 		DataManager.data.guilds[message.guild === null ? message.channel.id : message.guild.id].prefix = new_prefix;
 		DataManager.setOption(DataManager.data);
 		message.channel.send(new MessageEmbed()
@@ -232,11 +228,11 @@ commands.prefix = () => {
 }
 
 commands.nick = () => {
-	if (args[1] != undefined) {
-		message.guild.member(bot.user).setNickname(args[1])
+	if (args[0] != undefined) {
+		message.guild.member(bot.user).setNickname(args[0])
 		message.channel.send(new MessageEmbed()
 			.setTitle('Nickname Changed')
-			.setDescription(`Nickname has changed to **${args[1]}**`)
+			.setDescription(`Nickname has changed to **${args[0]}**`)
 			.setColor(green)
 		)
 	}
@@ -287,10 +283,10 @@ commands.ping = async () => {
 }
 
 commands.ip = async () => {
-	if (args[1] == 'plain' || args[1] == 'mobile' || args[1] == 'm') {
+	if (args[0] == 'plain' || args[0] == 'mobile' || args[0] == 'm') {
 		message.channel.send(await Util.refreshIp());
 	}
-	else if (args[1] == 'announce') {
+	else if (args[0] == 'announce') {
 		message.channel.send(new MessageEmbed()
 			.setTitle('CURRENT IP')
 			.setDescription(`**Current IP address is \`${await Util.refreshIp()}\`**`)
@@ -314,8 +310,8 @@ commands.history = () => {
 		message.channel.send('⛔ You don\'t have "Manage Messages" permission. This incident will be reported. ⛔');
 		return;
 	}
-	if (args[1]) {
-		message.channel.messages.fetch(args[1]).then(msg => {
+	if (args[0]) {
+		message.channel.messages.fetch(args[0]).then(msg => {
 			console.log(msg);
 			console.log(msg.edits.length)
 			let embed = new MessageEmbed()
@@ -353,8 +349,8 @@ commands.purge = () => {
 		message.channel.send('⛔ You don\'t have "Manage Messages" permission. This incident will be reported. ⛔');
 		return;
 	}
-	let amount = Number.parseInt(args[1]);
-	if (!isNaN((<any>args[1]))) {
+	let amount = Number.parseInt(args[0]);
+	if (!isNaN((<any>args[0]))) {
 		if (amount < 1 || amount > 100) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
@@ -418,10 +414,10 @@ commands.uptime = () => {
 }
 
 commands.info = async () => {
-	if (args[1] == 'user') {
+	if (args[0] == 'user') {
 		let user: User;
-		console.log(`"${longarg(2)}"`)
-		switch (longarg(2)) {
+		console.log(`"${longarg(1)}"`)
+		switch (longarg(1)) {
 			case "":
 				message.channel.send(new MessageEmbed()
 					.setTitle(`Assumed ${Util.inlineCodeBlock(prefix + 'userinfo me')}`)
@@ -439,7 +435,7 @@ commands.info = async () => {
 
 					let users: Array<GuildMember>;
 					try {
-						let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(2).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(2).toLowerCase()));
+						let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(1).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(1).toLowerCase()));
 						users = userscollection.array();
 					} catch (err) { }
 
@@ -460,16 +456,16 @@ commands.info = async () => {
 		// 	printUserInfo(user);
 		// 	return;
 		// }
-		if (!isNaN((<any>args[2]))) {
+		if (!isNaN((<any>args[1]))) {
 			try {
-				let fetcheduser = await bot.users.fetch(args[2]);
+				let fetcheduser = await bot.users.fetch(args[1]);
 				printUserInfo(fetcheduser);
 				return;
 			} catch (err) { }
 		}
 		message.channel.send(new MessageEmbed()
 			.setTitle('Member Not Found')
-			.setDescription(`Cannot find the specified member: "${longarg(2)}"`)
+			.setDescription(`Cannot find the specified member: "${longarg(1)}"`)
 			.setColor(red)
 		);
 		return;
@@ -506,7 +502,7 @@ commands.info = async () => {
 		}
 
 	}
-	else if (args[1] == 'server') {
+	else if (args[0] == 'server') {
 		let guild = message.guild;
 		let embed = new MessageEmbed()
 			.setTitle('Server Info Card')
@@ -523,13 +519,12 @@ commands.info = async () => {
 		message.channel.send(embed);
 	}
 	else {
-		setArguments(['help', 'info'])
-		run('help');
+		run('help', ['info'], message);
 	}
 }
 
 commands.ask = () => {
-	const query = args.slice(1).join(' ');
+	const query = longarg(0);
 	if (query == '') {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
@@ -542,7 +537,7 @@ commands.ask = () => {
 }
 
 commands.askimg = () => {
-	const query = args.slice(1).join(' ');
+	const query = longarg(0);
 	if (query == '') {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
@@ -579,7 +574,7 @@ commands.play = async () => { // Some part of code is from discord.js
 		);
 		return;
 	}
-	Music.addQueue(message.member, longarg())
+	Music.addQueue(message.member, longarg(0))
 }
 
 commands.pause = () => {
@@ -618,7 +613,7 @@ commands.nowplaying = () => {
 }
 
 commands.search = async () => {
-	let searchResult = await Music.search(longarg());
+	let searchResult = await Music.search(longarg(0));
 	let resultstr = [];
 	searchResult.slice(0, 10).forEach(result => {
 		resultstr.push(`[${result.title}](${result.link})`);
@@ -641,8 +636,8 @@ commands.loop = () => {
 
 commands.volume = () => {
 	// try {
-	if (args[1]) {
-		let volume = isNaN(Number(args[1])) ? -1 : Number(args[1]);
+	if (args[0]) {
+		let volume = isNaN(Number(args[0])) ? -1 : Number(args[0]);
 		if (0 > volume || volume > 100) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Invalid Argument')
@@ -655,7 +650,7 @@ commands.volume = () => {
 		if (oldVolume == volume) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Volume Unchanged')
-				.setDescription(`Volume has not changed since it's already at \`${args[1]}%\``)
+				.setDescription(`Volume has not changed since it's already at \`${args[0]}%\``)
 				.setColor(blue)
 			);
 			return;
@@ -667,7 +662,7 @@ commands.volume = () => {
 		// }
 		message.channel.send(new MessageEmbed()
 			.setTitle('Volume Adjusted ' + (oldVolume < volume ? '🔺' : '🔻'))
-			.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[1]}%\`.\n\n**${Util.progressBar(volume, 31)}**`)
+			.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[0]}%\`.\n\n**${Util.progressBar(volume, 31)}**`)
 			.setColor(green)
 		);
 	}
@@ -702,7 +697,7 @@ commands.queue = () => {
 }
 
 commands.remove = () => {
-	let song = Music.removeSong(message.guild, Number(args[1]) - 1);
+	let song = Music.removeSong(message.guild, Number(args[0]) - 1);
 	if (!song) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Song Not Found')
@@ -745,12 +740,12 @@ commands.hello = () => {
 }
 
 commands.say = () => {
-	message.channel.send(longarg());
+	message.channel.send(longarg(0));
 	if (message.deletable) message.delete();
 }
 
 commands.repeat = () => {
-	if (args[1] == null) {
+	if (args[0] == null) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
 			.setDescription(`Usage: ${Util.inlineCodeBlock(`${prefix}repeat me`)} or ${Util.inlineCodeBlock(`${prefix}repeat {user}`)}`)
@@ -758,7 +753,7 @@ commands.repeat = () => {
 		)
 		return 1;
 	}
-	let current_user: UserResolvable = args[1] == 'me' ? message.author.id : message.mentions.users.first().id;
+	let current_user: UserResolvable = args[0] == 'me' ? message.author.id : message.mentions.users.first().id;
 	if (current_user == bot.user.id) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
@@ -768,8 +763,8 @@ commands.repeat = () => {
 		return 1;
 	}
 	var repeating_user: Array<string> = [];
-	if (args[1] == 'stop') {
-		if (repeating_user.includes(args[2] == 'me' ? message.author.id : message.guild.member(args[2]).id)) {
+	if (args[0] == 'stop') {
+		if (repeating_user.includes(args[1] == 'me' ? message.author.id : message.guild.member(args[1]).id)) {
 			repeating_user = repeating_user.filter(user => user != current_user);
 		}
 		else {
@@ -807,10 +802,10 @@ commands.morse = () => {
 	confirm_click('Title here', description, ['1️⃣', '2️⃣']).then(answer => {
 		console.log(answer)
 		if (answer == '1️⃣') {
-			message.channel.send(Morse.toMorse(longarg()));
+			message.channel.send(Morse.toMorse(longarg(0)));
 		}
 		if (answer == '2️⃣') {
-			message.channel.send(Morse.toEnglish(longarg()));
+			message.channel.send(Morse.toEnglish(longarg(0)));
 		}
 	})
 }
@@ -820,10 +815,7 @@ commands.gamemode = () => {
 }
 
 commands.rickroll = () => {
-	setPrefix(prefix);
-	setRespondMessage(message);
-	setArguments(['play', 'never', 'gonna', ' give', ' you', 'up']);
-	run('play');
+	run('play', ['never', 'gonna', 'give', 'you', 'up'], message);
 }
 
 commands.duckroll = () => {
@@ -835,7 +827,7 @@ commands.duckroll = () => {
 // Personal-use commands
 
 commands.movevoice = async () => {
-	if (!(args[1] && args[2])) {
+	if (!(args[0] && args[1])) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
 			.setDescription(`Usage: ${prefix}movevoice {origin} {destination}`)
@@ -848,15 +840,15 @@ commands.movevoice = async () => {
 
 	// Gather origin channels
 	let origins = message.guild.channels.cache.filter(channel => channel.type == "voice");
-	if (args[1] != '*') {
-		origins = origins.filter(channel => channel.name.toLowerCase().includes(args[1].toLowerCase()));
+	if (args[0] != '*') {
+		origins = origins.filter(channel => channel.name.toLowerCase().includes(args[0].toLowerCase()));
 		origin_all = false;
 	}
 
 	// Gather destination channel
 	let dests = message.guild.channels.cache.filter(channel => channel.type == "voice");
-	if (args[2] != '*') {
-		dests = dests.filter(channel => channel.name.toLowerCase().includes(args[2].toLowerCase()));
+	if (args[1] != '*') {
+		dests = dests.filter(channel => channel.name.toLowerCase().includes(args[1].toLowerCase()));
 	}
 
 	let embed = new MessageEmbed()
@@ -965,7 +957,7 @@ commands.disconnectall = () => {
 
 
 commands.mvregex = async () => {
-	if (!(args[1] && args[2])) {
+	if (!(args[0] && args[1])) {
 		message.channel.send(new MessageEmbed()
 			.setDescription('Channel Not Specified')
 			.setColor(red)
@@ -976,8 +968,8 @@ commands.mvregex = async () => {
 	let origin_all = true;
 	// from
 	let origins = message.guild.channels.cache.filter(channel => channel.type == "voice");
-	if (args[1] != '*') {
-		origins = origins.filter(channel => Boolean(channel.name.match(new RegExp(args[1], 's'))));
+	if (args[0] != '*') {
+		origins = origins.filter(channel => Boolean(channel.name.match(new RegExp(args[0], 's'))));
 		origin_all = false;
 	}
 	// let origin_promise = new Promise((resolve, reject) => {
@@ -985,8 +977,8 @@ commands.mvregex = async () => {
 	// })
 
 	let dests = message.guild.channels.cache.filter(channel => channel.type == "voice");
-	if (args[2] != '*') {
-		dests = dests.filter(channel => Boolean(channel.name.match(new RegExp(args[2], 's'))));
+	if (args[1] != '*') {
+		dests = dests.filter(channel => Boolean(channel.name.match(new RegExp(args[1], 's'))));
 	}
 
 	// let origin_promise = ask_confirm('origin', origins);
@@ -1042,21 +1034,21 @@ commands.hook = () => {
 		DataManager.data.guilds[message.guild.id].hooks = [];
 	}
 
-	if (args[1] == 'add') {
-		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[2], voice: args[3], type: args[4] ? args[4] : 'hard' });
+	if (args[0] == 'add') {
+		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[1], voice: args[2], type: args[3] ? args[3] : 'hard' });
 		DataManager.updateOption();
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
-			.setDescription(`Hooked \`${message.guild.channels.resolve(args[2]).name}\` with \`${message.guild.channels.resolve(args[3]).name}\`.`)
+			.setDescription(`Hooked \`${message.guild.channels.resolve(args[1]).name}\` with \`${message.guild.channels.resolve(args[2]).name}\`.`)
 			.setColor(green)
 		);
 	}
-	else if (args[1] == 'remove') {
-		DataManager.data.guilds[message.guild.id].hooks = DataManager.data.guilds[message.guild.id].hooks.filter(hook => hook.text != args[2] && hook.voice != args[2]);
+	else if (args[0] == 'remove') {
+		DataManager.data.guilds[message.guild.id].hooks = DataManager.data.guilds[message.guild.id].hooks.filter((hook: { text: string; voice: string; }) => hook.text != args[1] && hook.voice != args[1]);
 		DataManager.updateOption();
 
 	}
-	else if (args[1] == 'list') {
+	else if (args[0] == 'list') {
 		if (DataManager.data.guilds[message.guild.id].hooks.length == 0) {
 			message.channel.send('No Hooks Created');
 			return;
@@ -1097,9 +1089,9 @@ commands.whoisironman = () => {
 }
 
 commands.ohm = () => {
-	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
-		message.channel.send(`Added "${longarg(2)}"`)
-		responses.ohm.push(longarg(2))
+	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[0] == 'add' && longarg(1) != '') {
+		message.channel.send(`Added "${longarg(1)}"`)
+		responses.ohm.push(longarg(1))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
@@ -1108,9 +1100,9 @@ commands.ohm = () => {
 }
 
 commands.kong = () => {
-	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
-		message.channel.send(`Added "${longarg(2)}"`)
-		responses.kong.push(longarg(2))
+	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[0] == 'add' && longarg(1) != '') {
+		message.channel.send(`Added "${longarg(1)}"`)
+		responses.kong.push(longarg(1))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
@@ -1119,9 +1111,9 @@ commands.kong = () => {
 }
 
 commands.omsin = () => {
-	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[1] == 'add' && longarg(2) != '') {
-		message.channel.send(`Added "${longarg(2)}"`)
-		responses.ohm.push(longarg(2))
+	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[0] == 'add' && longarg(1) != '') {
+		message.channel.send(`Added "${longarg(1)}"`)
+		responses.ohm.push(longarg(1))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
