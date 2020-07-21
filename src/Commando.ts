@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel } from 'discord.js';
+import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, ReactionEmoji, MessageReaction, Collection } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import { DataManager } from './DataManager'
@@ -22,7 +22,7 @@ interface CommandObject {
 }
 export const commands: CommandObject = {};
 
-export const non_dm_command = ['nick', 'purge', 'history', 'movevoice', 'play', 'queue', 'skip', 'volume', 'remove', 'pause', 'resume', 'search', 'nowplaying', 'join', 'leave', 'rickroll'];
+export const non_dm_command: Array<string> = ['nick', 'purge', 'history', 'movevoice', 'play', 'queue', 'skip', 'volume', 'remove', 'pause', 'resume', 'search', 'nowplaying', 'join', 'leave', 'rickroll'];
 
 export var prefix: string;
 export var message: Message;
@@ -89,10 +89,15 @@ commands.help = () => {
 	}
 
 
-	let command_info: { [type: string]: { [command: string]: { [key: string]: string | Array<string> } } } = helpDetail;
+	let command_info: {
+		[category: string]: {
+			[command: string]: {
+				[key: string]: string | Array<string>
+			}
+		}
+	} = helpDetail;
 
 	let validDetail = false;
-
 	if (args[1]) {
 		let command = args[1].toLowerCase();
 		for (let key in alias) {
@@ -103,6 +108,7 @@ commands.help = () => {
 		detailedHelp(command);
 	}
 	if (validDetail) return;
+
 	let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Util.inlineCodeBlock(prefix)}.`;
 
 	let embed = new MessageEmbed()
@@ -371,8 +377,8 @@ commands.purge = () => {
 						console.log('tick')
 						confirm_msg.react('❌');
 						console.log('nope')
-						confirm_msg.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
-							.then(collected => {
+						confirm_msg.awaitReactions((reaction: MessageReaction, user: User) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
+							.then((collected: Collection<string, MessageReaction>) => {
 								console.log(collected.first().emoji.name)
 								if (collected.first().emoji.name == '✅') {
 									deletemsg(exceed_three)
@@ -380,7 +386,7 @@ commands.purge = () => {
 								else {
 									confirm_msg.edit(new MessageEmbed()
 										.setDescription('❌ Canceled!')
-										.setColor(red)).then(msg => msg.delete({ timeout: 5000 }));
+										.setColor(red)).then((msg: Message) => msg.delete({ timeout: 5000 }));
 									confirm_msg.reactions.removeAll();
 								}
 							}).catch(() => {
@@ -469,7 +475,7 @@ commands.info = async () => {
 		return;
 
 
-		function printUserInfo(user) {
+		function printUserInfo(user: User) {
 			let embeduserinfo = new MessageEmbed();
 			embeduserinfo
 				.setTitle('User Info Card')
@@ -773,8 +779,7 @@ commands.repeat = () => {
 	}
 	repeating_user.push(current_user);
 	message.channel.send(`repeating ${current_user}`)
-	const filter = message => message.author == current_user;
-	const collector = message.channel.createMessageCollector(filter);
+	const collector = message.channel.createMessageCollector((message: Message) => message.author == current_user);
 
 	collector.on('collect', m => {
 		console.log(`Collected ${m.content}`);

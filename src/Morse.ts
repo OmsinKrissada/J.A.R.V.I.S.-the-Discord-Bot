@@ -1,4 +1,4 @@
-var alphabet = {
+var alphabet: { [key: string]: string } = {
 	' ': ' ',
 	'A': '.-',
 	'B': '.---',
@@ -55,14 +55,14 @@ var alphabet = {
 	'$': '...-..-',
 	'@': '.--.-.',
 }
-export function toMorse(text) {
+export function toMorse(text: string) {
 	let morse = '';
 	text.split('').forEach(char => {
 		morse += alphabet[char.toUpperCase()] + ' ';
 	})
 	return morse.trim();
 }
-export function toEnglish(morse) {
+export function toEnglish(morse: string) {
 	let text = '';
 	morse.split('/').forEach(char => {
 		text += Object.keys(alphabet).find(key => alphabet[key] == char.trim()) + ' ';

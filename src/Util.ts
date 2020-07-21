@@ -36,7 +36,7 @@ export class Util {
 	}
 
 	static getNumberEmoji(integer: number) {
-		let numberstr = {
+		let numberstr: { [key: string]: string } = {
 			'0': ':zero:',
 			'1': ':one:',
 			'2': ':two:',
