@@ -412,6 +412,8 @@ commands.info = async () => {
 			default:
 				if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
 					user = message.mentions.members.first().user;
+					printUserInfo(user);
+					return;
 				}
 				else if (message.guild) { // If not mention
 
