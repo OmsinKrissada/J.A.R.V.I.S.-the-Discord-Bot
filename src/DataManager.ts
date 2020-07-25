@@ -1,48 +1,35 @@
-import * as fs from 'fs'
-import yaml from 'js-yaml';
+import mongoose from 'mongoose';
+import * as fs from 'fs';
+import yaml from 'js-yaml'
 
-interface GuildOption {
-	[guild_id: string]: object
+import { GuildData } from './model/GuildData'
+export var CONFIG = yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'));
+
+// Connect to database
+export async function connect() {
+	await mongoose.connect("mongodb://localhost/" + CONFIG['appName'], {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	});
 }
 
-export class DataManager {
-	static data: GuildOption = {};
-
-	static getOption = () => {
-
-		if (!fs.existsSync('./files/guild_option.json')) fs.writeFileSync('./files/guild_option.json', '{"guilds":{}}');
-
-		// Get server data
-		fs.readFile('./files/guild_option.json', 'utf-8', (err, filecontent) => {
-			if (err) console.log(err);
-			else DataManager.data = JSON.parse(filecontent);
-			DataManager.data = DataManager.data;
-
-			console.log('read data: ')
-			console.log(JSON.stringify(DataManager.data))
+// Load Data
+export async function load(guildID: string) {
+	// if (typeof guildID == 'number') {
+	// 	guildID = Number(guildID);
+	// }
+	let loaded_guild = await GuildData.findOne({ id: guildID }).exec();
+	if (!loaded_guild) {
+		loaded_guild = new GuildData({
+			id: guildID,
+			prefix: CONFIG['defaultPrefix']
 		});
+		loaded_guild.save().then(_ => console.log('saved new'))
 	}
-
-	static setOption = (newDataObject: object) => {
-		if (newDataObject == {}
-		) {
-			console.log('BadData')
-			// return;
-		}
-		fs.writeFile('./files/guild_option.json', JSON.stringify(newDataObject, null, '	'), (err) => { if (err) throw err; });
-	}
-
-	static updateOption = () => {
-		DataManager.setOption(DataManager.data);
-	}
-
-	static addGuildDefaultOption = (id: string, name: string, isDM: boolean) => {
-		DataManager.data.guilds[id] = {
-			name: name,
-			prefix: yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'))['defaultPrefix'],
-			dm: isDM,
-			hooks: []
-		}
-		DataManager.setOption(DataManager.data)
-	}
+	// console.log(loaded_guild.get('dm'))
+	return loaded_guild;
 }
+
+// export async function update(guildID: string) {
+// 	const 
+// }

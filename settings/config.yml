@@ -1,3 +1,4 @@
+appName: "jarvis"
 defaultPrefix: "!"
 colors:
   red: 0xff0000
