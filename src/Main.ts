@@ -11,6 +11,7 @@ import fs from 'fs'
 import * as Commando from "./Commando";
 import { Util } from "./Util";
 import { DataManager } from './DataManager';
+import * as Dataman from './Dataman'
 import * as Music from './Music';
 import alias from '../settings/alias.json'
 
@@ -24,7 +25,7 @@ var client_id = '';
 // Start discord client
 import token from "../token.json"
 bot.login(token.discord)
-bot.on('ready', () => {
+bot.on('ready', async () => {
 
 	console.log('I am ready!');
 	bot.user.setActivity('Ultron | !help', { type: "WATCHING" })
@@ -37,13 +38,15 @@ bot.on('ready', () => {
 
 	client_id = `<@!${bot.user.id}>`;
 
+	await Dataman.connect();
+	Dataman.load('705043685888360548')
+
 	// Get specific channel object
 	// let mclog_channel = bot.channels.resolve('699045838718238771')
 
 
 	// console.log(Discord.GuildManager.resolve(client.guilds))
 });
-
 
 
 
