@@ -39,7 +39,7 @@ export async function run(command: string, argument_array: Array<string>, user_m
 	prefix = await DataManager.get(message.guild.id, 'prefix');
 	if (commands.hasOwnProperty(command)) {
 		commands[command]();
-	} else commands.unknown();
+	} else if (DataManager.get(user_message.guild.id, 'warnUnknownCommand')) commands.unknown();
 }
 
 
@@ -267,6 +267,10 @@ commands.alias = () => {
 	}
 	console.log(available_alias)
 	message.channel.send(embed);
+}
+
+commands.settings = () => {
+	DataManager.set(message.guild.id, args[0], args[1])
 }
 
 
