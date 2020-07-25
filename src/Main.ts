@@ -10,8 +10,7 @@ export const bot = new Client();
 import fs from 'fs'
 import * as Commando from "./Commando";
 import { Util } from "./Util";
-import { DataManager } from './DataManager';
-import * as Dataman from './Dataman'
+import * as DataManager from './DataManager'
 import * as Music from './Music';
 import alias from '../settings/alias.json'
 
@@ -32,14 +31,11 @@ bot.on('ready', async () => {
 
 	Util.refreshIp();
 
-	DataManager.getOption();
-
 	logfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
 
 	client_id = `<@!${bot.user.id}>`;
 
-	await Dataman.connect();
-	Dataman.load('705043685888360548')
+	await DataManager.connect();
 
 	// Get specific channel object
 	// let mclog_channel = bot.channels.resolve('699045838718238771')
@@ -89,8 +85,7 @@ function log(message: Message): void {
 
 
 
-bot.on('message', message => {
-
+bot.on('message', async (message) => {
 
 	// If guild not exist in database, add them. 
 	let store_id: string, store_name: string;
@@ -103,10 +98,7 @@ bot.on('message', message => {
 		store_name = message.guild.name;
 	}
 
-	if (DataManager.data.guilds[store_id] === undefined) {
-		DataManager.addGuildDefaultOption(store_id, store_name, message.guild === null);
-	}
-	let prefix = DataManager.data.guilds[store_id].prefix;
+	let prefix: string = await DataManager.get(store_id, 'prefix');
 
 	if (!message.author.bot && ((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) {
 
@@ -151,12 +143,14 @@ bot.on('message', message => {
 
 // Personal-use
 
-bot.on('voiceStateUpdate', (_oldState, newState) => {
+bot.on('voiceStateUpdate', async (_oldState, newState) => {
 	if (newState.member.user.bot) return;
-	if (!DataManager.data.guilds[newState.guild.id].hooks) {
-		DataManager.data.guilds[newState.guild.id].hooks = [];
+	let hooks = await DataManager.get(newState.guild.id, 'hooks');
+	console.log(hooks)
+	if (!hooks) {
+		hooks = [];
 	}
-	DataManager.data.guilds[newState.guild.id].hooks.forEach(hook => {
+	hooks.forEach(hook => {
 		if (hook.type == 'hard') {
 			if (newState.channel && newState.channel.id == hook.voice) {
 				newState.guild.channels.resolve(hook.text).createOverwrite(newState.member, { VIEW_CHANNEL: true });
