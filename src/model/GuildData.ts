@@ -8,17 +8,18 @@ export interface IGuildData {
 }
 
 const guildData = new mongoose.Schema({
-  id: Number,
+  id: { type: Number },
   prefix: { type: String, default: "!" },
-  dm: Boolean,
+  dm: { type: Boolean },
   settings: {
     warnUnknownCommand: { type: Boolean, default: true },
-    annouceSong: { type: Boolean, default: true }
+    announceSong: { type: Boolean, default: true },
+    announceQueueEnd: { type: Boolean, default: false }
   },
   hooks: [{
-    text: String,
-    voice: String,
-    type: String
+    text: { type: String },
+    voice: { type: String },
+    type: { type: String }
   }]
 })
 

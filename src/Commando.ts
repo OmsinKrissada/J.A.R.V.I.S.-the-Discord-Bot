@@ -1,7 +1,7 @@
 import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, ReactionEmoji, MessageReaction, Collection } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
-import { DataManager } from './DataManager'
+import * as DataManager from './DataManager'
 import alias from '../settings/alias.json';
 import * as fs from 'fs'
 import { Wolfram } from './Wolfram';
@@ -33,10 +33,10 @@ export var prefix: string;
  * @param command Command to run
  * @param args Array of arguments to apply to this command
  */
-export function run(command: string, argument_array: Array<string>, user_message: Message) {
+export async function run(command: string, argument_array: Array<string>, user_message: Message) {
 	args = argument_array;
 	message = user_message;
-	prefix = DataManager.data.guilds[message.guild.id].prefix;
+	prefix = await DataManager.get(message.guild.id, 'prefix');
 	if (commands.hasOwnProperty(command)) {
 		commands[command]();
 	} else commands.unknown();
@@ -141,12 +141,11 @@ commands.backup = () => {
 	)
 }
 
-commands.reload = () => {
-	DataManager.getOption();
+commands.reload = async () => {
 	message.channel.send(new MessageEmbed()
-		.setTitle('Data Reloaded')
-		.setDescription('Server database cache has reloaded from file')
-		.setColor(green)
+		.setTitle('Data Not Reloaded')
+		.setDescription('This function is deprecated since the introduction of database system.')
+		.setColor(yellow)
 	);
 }
 
@@ -162,9 +161,9 @@ commands.reset = () => {
 					console.log(collected.first().emoji.name)
 					if (collected.first().emoji.name == '✅') {
 						if (message.guild) {
-							DataManager.addGuildDefaultOption(message.guild.id, message.guild.name, false)
+							DataManager.purge(message.guild.id)
 						} else {
-							DataManager.addGuildDefaultOption(message.channel.id, message.author.username, true)
+							DataManager.purge(message.channel.id)
 						}
 
 						message.channel.send(new MessageEmbed()
@@ -191,8 +190,7 @@ commands.reset = () => {
 commands.prefix = () => {
 	if (args[0] == 'clear') {
 		if (message.guild === null) {
-			DataManager.data.guilds[message.channel.id].prefix = '';
-			DataManager.updateOption();
+			DataManager.set(message.channel.id, 'prefix', '');
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Cleared')
 				.setDescription(`Prefix has cleared`)
@@ -209,8 +207,7 @@ commands.prefix = () => {
 	}
 	else if (args[0] != undefined) {
 		let new_prefix = args[0];
-		DataManager.data.guilds[message.guild === null ? message.channel.id : message.guild.id].prefix = new_prefix;
-		DataManager.setOption(DataManager.data);
+		DataManager.set(message.guild === null ? message.channel.id : message.guild.id, 'prefix', new_prefix);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Prefix Changed')
 			.setDescription(`Prefix has changed to ${Util.inlineCodeBlock(new_prefix)}`)
@@ -503,7 +500,7 @@ commands.info = async () => {
 		message.channel.send(embed);
 	}
 	else {
-		run('help', ['info'], message);
+		await run('help', ['info'], message);
 	}
 }
 
@@ -803,8 +800,8 @@ commands.gamemode = () => {
 	message.reply('You are fixed with gamemode `survival` in discord. Sorry for inconvenience.')
 }
 
-commands.rickroll = () => {
-	run('play', ['never', 'gonna', 'give', 'you', 'up'], message);
+commands.rickroll = async () => {
+	await run('play', ['never', 'gonna', 'give', 'you', 'up'], message);
 }
 
 commands.duckroll = () => {
@@ -1017,16 +1014,28 @@ commands.mvregex = async () => {
 	// })
 }
 
-commands.hook = () => {
+commands.hook = async () => {
 	// hook(args[2], args[3]);
 	// function hook(text, voice) {
-	if (!DataManager.data.guilds[message.guild.id].hooks) {
-		DataManager.data.guilds[message.guild.id].hooks = [];
+
+	class Hook {
+		text: string;
+		voice: string;
+		type: string;
+	}
+
+	let hooks: Hook[] = await DataManager.get(message.guild.id, 'hooks');
+	if (!hooks) {
+		hooks = [];
 	}
 
 	if (args[0] == 'add') {
-		DataManager.data.guilds[message.guild.id].hooks.push({ text: args[1], voice: args[2], type: args[3] ? args[3] : 'hard' });
-		DataManager.updateOption();
+		hooks.push({
+			text: args[1],
+			voice: args[2],
+			type: (args[3] ? args[3] : 'hard')
+		});
+		DataManager.set(message.guild.id, 'hooks', hooks);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Channel Hooks:')
 			.setDescription(`Hooked \`${message.guild.channels.resolve(args[1]).name}\` with \`${message.guild.channels.resolve(args[2]).name}\`.`)
@@ -1034,18 +1043,17 @@ commands.hook = () => {
 		);
 	}
 	else if (args[0] == 'remove') {
-		DataManager.data.guilds[message.guild.id].hooks = DataManager.data.guilds[message.guild.id].hooks.filter((hook: { text: string; voice: string; }) => hook.text != args[1] && hook.voice != args[1]);
-		DataManager.updateOption();
-
+		hooks = hooks.filter((hook: { text: string; voice: string; }) => hook.text != args[1] && hook.voice != args[1]);
+		DataManager.set(message.guild.id, 'hooks', hooks);
 	}
 	else if (args[0] == 'list') {
-		if (DataManager.data.guilds[message.guild.id].hooks.length == 0) {
+		if (hooks.length == 0) {
 			message.channel.send('No Hooks Created');
 			return;
 		}
 		let content = '';
 		let count = 1;
-		DataManager.data.guilds[message.guild.id].hooks.forEach(hook => {
+		hooks.forEach(hook => {
 			content += `  ${Util.getNumberEmoji(count)} - :speech_balloon: **${message.guild.channels.resolve(hook.text)}**  :left_right_arrow:  :loud_sound: **${message.guild.channels.resolve(hook.voice).name}**\n\n`;
 			count++;
 		})
