@@ -1,8 +1,10 @@
 import { Guild, VoiceConnection, VoiceChannel, GuildMember, TextChannel, MessageEmbed } from 'discord.js';
 import ytdl from 'ytdl-core';
 import youtube, { Youtube } from 'scrape-youtube';
+
 import { Util } from './Util';
 import { message } from './Commando';
+import * as DataManager from './DataManager';
 
 class Song {
 	title: string;
@@ -92,17 +94,21 @@ export async function play(guild: Guild) {
 		}
 		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
-			song.textChannel.send('Queue Ended.');
+			if (DataManager.get(guild.id, 'announceQueueEnd')) {
+				song.textChannel.send('Queue Ended.');
+			}
 			music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 			getGuildData(guild.id).nowplaying = null;
 		}
 	})
 	dispatcher.setVolume(music_data[requester.guild.id].volume / 100);
 
-	song.textChannel.send(new MessageEmbed()
-		.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Util.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
-		.setColor(Util.blue)
-	)
+	if (DataManager.get(guild.id, 'announceSong')) {
+		song.textChannel.send(new MessageEmbed()
+			.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Util.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
+			.setColor(Util.blue)
+		)
+	}
 }
 
 export async function addQueue(member: GuildMember, field: string) {

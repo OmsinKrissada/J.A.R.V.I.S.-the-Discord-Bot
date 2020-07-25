@@ -88,5 +88,9 @@
 		"youtube",
 		"find",
 		"song"
+	],
+	"settings": [
+		"set",
+		"config"
 	]
 }
