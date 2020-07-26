@@ -82,7 +82,7 @@ export class Util {
 		return `${seconds / 3600 >= 1 ? Util.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${Util.min2(Math.floor(seconds / 60) % 60)}:${Util.min2(seconds % 60)}`
 	}
 
-	static shuffle(array: Array<any>) {
+	static shuffle(array: Array<any>): typeof array {
 		let shuffledArray = [];
 		while (array.length > 0) {
 			let index = Math.floor(Math.random() * array.length);

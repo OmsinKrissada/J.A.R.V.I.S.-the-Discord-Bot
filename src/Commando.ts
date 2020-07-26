@@ -1102,15 +1102,20 @@ commands.whoisironman = () => {
 	)
 }
 
+var ohm_answers: string[] = [];
 commands.ohm = () => {
-	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[0] == 'add' && longarg(1) != '') {
+	let allowedUsers = ['551678168348491786', '520243714359296011'];
+	if ((allowedUsers.includes(message.author.id)) && args[0] == 'add' && longarg(1) != '') {
 		message.channel.send(`Added "${longarg(1)}"`)
 		responses.ohm.push(longarg(1))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
-	let answers = responses.ohm;
-	message.reply(answers[Math.floor(Math.random() * answers.length)])
+
+	if (ohm_answers.length == 0) {
+		ohm_answers = Util.shuffle(responses.ohm);
+	}
+	message.reply(ohm_answers.pop());
 }
 
 commands.kong = () => {
