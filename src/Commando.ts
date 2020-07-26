@@ -10,7 +10,7 @@ import * as Morse from './Morse';
 import * as Music from './Music';
 
 import helpDetail from '../settings/help.json';
-import responses from '../files/responses.json';
+import responses from '../settings/responses.json';
 
 const red = Util.red
 const green = Util.green
