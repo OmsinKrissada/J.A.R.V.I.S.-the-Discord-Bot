@@ -10,3 +10,4 @@ prefix.txt
 .node*
 token.json
 deploy.sh
+settings/appname

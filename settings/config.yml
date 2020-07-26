@@ -1,5 +1,5 @@
-appName: "jarvis"
 defaultPrefix: "!"
+defaultDMPrefix: ""
 colors:
   red: 0xff0000
   green: 0x04CF8D
