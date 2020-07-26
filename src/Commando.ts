@@ -27,6 +27,7 @@ export const non_dm_command: Array<string> = ['nick', 'purge', 'history', 'movev
 export var message: Message;
 export var args: Array<string>;
 export var prefix: string;
+export var ID: string;
 
 /**
  * 
@@ -36,10 +37,11 @@ export var prefix: string;
 export async function run(command: string, argument_array: Array<string>, user_message: Message) {
 	args = argument_array;
 	message = user_message;
-	prefix = await DataManager.get(message.guild.id, 'prefix');
+	ID = message.guild ? message.guild.id : message.channel.id;
+	prefix = await DataManager.get(ID, 'prefix');
 	if (commands.hasOwnProperty(command)) {
 		commands[command]();
-	} else if (DataManager.get(user_message.guild.id, 'warnUnknownCommand')) commands.unknown();
+	} else if (await DataManager.get(ID, 'settings.warnUnknownCommand')) commands.unknown();
 }
 
 
@@ -270,7 +272,7 @@ commands.alias = () => {
 }
 
 commands.settings = () => {
-	DataManager.set(message.guild.id, args[0], args[1])
+	DataManager.set(ID, args[0], args[1])
 }
 
 
@@ -713,7 +715,7 @@ commands.clearqueue = () => {
 }
 
 commands.leave = async () => {
-	Music.leave(message.guild);
+	Music.leave(message.guild, (<TextChannel>message.channel));
 }
 
 // commands.volume = async () => {

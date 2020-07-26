@@ -51,11 +51,11 @@ export async function join(voiceChannel: VoiceChannel) {
 	// console.log(music_data)
 }
 
-export function leave(guild: Guild) {
+export function leave(guild: Guild, announceChannel?: TextChannel) {
 	if (!getGuildData(guild.id).connection) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
-			.setDescription('I am **not** in a voice channel.')
+			.setDescription('I am **NOT** in a voice channel.')
 			.setColor(Util.red)
 		);
 		return;
@@ -63,6 +63,8 @@ export function leave(guild: Guild) {
 	pause(guild);
 	getGuildData(guild.id).nowplaying = null;
 	getGuildData(guild.id).connection.disconnect();
+	if (announceChannel)
+		announceChannel.send('👋 Successfully Disconnected!');
 	getGuildData(guild.id).connection = null;
 	music_data[guild.id].isLooping = false;
 }
@@ -87,14 +89,14 @@ export async function play(guild: Guild) {
 
 	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly" }))
 	getGuildData(guild.id).nowplaying = song;
-	dispatcher.on('finish', () => {
+	dispatcher.on('finish', async () => {
 		if (getGuildData(guild.id).isLooping) {
 			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
 			play(guild);
 		}
 		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
-			if (DataManager.get(guild.id, 'announceQueueEnd')) {
+			if (await DataManager.get(guild.id, 'settings.announceQueueEnd')) {
 				song.textChannel.send('Queue Ended.');
 			}
 			music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
@@ -103,7 +105,7 @@ export async function play(guild: Guild) {
 	})
 	dispatcher.setVolume(music_data[requester.guild.id].volume / 100);
 
-	if (DataManager.get(guild.id, 'announceSong')) {
+	if (await DataManager.get(guild.id, 'settings.announceSong')) {
 		song.textChannel.send(new MessageEmbed()
 			.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Util.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
 			.setColor(Util.blue)
