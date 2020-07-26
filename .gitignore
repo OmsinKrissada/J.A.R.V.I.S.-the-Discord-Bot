@@ -11,3 +11,4 @@ prefix.txt
 token.json
 deploy.sh
 settings/appname
+settings/responses.json
