@@ -271,8 +271,18 @@ commands.alias = () => {
 	message.channel.send(embed);
 }
 
-commands.settings = () => {
-	DataManager.set(ID, args[0], args[1])
+commands.settings = async () => {
+	if (!args[0]) {
+		let settings: object = await DataManager.get(ID, 'settings');
+		let embed = new MessageEmbed().setTitle('Settings:').setColor(blue);
+		for (let setting in settings) {
+			embed.addField(setting, 'Value: ' + (settings[setting] ? '✅' : '❌'), true);
+		}
+		message.channel.send(embed)
+	} else {
+		DataManager.set(ID, 'settings.' + args[0], args[1]);
+		message.channel.send('Request Sent');
+	}
 }
 
 
