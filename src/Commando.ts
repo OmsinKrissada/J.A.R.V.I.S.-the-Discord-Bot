@@ -11,6 +11,7 @@ import * as Music from './Music';
 
 import helpDetail from '../settings/help.json';
 import responses from '../settings/responses.json';
+import { SearchResult } from 'scrape-youtube';
 
 const red = Util.red
 const green = Util.green
@@ -610,17 +611,21 @@ commands.nowplaying = () => {
 }
 
 commands.search = async () => {
-	let searchResult = await Music.search(longarg(0));
-	let resultstr = [];
-	searchResult.slice(0, 10).forEach(result => {
-		resultstr.push(`[${result.title}](${result.link})`);
-	})
-	let song = await confirm_type('Pick your song by typing the number into the chat.', resultstr, false, message.author.avatarURL());
+	let searchResult = (await Music.search(longarg(0))).slice(0, 10);
+	let song: SearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: SearchResult) => `[${result.title}](${result.link})`, false, message.author.avatarURL());
 	// setArguments(['play', searchResult[song].link])
 	// setPrefix(prefix)
 	// setRespondMessage(message)
 	// run('play')
-	Music.addQueue(message.guild.member(message.author), searchResult[song].link);
+	if (!message.member.voice.channel) {
+		message.channel.send(new MessageEmbed()
+			.setTitle('Error')
+			.setDescription('**You must be in a voice channel** to use this command.')
+			.setColor(red)
+		);
+		return;
+	}
+	Music.addQueue(message.guild.member(message.author), song.link);
 }
 
 commands.skip = () => {
@@ -1159,7 +1164,7 @@ commands.test = () => {
 }
 
 // Functions
-function confirm_type(title: string, list: Array<string>, is_delete = false, iconURL?: string): Promise<string> {
+function confirm_type(title: string, list: Array<any>, text_to_display: (_: any) => string = (item) => item, is_delete = false, iconURL?: string): Promise<any> {
 	let confirm = (resolve: (arg0: any) => void) => {
 		console.log(list)
 		console.log(list.length)
@@ -1177,8 +1182,12 @@ function confirm_type(title: string, list: Array<string>, is_delete = false, ico
 
 		let str = '';
 		let i = 1;
-		list.forEach((member) => {
-			str += `${Util.getNumberEmoji(i)} - ${member}\n\n`;
+		list.forEach((item) => {
+			if (text_to_display) {
+				str += `${Util.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`;
+			} else {
+				str += `${Util.getNumberEmoji(i)} - ${item}\n\n`;
+			}
 			i++;
 		})
 		embeduser.setDescription(str);
