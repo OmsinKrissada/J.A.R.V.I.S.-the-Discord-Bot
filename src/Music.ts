@@ -87,7 +87,7 @@ export async function play(guild: Guild) {
 		await join(requester.voice.channel);
 	}
 
-	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly" }))
+	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio" }))
 	getGuildData(guild.id).nowplaying = song;
 	dispatcher.on('finish', async () => {
 		if (getGuildData(guild.id).isLooping) {
