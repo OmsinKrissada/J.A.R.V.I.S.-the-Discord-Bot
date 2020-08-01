@@ -609,7 +609,7 @@ commands.nowplaying = () => {
 
 commands.search = async () => {
 	let searchResult = (await Music.search(longarg(0))).slice(0, 10);
-	let song: SearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: SearchResult) => `[${result.title}](${result.link})`, false, message.author.avatarURL());
+	let song: SearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: SearchResult) => `[${result.title}](${result.link}) \`${Util.prettyTime(result.duration)}\``, false, message.author.avatarURL());
 	// setArguments(['play', searchResult[song].link])
 	// setPrefix(prefix)
 	// setRespondMessage(message)
