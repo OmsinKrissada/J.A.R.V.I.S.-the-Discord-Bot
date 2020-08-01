@@ -46,8 +46,17 @@ export function constructData(guild_id: string) {
 }
 
 export async function join(voiceChannel: VoiceChannel) {
-	getGuildData(voiceChannel.guild.id).connection = await voiceChannel.join();
-	getGuildData(voiceChannel.guild.id).voiceChannelID = voiceChannel.id;
+	let guild = voiceChannel.guild;
+
+	getGuildData(guild.id).connection = await voiceChannel.join();
+	getGuildData(guild.id).voiceChannelID = voiceChannel.id;
+
+	music_data[guild.id].connection.on('disconnect', () => {
+		pause(guild);
+		getGuildData(guild.id).nowplaying = null;
+		getGuildData(guild.id).connection = null;
+		music_data[guild.id].isLooping = false;
+	})
 	// console.log(music_data)
 }
 
@@ -60,13 +69,9 @@ export function leave(guild: Guild, announceChannel?: TextChannel) {
 		);
 		return;
 	}
-	pause(guild);
-	getGuildData(guild.id).nowplaying = null;
 	getGuildData(guild.id).connection.disconnect();
 	if (announceChannel)
 		announceChannel.send('👋 Successfully Disconnected!');
-	getGuildData(guild.id).connection = null;
-	music_data[guild.id].isLooping = false;
 }
 
 
