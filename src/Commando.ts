@@ -438,17 +438,14 @@ commands.info = async () => {
 					} catch (err) { }
 
 					if (users.length && users.length > 0) {
-						let usernames = [];
-						users.forEach(user => usernames.push(`${user}`))
-						confirm_type('Please choose the member you refer to. (type in chat)', usernames).then(usr => {
-							user = message.guild.member(usr.slice(2, -1)).user;
-							printUserInfo(user);
+						confirm_type('Please choose the member you refer to. (type in chat)', users).then((usr: GuildMember) => {
+							printUserInfo(usr.user);
 						})
 						return;
 					}
 				}
 		}
-		if (message.deletable) message.delete();
+		// if (message.deletable) message.delete();
 
 		// if (!(user == null || user.size == 0)) {
 		// 	printUserInfo(user);
@@ -496,7 +493,7 @@ commands.info = async () => {
 				.addField('Created Account At', user.createdAt.toLocaleString(), true)
 				.setTimestamp()
 			message.channel.send(embeduserinfo);
-			if (message.deletable) message.delete();
+			// if (message.deletable) message.delete();
 		}
 
 	}
@@ -1137,7 +1134,7 @@ commands.kong = () => {
 commands.omsin = () => {
 	if ((message.author.id == '551678168348491786' || message.author.id == '520243714359296011') && args[0] == 'add' && longarg(1) != '') {
 		message.channel.send(`Added "${longarg(1)}"`)
-		responses.ohm.push(longarg(1))
+		responses.omsin.push(longarg(1))
 		fs.writeFileSync('./settings/responses.json', JSON.stringify(responses, null, ' '))
 		return;
 	}
