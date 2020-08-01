@@ -93,9 +93,9 @@
 		"set",
 		"config"
 	],
-	"move": [
+	"moveq": [
 		"mv",
-		"moveq",
+		"move",
 		"movequeue"
 	]
 }

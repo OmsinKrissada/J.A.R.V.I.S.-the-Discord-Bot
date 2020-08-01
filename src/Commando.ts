@@ -41,7 +41,7 @@ export async function run(command: string, argument_array: Array<string>, user_m
 	ID = message.guild ? message.guild.id : message.channel.id;
 	prefix = await DataManager.get(ID, 'prefix');
 	if (commands.hasOwnProperty(command)) {
-		commands[command]();
+		await commands[command]();
 	} else if (await DataManager.get(ID, 'settings.warnUnknownCommand')) commands.unknown();
 }
 
@@ -569,7 +569,7 @@ commands.play = async () => { // Some part of code is from discord.js
 		);
 		return;
 	}
-	Music.addQueue(message.member, longarg(0))
+	await Music.addQueue(message.member, longarg(0));
 }
 
 commands.pause = () => {
@@ -731,13 +731,13 @@ commands.leave = async () => {
 }
 
 commands.moveq = async () => {
-	let oldpos: number = <any>args[0];
-	let newpos: number = <any>args[1];
+	let frompos: number = <any>args[0];
+	let topos: number = <any>args[1];
 
-	let oldSong = Music.getQueue(message.guild)[oldpos - 1];
-	let newSong = Music.getQueue(message.guild)[newpos - 1];
+	let movingSong = Music.getQueue(message.guild)[frompos - 1];
+	let replacingSong = Music.getQueue(message.guild)[topos - 1];
 
-	if (!newSong || !oldSong) {
+	if (!replacingSong || !movingSong) {
 		message.channel.send({
 			embed: {
 				title: "Error",
@@ -746,13 +746,18 @@ commands.moveq = async () => {
 			}
 		})
 	}
-	Music.move(message.guild, oldpos, newpos);
+	Music.move(message.guild, frompos, topos);
 	message.channel.send({
 		embed: {
 			title: "Song Moved",
-			description: "Moved " + `[${newSong.title}](${newSong.url})`
+			description: "Moved " + `[${movingSong.title}](${movingSong.url})`
 		}
 	})
+}
+
+commands.getqjson = () => {
+	console.log('```js\n' + JSON.stringify(Music.getQueue(message.guild)) + '\n```', null, '    ');
+	message.channel.send('```js\n' + JSON.stringify(Music.getQueue(message.guild), null, '    ') + '\n```');
 }
 
 // commands.volume = async () => {
@@ -844,7 +849,13 @@ commands.gamemode = () => {
 }
 
 commands.rickroll = async () => {
-	await run('play', ['never', 'gonna', 'give', 'you', 'up'], message);
+	let queue = Music.getQueue(message.guild);
+	let idk = await run('play', ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'], message);
+	console.log('played')
+	await run('moveq', [String(queue.length), '1'], message);
+	console.log('moved')
+	await run('skip', [], message);
+	console.log('skipped')
 }
 
 commands.duckroll = () => {
