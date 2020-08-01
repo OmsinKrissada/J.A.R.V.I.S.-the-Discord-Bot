@@ -157,9 +157,7 @@ export async function addQueue(member: GuildMember, field: string) {
 		.addField('Time Before Playing', `\`${Util.prettyTime(totaltime)}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
-
-	if (!getGuildData(member.guild.id)) constructData(member.guild.id);
-	getGuildData(member.guild.id).queue.push(song);
+	music_data[member.guild.id].queue.push(song);
 
 	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length >= 1) play(member.guild);
 }
@@ -205,6 +203,12 @@ export function shuffle(guild: Guild) {
 	message.channel.send('Shuffled! 🔀')
 }
 
+export function move(guild: Guild, oldPosition: number, newPosition: number) {
+	let queue = music_data[guild.id].queue;
+	let transferingSong = queue.splice(oldPosition - 1, 1)[0];
+	queue.splice(newPosition - 1, 0, transferingSong);
+}
+
 export async function search(field: string) {
 	return youtube.search(field);
 }
@@ -230,6 +234,5 @@ export function removeSong(guild: Guild, index: number) {
 }
 
 export function clearQueue(guild: Guild) {
-	if (!getGuildData(guild.id)) constructData(guild.id);
 	if (music_data[guild.id]) music_data[guild.id].queue = [];
 }

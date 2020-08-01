@@ -52,9 +52,8 @@
 		"echo"
 	],
 	"movevoice": [
-		"mv",
-		"mvchannel",
-		"move"
+		"mvvoice",
+		"mvchannel"
 	],
 	"whoisironman": [
 		"whoisrealironman"
@@ -86,11 +85,17 @@
 	],
 	"search": [
 		"youtube",
+		"yt",
 		"find",
 		"song"
 	],
 	"settings": [
 		"set",
 		"config"
+	],
+	"move": [
+		"mv",
+		"moveq",
+		"movequeue"
 	]
 }

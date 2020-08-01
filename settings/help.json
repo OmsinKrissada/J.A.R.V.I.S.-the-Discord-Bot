@@ -179,6 +179,14 @@
 		"loop": {
 			"description": "Enable/Disable looping on current song.",
 			"usage": "loop"
+		},
+		"shuffle": {
+			"description": "Shuffles music queue.",
+			"usage": "shuffle"
+		},
+		"move": {
+			"description": "Moves position of a song in the queue.",
+			"usage": "move {old position} {new position}"
 		}
 	},
 	"😂  Misc": {

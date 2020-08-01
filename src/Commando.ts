@@ -730,6 +730,31 @@ commands.leave = async () => {
 	Music.leave(message.guild, (<TextChannel>message.channel));
 }
 
+commands.moveq = async () => {
+	let oldpos: number = <any>args[0];
+	let newpos: number = <any>args[1];
+
+	let oldSong = Music.getQueue(message.guild)[oldpos - 1];
+	let newSong = Music.getQueue(message.guild)[newpos - 1];
+
+	if (!newSong || !oldSong) {
+		message.channel.send({
+			embed: {
+				title: "Error",
+				description: 'Please use any number displayed in ' + Util.inlineCodeBlock(prefix + 'queue') + '.',
+				color: red
+			}
+		})
+	}
+	Music.move(message.guild, oldpos, newpos);
+	message.channel.send({
+		embed: {
+			title: "Song Moved",
+			description: "Moved " + `[${newSong.title}](${newSong.url})`
+		}
+	})
+}
+
 // commands.volume = async () => {
 // 	// message.member.voice.
 // }
