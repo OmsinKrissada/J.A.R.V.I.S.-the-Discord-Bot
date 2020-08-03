@@ -594,7 +594,7 @@ commands.nowplaying = () => {
 
 	let secondsPlayed = Math.floor(current_song.getPlayedTime());
 	message.channel.send(new MessageEmbed()
-		.setTitle('🎧 Now Playing:')
+		.setTitle('🎧 Now Playing')
 		// .setDescription(content)
 		.setColor(blue)
 		.setThumbnail(current_song.thumbnail)
@@ -710,8 +710,8 @@ commands.remove = () => {
 		return;
 	}
 	message.channel.send(new MessageEmbed()
-		.setTitle('Song Removed')
-		.setDescription(`Removed [${song.title}](${song.url}) requested by ${song.requester}`)
+		.setAuthor('🗑️ Song Removed')
+		.setDescription(`Removed [${song.title}](${song.url}) [${song.requester}]`)
 		.setColor(green)
 	);
 
