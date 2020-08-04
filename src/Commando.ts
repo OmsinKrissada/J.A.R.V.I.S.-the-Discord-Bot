@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, ReactionEmoji, MessageReaction, Collection } from 'discord.js';
+import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import * as DataManager from './DataManager'
@@ -219,9 +219,9 @@ commands.prefix = () => {
 	}
 	else {
 		message.channel.send(new MessageEmbed()
-			.setTitle('Error')
+			.setTitle('Current prefix is ' + Util.inlineCodeBlock(prefix) + '.')
 			.setDescription(`Usage: ${Util.inlineCodeBlock(`${prefix}prefix {new prefix}`)} or ${Util.inlineCodeBlock(`${prefix}prefix clear`)}`)
-			.setColor(red)
+			.setColor(blue)
 			.setFooter('Note: Blank prefix is only allowed in DM channels.')
 		);
 	}
@@ -609,7 +609,7 @@ commands.nowplaying = () => {
 
 commands.search = async () => {
 	let searchResult = (await Music.search(longarg(0))).slice(0, 10);
-	let song: SearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: SearchResult) => `[${result.title}](${result.link}) \`${Util.prettyTime(result.duration)}\``, false, message.author.avatarURL());
+	let song: SearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: SearchResult) => `__**[${result.title}](${result.link})**__ - ${result.channel.name} [\`${Util.prettyTime(result.duration)}\`]`, false, message.author.avatarURL());
 	// setArguments(['play', searchResult[song].link])
 	// setPrefix(prefix)
 	// setRespondMessage(message)
@@ -680,12 +680,13 @@ commands.volume = () => {
 }
 
 commands.queue = () => {
-	let content = '';
+	let content: string[] = [];
 	let i = 0;
 	Music.getQueue(message.guild).forEach(song => {
 		i++;
-		content += `${Util.getNumberEmoji(i)} \`${Util.prettyTime(song.getDuration())}\` [${song.title}](${song.url}) [${song.requester}]\n\n`;
+		content.push(`${Util.getNumberEmoji(i)} \`${Util.prettyTime(song.getDuration())}\` [${song.title}](${song.url}) [${song.requester}]\n\n`);
 	})
+
 	let embed = new MessageEmbed()
 		.setTitle('Song Queue 🎶')
 		.setColor(blue);
@@ -695,8 +696,7 @@ commands.queue = () => {
 		let secondsPlayed = Math.floor(currentSong.getPlayedTime());
 		embed.addField('​\n🎧 Now Playing', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}]\n${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(currentSong.getDuration())} ${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
 	}
-	embed.addField('🔺 Upcoming', (content.length != 0 ? '​\n' + content : 'Empty Queue'));
-	message.channel.send(embed)
+	Util.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))
 }
 
 commands.remove = () => {
@@ -1190,10 +1190,8 @@ commands.unknown = () => {
 }
 
 commands.test = () => {
-	message.channel.send(new MessageEmbed()
-		.setTitle('test')
-		.addField('command', "`!info`\n`!...`\n`...`")
-	)
+	let texttosend = ['afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss']
+	Util.sendEmbedPage(<TextChannel>message.channel, new MessageEmbed().setTitle('Title').setDescription('Description'), 'title of field', texttosend)
 }
 
 // Functions
