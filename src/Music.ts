@@ -1,5 +1,5 @@
 import { Guild, VoiceConnection, VoiceChannel, GuildMember, TextChannel, MessageEmbed } from 'discord.js';
-import ytdl from 'ytdl-core';
+import ytdl from 'discord-ytdl-core';
 import youtube, { Youtube } from 'scrape-youtube';
 
 import { Util } from './Util';
@@ -92,10 +92,10 @@ export async function play(guild: Guild) {
 		await join(requester.voice.channel);
 	}
 
-	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio" }))
+	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" })
 	getGuildData(guild.id).nowplaying = song;
 	dispatcher.on('finish', async () => {
-		if (getGuildData(guild.id).isLooping) {
+		if (getGuildData(guild.id).isLooping && music_data[guild.id].nowplaying != null) {
 			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
 			play(guild);
 		}
@@ -155,7 +155,7 @@ export async function addQueue(member: GuildMember, field: string) {
 
 	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
 		.setAuthor('Song Queued', member.user.displayAvatarURL())
-		.setDescription('Added ' + `**[${song.title}](${song.url})**` + ' to the queue.\n')
+		.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
 		.setColor(Util.green)
 		.addField('Song Duration', `\`${Util.prettyTime(song.getDuration())}\``, true)
 		.addField('Position in Queue', `\`${music.nowplaying ? music.queue.length + 1 : 0}\``, true)
@@ -212,6 +212,16 @@ export function move(guild: Guild, oldPosition: number, newPosition: number) {
 	let queue = music_data[guild.id].queue;
 	let transferingSong = queue.splice(oldPosition - 1, 1)[0];
 	queue.splice(newPosition - 1, 0, transferingSong);
+}
+
+export function seek(guild: Guild, startsec: number) {
+	let currentSong = music_data[guild.id].nowplaying;
+	console.log(startsec)
+	const dispatcher = music_data[guild.id].connection.play(ytdl(currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
+	dispatcher.setVolume(music_data[guild.id].volume / 100);
+	currentSong.getPlayedTime = () => {
+		return (music_data[guild.id].connection.dispatcher.streamTime + startsec * 1000) / 1000;
+	}
 }
 
 export async function search(field: string) {
