@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import fs from 'fs';
 import yaml from 'js-yaml';
+import { TextChannel, MessageEmbed, MessageReaction, User } from 'discord.js';
 
 var config = yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'));
 
@@ -92,5 +93,66 @@ export class Util {
 		}
 		console.log(shuffledArray)
 		return shuffledArray;
+	}
+
+	static sendEmbedPage(textChannel: TextChannel, prototype: MessageEmbed, name: string, value: string[], inline = false) {
+		let pages: MessageEmbed[] = [];
+		while (value.length > 0) {
+			let page = new MessageEmbed(prototype);
+			let val = '';
+
+			let nextval = '';
+			for (let i = 0; val.length + nextval.length <= 1024 && value.length > 0; i++) {
+				nextval = value.shift();
+				val += nextval;
+				console.log('shifted')
+			}
+			console.log('"' + val + '"')
+
+			if (val.length > 0) page.addFields({ name: name, value: val, inline: inline });
+			pages.push(page);
+		}
+
+		let pagenum = 1;
+		pages.forEach(page => {
+			page.setFooter(`Page ${pagenum++} / ${pages.length}`);
+		})
+
+		if (pages.length == 1) {
+			textChannel.send(pages[0])
+			return;
+		}
+
+		let current_page = 0;
+		textChannel.send(pages[0]).then(msg => {
+
+			msg.react('▶');
+			const collector = msg.createReactionCollector((reaction: MessageReaction, user: User) => (reaction.emoji.name == '◀' || reaction.emoji.name == '▶') && !user.bot, { time: 1000000 })
+			collector.on('collect', (reaction, user) => {
+				console.log(reaction.emoji.name)
+				if (reaction.emoji.name == '◀') {
+					console.log('left')
+					msg.reactions.removeAll();
+					if (current_page + 1 > 1) {
+						msg.edit(pages[--current_page]);
+						if (current_page + 1 != 1) msg.react('◀');
+					}
+					msg.react('▶');
+				}
+				else if (reaction.emoji.name == '▶') {
+					console.log('right')
+					msg.reactions.removeAll();
+					msg.react('◀');
+					if (current_page + 1 < pages.length) {
+						msg.edit(pages[++current_page]);
+						if (current_page + 1 != pages.length) msg.react('▶');
+					}
+				}
+			})
+			collector.on('end', () => {
+				console.log('catched')
+			})
+
+		})
 	}
 }
