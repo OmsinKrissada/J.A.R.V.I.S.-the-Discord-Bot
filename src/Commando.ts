@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction } from 'discord.js';
+import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction, VoiceChannel } from 'discord.js';
 import { bot } from '././Main'
 import { Util } from './Util';
 import * as DataManager from './DataManager'
