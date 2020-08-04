@@ -549,15 +549,26 @@ commands.askimg = () => {
 // MUSIC !!!
 
 commands.join = () => {
-	if (!message.member.voice.channel) {
-		message.channel.send(new MessageEmbed()
-			.setTitle('Error')
-			.setDescription('**You must be in a voice channel** to use this command.')
-			.setColor(red)
-		);
-		return;
+	if (args[0]) {
+		const channel = message.guild.channels.resolve(args[0]);
+		if (channel && channel.type == 'voice') {
+			Music.join(<VoiceChannel>channel);
+		}
+		else {
+			message.channel.send('Channel with ID ' + args[0] + ' is not a voice channel.')
+		}
 	}
-	Music.join(message.member.voice.channel)
+	else {
+		if (!message.member.voice.channel) {
+			message.channel.send(new MessageEmbed()
+				.setTitle('Error')
+				.setDescription('**You must be in a voice channel** to use this command.')
+				.setColor(red)
+			);
+			return;
+		}
+		Music.join(message.member.voice.channel)
+	}
 }
 
 commands.play = async () => { // Some part of code is from discord.js
