@@ -594,7 +594,7 @@ commands.resume = () => {
 }
 
 commands.nowplaying = () => {
-	let current_song = Music.getCurrentSong(message.guild);
+	const current_song = Music.getCurrentSong(message.guild);
 	if (!current_song) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('No Playing Song')
@@ -603,7 +603,7 @@ commands.nowplaying = () => {
 		return;
 	}
 
-	let secondsPlayed = Math.floor(current_song.getPlayedTime());
+	const secondsPlayed = Math.floor(current_song.getPlayedTime());
 	message.channel.send(new MessageEmbed()
 		.setTitle('🎧 Now Playing')
 		// .setDescription(content)
@@ -705,7 +705,7 @@ commands.queue = () => {
 	let currentSong = Music.getCurrentSong(message.guild);
 	if (currentSong) {
 		let secondsPlayed = Math.floor(currentSong.getPlayedTime());
-		embed.addField('​\n🎧 Now Playing', `​\n**[${currentSong.title}](${currentSong.url})** [${currentSong.requester}]\n${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(currentSong.getDuration())} ${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
+		embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
 	}
 	Util.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))
 }
@@ -764,6 +764,17 @@ commands.moveq = async () => {
 			description: "Moved " + `[${movingSong.title}](${movingSong.url})`
 		}
 	})
+}
+
+commands.seek = () => {
+	Music.seek(message.guild, <any>args[0]);
+	const current_song = Music.getCurrentSong(message.guild);
+	const secondsPlayed = Math.floor(current_song.getPlayedTime());
+	message.channel.send(new MessageEmbed()
+		.setTitle('Seeked!')
+		.setDescription(`${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(current_song.getDuration())}\n${Util.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
+		.setColor(green)
+	)
 }
 
 commands.getqjson = () => {
@@ -1201,8 +1212,9 @@ commands.unknown = () => {
 }
 
 commands.test = () => {
-	let texttosend = ['afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss']
-	Util.sendEmbedPage(<TextChannel>message.channel, new MessageEmbed().setTitle('Title').setDescription('Description'), 'title of field', texttosend)
+	// let texttosend = ['afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss', 'afdsssssssssssssssssssssssssssssssssssssssssssssssssss']
+	let texttosend = '```' + fs.readFileSync('./src/Commando.ts', 'utf-8').toString() + '```'
+	Util.sendEmbedPage(<TextChannel>message.channel, new MessageEmbed().setTitle('Title').setDescription('Description'), 'title of field', texttosend.split('\n'))
 }
 
 // Functions
