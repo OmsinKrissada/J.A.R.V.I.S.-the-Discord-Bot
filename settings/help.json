@@ -1,5 +1,9 @@
 {
 	"ℹ  General": {
+		"about": {
+			"description": "Information about the bot.",
+			"usage": "about"
+		},
 		"help": {
 			"description": "Shows this message.",
 			"usage": "help"
