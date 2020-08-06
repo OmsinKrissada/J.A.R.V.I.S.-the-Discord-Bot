@@ -53,7 +53,9 @@
 	],
 	"movevoice": [
 		"mvvoice",
-		"mvchannel"
+		"mvv",
+		"mvchannel",
+		"mvchan"
 	],
 	"whoisironman": [
 		"whoisrealironman"

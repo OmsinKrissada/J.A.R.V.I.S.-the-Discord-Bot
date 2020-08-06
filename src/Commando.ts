@@ -1,17 +1,19 @@
 import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction, VoiceChannel } from 'discord.js';
+import { SearchResult } from 'scrape-youtube';
+
 import { bot } from '././Main'
 import { Util } from './Util';
 import * as DataManager from './DataManager'
-import alias from '../settings/alias.json';
 import * as fs from 'fs'
 import { Wolfram } from './Wolfram';
 // import { Ranker } from '../files/Ranker';
 import * as Morse from './Morse';
 import * as Music from './Music';
 
+import alias from '../settings/alias.json';
 import helpDetail from '../settings/help.json';
 import responses from '../settings/responses.json';
-import { SearchResult } from 'scrape-youtube';
+import packageinfo from '../package.json';
 
 const red = Util.red
 const green = Util.green
@@ -128,6 +130,23 @@ commands.help = () => {
 
 	message.channel.send(embed);
 
+}
+
+commands.about = () => {
+	message.channel.send(new MessageEmbed()
+		.setTitle('About Me')
+		.setColor(blue)
+		.setThumbnail(bot.user.displayAvatarURL())
+		.addField('Name', '**J.A.R.V.I.S.**', true)
+		.addField('Current Version', Util.inlineCodeBlock(packageinfo.version), true)
+		.addField('License', '[**MIT License**](https://en.wikipedia.org/wiki/MIT_License)', true)
+		.addField('Author', '[**OmsinKrissada**](https://github.com/OmsinKrissada)', true)
+		.addField('Source Code', '[**GitHub**](https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot)', true)
+		.addField('Default Prefix', Util.inlineCodeBlock(DataManager.CONFIG['defaultPrefix']), true)
+		.addField('Guild Count', bot.guilds.cache.size, true)
+		.addField('Shard Count', bot.ws.shards.size, true)
+		.addField('HTTP API Version', bot.options.http.version, true)
+	)
 }
 
 commands.backup = () => {
