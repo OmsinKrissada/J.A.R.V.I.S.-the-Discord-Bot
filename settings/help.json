@@ -187,6 +187,10 @@
 		"move": {
 			"description": "Moves position of a song in the queue.",
 			"usage": "move {old position} {new position}"
+		},
+		"seek": {
+			"description": "Seeks to a specific point in a song.",
+			"usage": "seek {second(s) from beginning}"
 		}
 	},
 	"😂  Misc": {
