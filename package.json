@@ -1,7 +1,7 @@
 {
   "name": "jarvis",
-  "version": "1.0.0",
-  "description": "",
+  "version": "v2.0.0",
+  "description": "A Discord utility/music bot.",
   "main": "dist/Main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,7 @@
     "tsc": "tsc"
   },
   "keywords": [],
-  "author": "Krissada Singhakachain",
+  "author": "OmsinKrissada",
   "license": "MIT",
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
@@ -32,7 +32,6 @@
     "typescript": "^3.9.7",
     "utf-8-validate": "^5.0.2",
     "xmlhttprequest": "^1.8.0",
-    "ytdl-core": "^2.1.7",
     "zlib-sync": "^0.1.7"
   },
   "devDependencies": {
