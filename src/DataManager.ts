@@ -35,7 +35,6 @@ export async function get(guildID: string, item: string) {
 		}
 		loaded_guild.save().then(_ => console.log('saved new'))
 	}
-	console.log(loaded_guild.get(item))
 	return loaded_guild.get(item);
 }
 
