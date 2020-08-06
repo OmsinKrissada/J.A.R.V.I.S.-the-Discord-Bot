@@ -94,7 +94,10 @@ export async function play(guild: Guild) {
 
 	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" })
 	getGuildData(guild.id).nowplaying = song;
+	dispatcher.on('close', () => { console.log('closed') })
+	dispatcher.on('unpipe', () => { console.log('unpiped') })
 	dispatcher.on('finish', async () => {
+		console.log('finished')
 		if (getGuildData(guild.id).isLooping && music_data[guild.id].nowplaying != null) {
 			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
 			play(guild);
@@ -217,8 +220,24 @@ export function move(guild: Guild, oldPosition: number, newPosition: number) {
 export function seek(guild: Guild, startsec: number) {
 	let currentSong = music_data[guild.id].nowplaying;
 	console.log(startsec)
+	music_data[guild.id].connection.dispatcher.destroy();
 	const dispatcher = music_data[guild.id].connection.play(ytdl(currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
 	dispatcher.setVolume(music_data[guild.id].volume / 100);
+	dispatcher.on('finish', async () => {
+		console.log('finished')
+		if (getGuildData(guild.id).isLooping && music_data[guild.id].nowplaying != null) {
+			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
+			play(guild);
+		}
+		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
+		else { // Doesn't have next song
+			if (await DataManager.get(guild.id, 'settings.announceQueueEnd')) {
+				currentSong.textChannel.send('Queue Ended.');
+			}
+			music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+			getGuildData(guild.id).nowplaying = null;
+		}
+	})
 	currentSong.getPlayedTime = () => {
 		return (music_data[guild.id].connection.dispatcher.streamTime + startsec * 1000) / 1000;
 	}
