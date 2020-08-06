@@ -5,18 +5,18 @@ import { TextChannel, MessageEmbed, MessageReaction, User } from 'discord.js';
 
 var config = yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'));
 
-export class Util {
+class UtilClass {
 
-	static red = config['colors']['red'];
-	static green = config['colors']['green'];
-	static blue = config['colors']['blue'];
-	static yellow = config['colors']['yellow'];
+	red = config['colors']['red'];
+	green = config['colors']['green'];
+	blue = config['colors']['blue'];
+	yellow = config['colors']['yellow'];
 
-	static inlineCodeBlock(content: string) {
+	inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
 	}
 
-	static refreshIp(): Promise<string> {
+	refreshIp(): Promise<string> {
 		// Get IP 
 		return new Promise((resolve, _reject) => {
 			exec('dig +short myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
@@ -28,15 +28,15 @@ export class Util {
 		});
 	}
 
-	static getDateTimeString(date: Date) {
-		return `${Util.min2(date.getDate())}/${Util.min2(date.getMonth())}/${Util.min2(date.getFullYear())}-${Util.min2(date.getHours())}:${Util.min2(date.getMinutes())}:${Util.min2(date.getSeconds())}`;
+	getDateTimeString(date: Date) {
+		return `${this.min2(date.getDate())}/${this.min2(date.getMonth())}/${this.min2(date.getFullYear())}-${this.min2(date.getHours())}:${this.min2(date.getMinutes())}:${this.min2(date.getSeconds())}`;
 	}
 
-	static min2(num: number) {
+	min2(num: number) {
 		return ('0' + num).slice(-2);
 	}
 
-	static getNumberEmoji(integer: number) {
+	getNumberEmoji(integer: number) {
 		let numberstr: { [key: string]: string } = {
 			'0': ':zero:',
 			'1': ':one:',
@@ -63,7 +63,7 @@ export class Util {
 	 * @param percent A percentage from 0 to 100.
 	 * @param length Full length of the progress bar. (default to 30)
 	 */
-	static progressBar(percent: number, length = 30): string {
+	progressBar(percent: number, length = 30): string {
 		let show = Math.round(percent / 100 * length);
 		let progress = '';
 		for (let i = 0; i < show - 1; i++) {
@@ -77,13 +77,13 @@ export class Util {
 		return '`|' + progress + '|`';
 	}
 
-	static prettyTime(seconds: number): string {
+	prettyTime(seconds: number): string {
 		seconds = Math.round(seconds)
 		console.log(`${seconds} ${Math.floor(seconds / 60)}`)
-		return `${seconds / 3600 >= 1 ? Util.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${Util.min2(Math.floor(seconds / 60) % 60)}:${Util.min2(seconds % 60)}`
+		return `${seconds / 3600 >= 1 ? this.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${this.min2(Math.floor(seconds / 60) % 60)}:${this.min2(seconds % 60)}`
 	}
 
-	static shuffle(array: Array<any>): typeof array {
+	shuffle(array: Array<any>): typeof array {
 		let shuffledArray = [];
 		while (array.length > 0) {
 			let index = Math.floor(Math.random() * array.length);
@@ -95,7 +95,7 @@ export class Util {
 		return shuffledArray;
 	}
 
-	static sendEmbedPage(textChannel: TextChannel, prototype: MessageEmbed, name: string, value: string[], inline = false) {
+	sendEmbedPage(textChannel: TextChannel, prototype: MessageEmbed, name: string, value: string[], inline = false) {
 		let pages: MessageEmbed[] = [];
 		while (value.length > 0) {
 			let page = new MessageEmbed(prototype);
@@ -156,3 +156,5 @@ export class Util {
 		})
 	}
 }
+
+export const Util = new UtilClass();

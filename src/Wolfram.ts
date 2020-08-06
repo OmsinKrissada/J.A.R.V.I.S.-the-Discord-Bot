@@ -2,12 +2,12 @@
 
 import { Message } from "discord.js";
 
-const token = require('../token.json').wolfram;
-const Util = require('./Util')
+import token from "../token.json"
+const apitoken = token.wolfram;
+import { Util } from './Util';
 
 const { MessageEmbed, MessageAttachment } = require('discord.js')
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-
+import { XMLHttpRequest } from "xmlhttprequest"
 
 function httpGet(theUrl) {
     var xmlHttp = new XMLHttpRequest();
@@ -16,23 +16,13 @@ function httpGet(theUrl) {
     return xmlHttp.responseText;
 }
 
-function httpGetAsync(url, callback) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            callback(xmlHttp.responseText);
-    }
-    xmlHttp.open("GET", url, true); // true for asynchronous 
-    xmlHttp.send(null);
-}
-
 class WolframInterface {
 
 
     async getShort(input: string, message: Message) {
 
         console.log(`Wolfram: going to send as ${input.replace(/\+/g, '%2B')}`)
-        let output = httpGet(`https://api.wolframalpha.com/v1/result?i=${input.replace(/\+/g, '%2B')}&appid=${token}`)
+        const output = httpGet(`https://api.wolframalpha.com/v1/result?i=${input.replace(/\+/g, '%2B')}&appid=${apitoken}`)
         console.log(output);
         if (output != 'Wolfram|Alpha did not understand your input') {
             message.channel.send(new MessageEmbed()
@@ -55,7 +45,7 @@ class WolframInterface {
 
     async getSimple(input, message) {
         console.log(`Wolfram: going to send as "${input}"`)
-        let img = new MessageAttachment(`https://api.wolframalpha.com/v1/simple?i=${input}&appid=${token}`, "result.png");
+        const img = new MessageAttachment(`https://api.wolframalpha.com/v1/simple?i=${input}&appid=${apitoken}`, "result.png");
         message.channel.send(new MessageEmbed()
             .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
             .setColor(Util.green)
@@ -67,4 +57,4 @@ class WolframInterface {
 
 }
 
-export let Wolfram = new WolframInterface;
+export const Wolfram = new WolframInterface();
