@@ -630,7 +630,7 @@ commands.nowplaying = () => {
 		.setThumbnail(current_song.thumbnail)
 		.addField('Song', `${current_song.title}`)
 		.addField('Link', current_song.url)
-		.addField('Duration', `${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(current_song.getDuration())}\n${Util.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
+		.addField('Duration', `${Util.prettyTime(secondsPlayed)} / ${Util.prettyTime(current_song.getDuration())}` + (Music.isLooping(message.guild) ? ' 🔂' : '') + `\n${Util.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
 		.addField('Text Channel', current_song.textChannel, true)
 		.addField('Voice Channel', current_song.voiceChannel, true)
 		.addField('Requester', `${current_song.requester}`, true)
@@ -714,7 +714,7 @@ commands.queue = () => {
 	let i = 0;
 	Music.getQueue(message.guild).forEach(song => {
 		i++;
-		content.push(`${Util.getNumberEmoji(i)} \`${Util.prettyTime(song.getDuration())}\` [${song.title}](${song.url}) [${song.requester}]\n\n`);
+		content.push(`${Util.inlineCodeBlock(String(i))} - \`${Util.prettyTime(song.getDuration())}\` __[${song.title}](${song.url})__ [${song.requester}]\n\n`);
 	})
 
 	let embed = new MessageEmbed()
@@ -724,7 +724,9 @@ commands.queue = () => {
 	let currentSong = Music.getCurrentSong(message.guild);
 	if (currentSong) {
 		let secondsPlayed = Math.floor(currentSong.getPlayedTime());
-		embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}\n​`);
+		embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Util.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}`)
+			.addField('Total Time', `**${Util.prettyTime(Music.getTotalTime(message.guild))}**`, true)
+			.addField('Loop Mode', Music.isLooping(message.guild) ? '🔂 Current Song' : '❌ None\n​', true);
 	}
 	Util.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))
 }
