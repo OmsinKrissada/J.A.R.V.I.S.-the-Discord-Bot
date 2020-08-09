@@ -1,6 +1,6 @@
 import { Guild, VoiceConnection, VoiceChannel, GuildMember, TextChannel, MessageEmbed } from 'discord.js';
 import ytdl from 'discord-ytdl-core';
-import youtube, { Youtube } from 'scrape-youtube';
+import yts from 'yt-search';
 
 import { Util } from './Util';
 import { message } from './Commando';
@@ -145,16 +145,16 @@ export async function addQueue(member: GuildMember, field: string) {
 		song.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
 
 	} else {
-		let youtube = new Youtube();
-		let searchResult = await youtube.searchOne(field);
+		const searchResult = await yts({ query: field, pageStart: 1, pageEnd: 1 });
+		const video = searchResult.videos[0];
 		if (searchResult == null) {
 			message.channel.send('Sorry, we experienced difficulties finding your song. Try with other phrases.');
 			return;
 		}
-		song.title = searchResult.title;
-		song.url = searchResult.link;
-		song.duration = searchResult.duration;
-		song.thumbnail = searchResult.thumbnail;
+		song.title = video.title;
+		song.url = video.url;
+		song.duration = video.duration.seconds;
+		song.thumbnail = video.thumbnail;
 	}
 	song.requester = member;
 	song.textChannel = (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID));
@@ -248,7 +248,7 @@ export function seek(guild: Guild, startsec: number) {
 }
 
 export async function search(field: string) {
-	return youtube.search(field);
+	return await yts({ query: field, pageStart: 1, pageEnd: 1 });
 }
 
 export function getPlayedTime(guild: Guild) {

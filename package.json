@@ -16,6 +16,7 @@
     "@discordjs/opus": "^0.3.2",
     "@types/js-yaml": "^3.12.5",
     "@types/mongoose": "^5.7.34",
+    "@types/yt-search": "^2.0.0",
     "bufferutil": "^4.0.1",
     "discord-ytdl-core": "^4.0.6",
     "discord.js": "^12.2.0",
@@ -27,11 +28,11 @@
     "mongodb": "^3.6.0",
     "mongoose": "^5.9.27",
     "n-readlines": "^1.0.0",
-    "scrape-youtube": "^0.2.3",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7",
     "utf-8-validate": "^5.0.2",
     "xmlhttprequest": "^1.8.0",
+    "yt-search": "^2.1.8",
     "zlib-sync": "^0.1.7"
   },
   "devDependencies": {

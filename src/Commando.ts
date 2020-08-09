@@ -14,6 +14,7 @@ import alias from '../settings/alias.json';
 import helpDetail from '../settings/help.json';
 import responses from '../settings/responses.json';
 import packageinfo from '../package.json';
+import { VideoSearchResult } from 'yt-search';
 
 const red = Util.red
 const green = Util.green
@@ -638,8 +639,8 @@ commands.nowplaying = () => {
 }
 
 commands.search = async () => {
-	let searchResult = (await Music.search(longarg(0))).slice(0, 10);
-	let song: SearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: SearchResult) => `__**[${result.title}](${result.link})**__ - ${result.channel.name} [\`${Util.prettyTime(result.duration)}\`]`, false, message.author.avatarURL());
+	let searchResult = (await Music.search(longarg(0))).videos.slice(0, 10);
+	let song: VideoSearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: VideoSearchResult) => `\`${Util.prettyTime(result.duration.seconds)}\` __**[${result.title}](${result.url})**__ - ${result.author.name}`, false, message.author.avatarURL());
 	// setArguments(['play', searchResult[song].link])
 	// setPrefix(prefix)
 	// setRespondMessage(message)
@@ -652,7 +653,7 @@ commands.search = async () => {
 		);
 		return;
 	}
-	Music.addQueue(message.guild.member(message.author), song.link);
+	Music.addQueue(message.guild.member(message.author), song.url);
 }
 
 commands.skip = () => {
