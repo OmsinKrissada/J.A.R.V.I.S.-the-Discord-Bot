@@ -1,5 +1,4 @@
 import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction, VoiceChannel } from 'discord.js';
-import { SearchResult } from 'scrape-youtube';
 
 import { bot } from '././Main'
 import { Util } from './Util';
