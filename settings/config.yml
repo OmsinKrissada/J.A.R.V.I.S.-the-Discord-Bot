@@ -1,5 +1,6 @@
 defaultPrefix: "!"
 defaultDMPrefix: ""
+defaultVolume: 20
 colors:
   red: 0xff0000
   green: 0x04CF8D

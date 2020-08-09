@@ -28,7 +28,7 @@ class GuildMusicData {
 	nowplaying: Song;
 	isLooping = false;
 	queue: Array<Song> = [];
-	volume: number = 5;
+	volume: number = DataManager.CONFIG['defaultVolume'];
 	leaveTimeout: NodeJS.Timeout;
 }
 var music_data: { [guild: string]: GuildMusicData } = {};
@@ -37,6 +37,16 @@ var music_data: { [guild: string]: GuildMusicData } = {};
 
 function getGuildData(guild_id: string) {
 	return music_data[guild_id];
+}
+
+export function getTotalTime(guild: Guild) {
+	const music = music_data[guild.id];
+	let totaltime = 0;
+	music.queue.forEach(song => {
+		totaltime += song.duration;
+	});
+	if (music.nowplaying) totaltime += music.nowplaying.duration - music.nowplaying.getPlayedTime();
+	return totaltime;
 }
 
 export function constructData(guild_id: string) {
@@ -150,19 +160,13 @@ export async function addQueue(member: GuildMember, field: string) {
 	song.textChannel = (<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID));
 	song.voiceChannel = member.voice.channel;
 
-	let totaltime = 0;
-	music.queue.forEach(song => {
-		totaltime += song.duration;
-	});
-	if (music.nowplaying) totaltime += music.nowplaying.duration - music.nowplaying.getPlayedTime();
-
 	(<TextChannel>member.guild.channels.resolve(member.lastMessageChannelID)).send(new MessageEmbed()
 		.setAuthor('Song Queued', member.user.displayAvatarURL())
 		.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
 		.setColor(Util.green)
 		.addField('Song Duration', `\`${Util.prettyTime(song.getDuration())}\``, true)
 		.addField('Position in Queue', `\`${music.nowplaying ? music.queue.length + 1 : 0}\``, true)
-		.addField('Time Before Playing', `\`${Util.prettyTime(totaltime)}\``, true)
+		.addField('Time Before Playing', `\`${Util.prettyTime(getTotalTime(member.guild))}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
 	music_data[member.guild.id].queue.push(song);
@@ -269,4 +273,8 @@ export function removeSong(guild: Guild, index: number) {
 
 export function clearQueue(guild: Guild) {
 	if (music_data[guild.id]) music_data[guild.id].queue = [];
+}
+
+export function isLooping(guild: Guild) {
+	return music_data[guild.id].isLooping;
 }

@@ -19,7 +19,7 @@ class UtilClass {
 	refreshIp(): Promise<string> {
 		// Get IP 
 		return new Promise((resolve, _reject) => {
-			exec('dig +short myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
+			exec('dig +short -4 myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
 				if (err) {
 					console.warn(err);
 				}
