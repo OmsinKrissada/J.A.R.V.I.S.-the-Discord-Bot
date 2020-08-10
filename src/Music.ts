@@ -248,7 +248,7 @@ export function seek(guild: Guild, startsec: number) {
 }
 
 export async function search(field: string) {
-	return await yts({ query: field, pageStart: 1, pageEnd: 1 });
+	return await yts({ query: field, pageStart: 1, pageEnd: 3 });
 }
 
 export function getPlayedTime(guild: Guild) {

@@ -638,7 +638,7 @@ commands.nowplaying = () => {
 }
 
 commands.search = async () => {
-	let searchResult = (await Music.search(longarg(0))).videos.slice(0, 10);
+	let searchResult = (await Music.search(longarg(0))).videos;
 	let song: VideoSearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: VideoSearchResult) => `\`${Util.prettyTime(result.duration.seconds)}\` __**[${result.title}](${result.url})**__ - ${result.author.name}`, false, message.author.avatarURL());
 	// setArguments(['play', searchResult[song].link])
 	// setPrefix(prefix)
@@ -1255,18 +1255,17 @@ function confirm_type(title: string, list: Array<any>, text_to_display: (_: any)
 			embeduser.setTitle(title);
 		}
 
-		let str = '';
+		let items: string[] = [];
 		let i = 1;
 		list.forEach((item) => {
 			if (text_to_display) {
-				str += `${Util.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`;
+				items.push(`${Util.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`);
 			} else {
-				str += `${Util.getNumberEmoji(i)} - ${item}\n\n`;
+				items.push(`${Util.getNumberEmoji(i)} - ${item}\n\n`);
 			}
 			i++;
 		})
-		embeduser.setDescription(str);
-		message.channel.send(embeduser)
+		Util.sendEmbedPage(<TextChannel>message.channel, embeduser, '​', items)
 			.then((confirm_msg) => {
 				message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
 					let answer_msg = collected.first();
