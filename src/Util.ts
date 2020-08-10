@@ -95,7 +95,7 @@ class UtilClass {
 		return shuffledArray;
 	}
 
-	sendEmbedPage(textChannel: TextChannel, prototype: MessageEmbed, name: string, value: string[], inline = false) {
+	async sendEmbedPage(textChannel: TextChannel, prototype: MessageEmbed, name: string, value: string[], inline = false) {
 		let pages: MessageEmbed[] = [];
 		while (value.length > 0) {
 			let page = new MessageEmbed(prototype);
@@ -124,36 +124,34 @@ class UtilClass {
 		}
 
 		let current_page = 0;
-		textChannel.send(pages[0]).then(msg => {
-
-			msg.react('▶');
-			const collector = msg.createReactionCollector((reaction: MessageReaction, user: User) => (reaction.emoji.name == '◀' || reaction.emoji.name == '▶') && !user.bot, { time: 1000000 })
-			collector.on('collect', (reaction, user) => {
-				console.log(reaction.emoji.name)
-				if (reaction.emoji.name == '◀') {
-					console.log('left')
-					msg.reactions.removeAll();
-					if (current_page + 1 > 1) {
-						msg.edit(pages[--current_page]);
-						if (current_page + 1 != 1) msg.react('◀');
-					}
-					msg.react('▶');
+		const message = await textChannel.send(pages[0]);
+		message.react('▶');
+		const collector = message.createReactionCollector((reaction: MessageReaction, user: User) => (reaction.emoji.name == '◀' || reaction.emoji.name == '▶') && !user.bot, { time: 1000000 })
+		collector.on('collect', (reaction, user) => {
+			console.log(reaction.emoji.name)
+			if (reaction.emoji.name == '◀') {
+				console.log('left')
+				message.reactions.removeAll();
+				if (current_page + 1 > 1) {
+					message.edit(pages[--current_page]);
+					if (current_page + 1 != 1) message.react('◀');
 				}
-				else if (reaction.emoji.name == '▶') {
-					console.log('right')
-					msg.reactions.removeAll();
-					msg.react('◀');
-					if (current_page + 1 < pages.length) {
-						msg.edit(pages[++current_page]);
-						if (current_page + 1 != pages.length) msg.react('▶');
-					}
+				message.react('▶');
+			}
+			else if (reaction.emoji.name == '▶') {
+				console.log('right')
+				message.reactions.removeAll();
+				message.react('◀');
+				if (current_page + 1 < pages.length) {
+					message.edit(pages[++current_page]);
+					if (current_page + 1 != pages.length) message.react('▶');
 				}
-			})
-			collector.on('end', () => {
-				console.log('catched')
-			})
-
+			}
 		})
+		collector.on('end', () => {
+			console.log('catched')
+		})
+		return message;
 	}
 }
 
