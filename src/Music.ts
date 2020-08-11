@@ -165,7 +165,7 @@ export async function addQueue(member: GuildMember, field: string) {
 		.addField('Time Before Playing', `\`${Util.prettyTime(getTotalTime(member.guild))}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
-	MusicData[member.guild.id].queue.push(song);
+	MusicData.get(member.guild.id).queue.push(song);
 
 	if (!MusicData.get(member.guild.id).nowplaying && MusicData.get(member.guild.id).queue.length >= 1) play(member.guild);
 }
