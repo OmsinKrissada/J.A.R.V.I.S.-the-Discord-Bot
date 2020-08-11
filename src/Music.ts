@@ -1,4 +1,4 @@
-import { Guild, VoiceConnection, VoiceChannel, GuildMember, TextChannel, MessageEmbed } from 'discord.js';
+import { Guild, VoiceConnection, VoiceChannel, GuildMember, TextChannel, MessageEmbed, GuildResolvable } from 'discord.js';
 import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
 
@@ -31,16 +31,11 @@ class GuildMusicData {
 	volume: number = DataManager.CONFIG['defaultVolume'];
 	leaveTimeout: NodeJS.Timeout;
 }
-var music_data: { [guild: string]: GuildMusicData } = {};
+const MusicData = new Map<GuildResolvable, GuildMusicData>();
 
-
-
-function getGuildData(guild_id: string) {
-	return music_data[guild_id];
-}
 
 export function getTotalTime(guild: Guild) {
-	const music = music_data[guild.id];
+	const music = MusicData.get(guild.id);
 	let totaltime = 0;
 	music.queue.forEach(song => {
 		totaltime += song.duration;
@@ -50,28 +45,28 @@ export function getTotalTime(guild: Guild) {
 }
 
 export function constructData(guild_id: string) {
-	if (!music_data.hasOwnProperty(guild_id)) {
-		music_data[guild_id] = new GuildMusicData();
+	if (!MusicData.has(guild_id)) {
+		MusicData.set(guild_id, new GuildMusicData());
 	}
 }
 
 export async function join(voiceChannel: VoiceChannel) {
 	let guild = voiceChannel.guild;
 
-	getGuildData(guild.id).connection = await voiceChannel.join();
-	getGuildData(guild.id).voiceChannelID = voiceChannel.id;
+	MusicData.get(guild.id).connection = await voiceChannel.join();
+	MusicData.get(guild.id).voiceChannelID = voiceChannel.id;
 
-	music_data[guild.id].connection.on('disconnect', () => {
+	MusicData.get(guild.id).connection.on('disconnect', () => {
 		pause(guild);
-		getGuildData(guild.id).nowplaying = null;
-		getGuildData(guild.id).connection = null;
-		music_data[guild.id].isLooping = false;
+		MusicData.get(guild.id).nowplaying = null;
+		MusicData.get(guild.id).connection = null;
+		MusicData.get(guild.id).isLooping = false;
 	})
 	// console.log(music_data)
 }
 
 export function leave(guild: Guild, announceChannel?: TextChannel) {
-	if (!getGuildData(guild.id).connection) {
+	if (!MusicData.get(guild.id).connection) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
 			.setDescription('I am **NOT** in a voice channel.')
@@ -79,7 +74,7 @@ export function leave(guild: Guild, announceChannel?: TextChannel) {
 		);
 		return;
 	}
-	getGuildData(guild.id).connection.disconnect();
+	MusicData.get(guild.id).connection.disconnect();
 	if (announceChannel)
 		announceChannel.send('👋 Successfully Disconnected!');
 }
@@ -87,41 +82,42 @@ export function leave(guild: Guild, announceChannel?: TextChannel) {
 
 
 export async function play(guild: Guild) {
+	const guild_music = MusicData.get(guild.id);
 
-	clearTimeout(music_data[guild.id].leaveTimeout);
+	clearTimeout(guild_music.leaveTimeout);
 
-	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher && getGuildData(guild.id).connection.dispatcher.paused) {
+	if (guild_music.connection && guild_music.connection.dispatcher && guild_music.connection.dispatcher.paused) {
 		resume(guild);
 	}
-	if (getGuildData(guild.id).queue.length <= 0) return;
+	if (guild_music.queue.length <= 0) return;
 
-	let song = getGuildData(guild.id).queue.shift();
+	let song = guild_music.queue.shift();
 
 	let requester = song.requester;
-	if (!getGuildData(guild.id).connection) {
+	if (!guild_music.connection) {
 		await join(requester.voice.channel);
 	}
 
-	const dispatcher = getGuildData(guild.id).connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" })
-	getGuildData(guild.id).nowplaying = song;
+	const dispatcher = guild_music.connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" })
+	guild_music.nowplaying = song;
 	dispatcher.on('close', () => { console.log('closed') })
 	dispatcher.on('unpipe', () => { console.log('unpiped') })
 	dispatcher.on('finish', async () => {
 		console.log('finished')
-		if (getGuildData(guild.id).isLooping && music_data[guild.id].nowplaying != null) {
-			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
+		if (guild_music.isLooping && guild_music.nowplaying != null) {
+			guild_music.queue.unshift(guild_music.nowplaying);
 			play(guild);
 		}
-		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
+		else if (guild_music.queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
 			if (await DataManager.get(guild.id, 'settings.announceQueueEnd')) {
 				song.textChannel.send('Queue Ended.');
 			}
-			music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
-			getGuildData(guild.id).nowplaying = null;
+			guild_music.leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+			guild_music.nowplaying = null;
 		}
 	})
-	dispatcher.setVolume(music_data[requester.guild.id].volume / 100);
+	dispatcher.setVolume(MusicData.get(requester.guild.id).volume / 100);
 
 	if (await DataManager.get(guild.id, 'settings.announceSong')) {
 		song.textChannel.send(new MessageEmbed()
@@ -132,7 +128,7 @@ export async function play(guild: Guild) {
 }
 
 export async function addQueue(member: GuildMember, field: string) {
-	let music = music_data[member.guild.id];
+	let guild_music = MusicData.get(member.guild.id);
 	await join(member.voice.channel);
 	if (field == '') return;
 	let song = new Song();
@@ -165,85 +161,87 @@ export async function addQueue(member: GuildMember, field: string) {
 		.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
 		.setColor(Util.green)
 		.addField('Song Duration', `\`${Util.prettyTime(song.getDuration())}\``, true)
-		.addField('Position in Queue', `\`${music.nowplaying ? music.queue.length + 1 : 0}\``, true)
+		.addField('Position in Queue', `\`${guild_music.nowplaying ? guild_music.queue.length + 1 : 0}\``, true)
 		.addField('Time Before Playing', `\`${Util.prettyTime(getTotalTime(member.guild))}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
-	music_data[member.guild.id].queue.push(song);
+	MusicData[member.guild.id].queue.push(song);
 
-	if (!getGuildData(member.guild.id).nowplaying && getGuildData(member.guild.id).queue.length >= 1) play(member.guild);
+	if (!MusicData.get(member.guild.id).nowplaying && MusicData.get(member.guild.id).queue.length >= 1) play(member.guild);
 }
 
 export function pause(guild: Guild) {
-	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher) {
-		music_data[guild.id].connection.dispatcher.pause();
+	if (MusicData.get(guild.id).connection && MusicData.get(guild.id).connection.dispatcher) {
+		MusicData.get(guild.id).connection.dispatcher.pause();
 	}
 }
 
 export function resume(guild: Guild) {
-	if (getGuildData(guild.id).connection && getGuildData(guild.id).connection.dispatcher) {
-		music_data[guild.id].connection.dispatcher.resume();
+	if (MusicData.get(guild.id).connection && MusicData.get(guild.id).connection.dispatcher) {
+		MusicData.get(guild.id).connection.dispatcher.resume();
 	}
 }
 
 export function volume(guild: Guild, volume: number) {
-	if (music_data[guild.id] && music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) music_data[guild.id].connection.dispatcher.setVolume(volume / 100)
-	music_data[guild.id].volume = volume;
+	if (MusicData.get(guild.id) && MusicData.get(guild.id).connection && MusicData.get(guild.id).connection.dispatcher) MusicData.get(guild.id).connection.dispatcher.setVolume(volume / 100)
+	MusicData.get(guild.id).volume = volume;
 }
 
 export function skip(guild: Guild, respond_in: TextChannel) {
-	if (music_data[guild.id].queue.length > 0) {
+	if (MusicData.get(guild.id).queue.length > 0) {
 		play(guild);
 		respond_in.send('Skipped! ⏩')
 	}
-	else if (music_data[guild.id].connection && music_data[guild.id].connection.dispatcher) {
-		music_data[guild.id].connection.dispatcher.destroy();
-		music_data[guild.id].nowplaying = null;
-		music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+	else if (MusicData.get(guild.id).connection && MusicData.get(guild.id).connection.dispatcher) {
+		const guild_music = MusicData.get(guild.id);
+		guild_music.connection.dispatcher.destroy();
+		guild_music.nowplaying = null;
+		guild_music.leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
 		respond_in.send('Skipped! ⏩')
 	}
 }
 
 export function loop(guild: Guild) {
-	music_data[guild.id].isLooping = !music_data[guild.id].isLooping;
-	if (music_data[guild.id].isLooping) message.channel.send('Looping! 🔂');
+	MusicData.get(guild.id).isLooping = !MusicData.get(guild.id).isLooping;
+	if (MusicData.get(guild.id).isLooping) message.channel.send('Looping! 🔂');
 	else message.channel.send('Stopped Looping! ➡');
 }
 
 export function shuffle(guild: Guild) {
-	music_data[guild.id].queue = Util.shuffle(music_data[guild.id].queue);
+	MusicData.get(guild.id).queue = Util.shuffle(MusicData.get(guild.id).queue);
 	message.channel.send('Shuffled! 🔀')
 }
 
 export function move(guild: Guild, oldPosition: number, newPosition: number) {
-	let queue = music_data[guild.id].queue;
+	let queue = MusicData.get(guild.id).queue;
 	let transferingSong = queue.splice(oldPosition - 1, 1)[0];
 	queue.splice(newPosition - 1, 0, transferingSong);
 }
 
 export function seek(guild: Guild, startsec: number) {
-	let currentSong = music_data[guild.id].nowplaying;
+	const guild_music = MusicData.get(guild.id);
+	let currentSong = guild_music.nowplaying;
 	console.log(startsec)
-	music_data[guild.id].connection.dispatcher.destroy();
-	const dispatcher = music_data[guild.id].connection.play(ytdl(currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
-	dispatcher.setVolume(music_data[guild.id].volume / 100);
+	guild_music.connection.dispatcher.destroy();
+	const dispatcher = guild_music.connection.play(ytdl(currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
+	dispatcher.setVolume(guild_music.volume / 100);
 	dispatcher.on('finish', async () => {
 		console.log('finished')
-		if (getGuildData(guild.id).isLooping && music_data[guild.id].nowplaying != null) {
-			music_data[guild.id].queue.unshift(music_data[guild.id].nowplaying);
+		if (guild_music.isLooping && guild_music.nowplaying != null) {
+			guild_music.queue.unshift(guild_music.nowplaying);
 			play(guild);
 		}
-		else if (getGuildData(guild.id).queue.length >= 1) play(guild); // Have next song
+		else if (guild_music.queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
 			if (await DataManager.get(guild.id, 'settings.announceQueueEnd')) {
 				currentSong.textChannel.send('Queue Ended.');
 			}
-			music_data[guild.id].leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
-			getGuildData(guild.id).nowplaying = null;
+			guild_music.leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
+			guild_music.nowplaying = null;
 		}
 	})
 	currentSong.getPlayedTime = () => {
-		return (music_data[guild.id].connection.dispatcher.streamTime + startsec * 1000) / 1000;
+		return (guild_music.connection.dispatcher.streamTime + startsec * 1000) / 1000;
 	}
 }
 
@@ -252,29 +250,29 @@ export async function search(field: string) {
 }
 
 export function getPlayedTime(guild: Guild) {
-	return music_data[guild.id].connection.dispatcher.streamTime;
+	return MusicData.get(guild.id).connection.dispatcher.streamTime;
 }
 
 export function getCurrentSong(guild: Guild) {
-	return music_data[guild.id].nowplaying;
+	return MusicData.get(guild.id).nowplaying;
 }
 
 export function getQueue(guild: Guild) {
-	return music_data[guild.id].queue;
+	return MusicData.get(guild.id).queue;
 }
 
 export function getVolume(guild: Guild) {
-	return music_data[guild.id].volume;
+	return MusicData.get(guild.id).volume;
 }
 
 export function removeSong(guild: Guild, index: number) {
-	return music_data[guild.id].queue.splice(index, 1)[0];
+	return MusicData.get(guild.id).queue.splice(index, 1)[0];
 }
 
 export function clearQueue(guild: Guild) {
-	if (music_data[guild.id]) music_data[guild.id].queue = [];
+	if (MusicData.get(guild.id)) MusicData.get(guild.id).queue = [];
 }
 
 export function isLooping(guild: Guild) {
-	return music_data[guild.id].isLooping;
+	return MusicData.get(guild.id).isLooping;
 }
