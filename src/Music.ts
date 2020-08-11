@@ -1,5 +1,5 @@
 import { Guild, VoiceConnection, VoiceChannel, GuildMember, TextChannel, MessageEmbed, GuildResolvable } from 'discord.js';
-import ytdl from 'discord-ytdl-core';
+import ytdl from 'ytdl-core-discord';
 import yts from 'yt-search';
 
 import { Util } from './Util';
@@ -98,7 +98,7 @@ export async function play(guild: Guild) {
 		await join(requester.voice.channel);
 	}
 
-	const dispatcher = guild_music.connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" })
+	const dispatcher = guild_music.connection.play(await ytdl(song.url, { filter: "audioonly", quality: "highestaudio" }), { type: "opus" })
 	guild_music.nowplaying = song;
 	dispatcher.on('close', () => { console.log('closed') })
 	dispatcher.on('unpipe', () => { console.log('unpiped') })
@@ -165,9 +165,9 @@ export async function addQueue(member: GuildMember, field: string) {
 		.addField('Time Before Playing', `\`${Util.prettyTime(getTotalTime(member.guild))}\``, true)
 		.setThumbnail(song.thumbnail)
 	);
-	MusicData[member.guild.id].queue.push(song);
+	guild_music.queue.push(song);
 
-	if (!MusicData.get(member.guild.id).nowplaying && MusicData.get(member.guild.id).queue.length >= 1) play(member.guild);
+	if (!guild_music.nowplaying && guild_music.queue.length >= 1) play(member.guild);
 }
 
 export function pause(guild: Guild) {
@@ -218,12 +218,12 @@ export function move(guild: Guild, oldPosition: number, newPosition: number) {
 	queue.splice(newPosition - 1, 0, transferingSong);
 }
 
-export function seek(guild: Guild, startsec: number) {
+export async function seek(guild: Guild, startsec: number) {
 	const guild_music = MusicData.get(guild.id);
 	let currentSong = guild_music.nowplaying;
 	console.log(startsec)
 	guild_music.connection.dispatcher.destroy();
-	const dispatcher = guild_music.connection.play(ytdl(currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
+	const dispatcher = guild_music.connection.play(await ytdl(currentSong.url, { filter: "audioonly", quality: "highestaudio", begin: startsec }), { type: "opus" });
 	dispatcher.setVolume(guild_music.volume / 100);
 	dispatcher.on('finish', async () => {
 		console.log('finished')
