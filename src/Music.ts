@@ -135,9 +135,9 @@ export async function addQueue(member: GuildMember, field: string) {
 	if (ytdl.validateURL(field)) {
 		// song.title = ytdl.getInfo;
 		let info = await ytdl.getInfo(field);
-		song.title = info.title;
+		song.title = info.videoDetails.title;
 		song.url = field;
-		song.duration = Number(info.length_seconds);
+		song.duration = Number(info.videoDetails.lengthSeconds);
 		song.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
 
 	} else {
