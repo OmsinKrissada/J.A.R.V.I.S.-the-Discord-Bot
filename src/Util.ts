@@ -79,7 +79,6 @@ class UtilClass {
 
 	prettyTime(seconds: number): string {
 		seconds = Math.round(seconds)
-		console.log(`${seconds} ${Math.floor(seconds / 60)}`)
 		return `${seconds / 3600 >= 1 ? this.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${this.min2(Math.floor(seconds / 60) % 60)}:${this.min2(seconds % 60)}`
 	}
 
@@ -91,7 +90,6 @@ class UtilClass {
 			shuffledArray.push(array[index]);
 			array = array.filter(item => array.indexOf(item) != index);
 		}
-		console.log(shuffledArray)
 		return shuffledArray;
 	}
 
@@ -105,9 +103,7 @@ class UtilClass {
 			for (let i = 0; val.length + nextval.length <= 1024 && value.length > 0; i++) {
 				nextval = value.shift();
 				val += nextval;
-				console.log('shifted')
 			}
-			console.log('"' + val + '"')
 
 			if (val.length > 0) page.addFields({ name: name, value: val, inline: inline });
 			pages.push(page);
@@ -115,41 +111,55 @@ class UtilClass {
 
 		let pagenum = 1;
 		pages.forEach(page => {
-			page.setFooter(`Page ${pagenum++} / ${pages.length}`);
+			page.setFooter(page.footer ? page.footer.text + `\n\nPage ${pagenum++} / ${pages.length}` : `Page ${pagenum++} / ${pages.length}`);
 		})
 
-		if (pages.length == 1) {
-			textChannel.send(pages[0])
-			return;
-		}
 
 		let current_page = 0;
 		const message = await textChannel.send(pages[0]);
-		message.react('▶');
-		const collector = message.createReactionCollector((reaction: MessageReaction, user: User) => (reaction.emoji.name == '◀' || reaction.emoji.name == '▶') && !user.bot, { time: 1000000 })
+
+		if (pages.length > 1) {
+			if (pages.length > 2) message.react('⏮')
+			message.react('◀');
+			message.react('▶');
+			if (pages.length > 2) message.react('⏭')
+		}
+		message.react('🛑');
+
+		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 })
 		collector.on('collect', (reaction, user) => {
-			console.log(reaction.emoji.name)
 			if (reaction.emoji.name == '◀') {
-				console.log('left')
-				message.reactions.removeAll();
+				message.reactions.resolve('◀').users.remove(user);
 				if (current_page + 1 > 1) {
 					message.edit(pages[--current_page]);
-					if (current_page + 1 != 1) message.react('◀');
 				}
-				message.react('▶');
 			}
 			else if (reaction.emoji.name == '▶') {
-				console.log('right')
-				message.reactions.removeAll();
-				message.react('◀');
+				message.reactions.resolve('▶').users.remove(user);
 				if (current_page + 1 < pages.length) {
 					message.edit(pages[++current_page]);
-					if (current_page + 1 != pages.length) message.react('▶');
 				}
 			}
-		})
-		collector.on('end', () => {
-			console.log('catched')
+			else if (reaction.emoji.name == '⏮') {
+				message.reactions.resolve('⏮').users.remove(user);
+				if (current_page + 1 > 1) {
+					message.edit(pages[0]);
+					current_page = 0;
+				}
+			}
+			else if (reaction.emoji.name == '⏭') {
+				message.reactions.resolve('⏭').users.remove(user);
+				if (current_page + 1 < pages.length) {
+					message.edit(pages[pages.length - 1]);
+					current_page = pages.length - 1;
+				}
+			}
+			else if (reaction.emoji.name == '🛑') {
+				if (message.deletable) message.delete();
+			}
+			else {
+				message.reactions.resolve(reaction.emoji.name).users.remove(user);
+			}
 		})
 		return message;
 	}

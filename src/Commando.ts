@@ -11,7 +11,6 @@ import * as Music from './Music';
 
 import alias from '../settings/alias.json';
 import helpDetail from '../settings/help.json';
-import responses from '../settings/responses.json';
 import packageinfo from '../package.json';
 import { VideoSearchResult } from 'yt-search';
 
@@ -44,7 +43,7 @@ export async function run(command: string, argument_array: Array<string>, user_m
 	prefix = await DataManager.get(ID, 'prefix');
 	if (commands.hasOwnProperty(command)) {
 		await commands[command]();
-	} else if (await DataManager.get(ID, 'settings.warnUnknownCommand')) commands.unknown();
+	} else if (command != 'cancel' && await DataManager.get(ID, 'settings.warnUnknownCommand')) commands.unknown();
 }
 
 
@@ -644,6 +643,7 @@ commands.search = async () => {
 	// setPrefix(prefix)
 	// setRespondMessage(message)
 	// run('play')
+	if (!song) return;
 	if (!message.member.voice.channel) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Error')
@@ -1203,18 +1203,17 @@ commands.test = () => {
 // Functions
 function confirm_type(title: string, list: Array<any>, text_to_display: (_: any) => string = (item) => item, is_delete = false, iconURL?: string): Promise<any> {
 	let confirm = (resolve: (arg0: any) => void) => {
-		console.log(list)
-		console.log(list.length)
 		if (list.length <= 1) {
 			resolve(list[0]);
 			return list[0];
 		}
-		let embeduser = new MessageEmbed()
-			.setColor(blue);
+		let embed = new MessageEmbed()
+			.setColor(blue)
+			.setFooter(`Type ${prefix}cancel to cancel.`);
 		if (iconURL) {
-			embeduser.setAuthor(title, iconURL);
+			embed.setAuthor(title, iconURL);
 		} else {
-			embeduser.setTitle(title);
+			embed.setTitle(title);
 		}
 
 		let items: string[] = [];
@@ -1227,11 +1226,18 @@ function confirm_type(title: string, list: Array<any>, text_to_display: (_: any)
 			}
 			i++;
 		})
-		Util.sendEmbedPage(<TextChannel>message.channel, embeduser, '​', items)
+		Util.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
 			.then((confirm_msg) => {
 				message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
-					let answer_msg = collected.first();
-					if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
+					const answer_msg = collected.first();
+					if (confirm_msg.deleted) return undefined;
+					if (answer_msg.deletable) answer_msg.delete();
+					if (confirm_msg.deletable) confirm_msg.delete();
+					if (answer_msg.content == prefix + 'cancel') {
+						resolve(undefined);
+						return undefined;
+					}
+					else if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
 						message.channel.send(new MessageEmbed()
 							.setDescription('Invalid answer, aborted.')
 							.setColor(red)

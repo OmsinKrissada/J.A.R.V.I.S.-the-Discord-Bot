@@ -26,7 +26,7 @@ import token from "../token.json"
 bot.login(token.discord)
 bot.on('ready', async () => {
 
-	console.log('I am ready!');
+	console.log('Logged in, ready.');
 	bot.user.setActivity('Ultron | !help', { type: "WATCHING" })
 
 	Util.refreshIp();
