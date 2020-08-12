@@ -100,7 +100,7 @@ class UtilClass {
 			let val = '';
 
 			let nextval = '';
-			for (let i = 0; val.length + nextval.length <= 1024 && value.length > 0; i++) {
+			for (let i = 0; val.length + nextval.length <= 1020 && value.length > 0; i++) {
 				nextval = value.shift();
 				val += nextval;
 			}
