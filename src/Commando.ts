@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction, VoiceChannel } from 'discord.js';
+import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMember, TextChannel, MessageReaction, VoiceChannel, MessageEmbedOptions } from 'discord.js';
 
 import { bot } from '././Main'
 import { Util } from './Util';
@@ -456,7 +456,7 @@ commands.info = async () => {
 					} catch (err) { }
 
 					if (users.length && users.length > 0) {
-						confirm_type('Please choose the member you refer to. (type in chat)', users).then((usr: GuildMember) => {
+						confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users).then((usr: GuildMember) => {
 							printUserInfo(usr.user);
 						})
 						return;
@@ -637,8 +637,12 @@ commands.nowplaying = () => {
 }
 
 commands.search = async () => {
-	let searchResult = (await Music.search(longarg(0))).videos;
-	let song: VideoSearchResult = await confirm_type('Pick your song by typing the number into the chat.', searchResult, (result: VideoSearchResult) => `\`${Util.prettyTime(result.duration.seconds)}\` __**[${result.title}](${result.url})**__ - ${result.author.name}`, false, message.author.avatarURL());
+	const searchResult = (await Music.search(longarg(0))).videos;
+	const prototype = new MessageEmbed()
+		.setAuthor('Pick your song by typing the number into the chat.', message.author.avatarURL())
+		.setThumbnail('attachment://yt-small2.png')
+		.attachFiles([{ attachment: './resources/yt-small2.png' }]);
+	const song: VideoSearchResult = await confirm_type(prototype, searchResult, (result: VideoSearchResult) => `\`${Util.prettyTime(result.duration.seconds)}\` __**[${result.title}](${result.url})**__ - ${result.author.name}`, false);
 	// setArguments(['play', searchResult[song].link])
 	// setPrefix(prefix)
 	// setRespondMessage(message)
@@ -941,7 +945,7 @@ commands.movevoice = async () => {
 
 	// Confirm destination channel
 	if (origin_all) {
-		confirm_type('Choose Destination Channel', Array.from(dests.keys())).then(deststr => {
+		confirm_type({ title: 'Choose Destination Channel' }, Array.from(dests.keys())).then(deststr => {
 			console.log(deststr)
 			let dest = message.guild.channels.resolve(deststr);
 			if (origins.size == 0) message.channel.send(new MessageEmbed()
@@ -975,8 +979,8 @@ commands.movevoice = async () => {
 		})
 	}
 	else { // Confirm origin channel
-		confirm_type('Choose Origin Channel', Array.from(origins.keys())).then(originstr => {
-			confirm_type('Choose Destination Channel', Array.from(dests.keys())).then(deststr => {
+		confirm_type({ title: 'Choose Origin Channel' }, Array.from(origins.keys())).then(originstr => {
+			confirm_type({ title: 'Choose Destination Channel' }, Array.from(dests.keys())).then(deststr => {
 				let origin = message.guild.channels.resolve(originstr);
 				let dest = message.guild.channels.resolve(deststr);
 				// Tell the errors
@@ -1069,7 +1073,7 @@ commands.mvregex = async () => {
 	// let dest_promise = ask_confirm('destination', dests);
 
 	if (origin_all) {
-		confirm_type('Choose destination channel you are refering to. *(type in chat)*', Array.from(dests.keys())).then(dest => {
+		confirm_type({ title: 'Choose destination channel you are refering to. *(type in chat)*' }, Array.from(dests.keys())).then(dest => {
 			origins.forEach((origin) => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('all')
@@ -1080,8 +1084,8 @@ commands.mvregex = async () => {
 		})
 	}
 	else {
-		confirm_type('Choose origin channel you are refering to. *(type in chat)*', Array.from(origins.keys())).then(origin => {
-			confirm_type('destination', Array.from(dests.keys())).then(dest => {
+		confirm_type({ title: 'Choose origin channel you are refering to. *(type in chat)*' }, Array.from(origins.keys())).then(origin => {
+			confirm_type({ title: 'destination' }, Array.from(dests.keys())).then(dest => {
 				message.guild.channels.resolve(origin).members.forEach((member) => {
 					console.log('not all')
 					console.log('from ' + message.guild.channels.resolve(origin).name + ' to ' + message.guild.channels.resolve(dest).name)
@@ -1201,20 +1205,15 @@ commands.test = () => {
 }
 
 // Functions
-function confirm_type(title: string, list: Array<any>, text_to_display: (_: any) => string = (item) => item, is_delete = false, iconURL?: string): Promise<any> {
+function confirm_type(prototype: MessageEmbed | MessageEmbedOptions, list: Array<any>, text_to_display: (_: any) => string = (item) => item, is_delete = false): Promise<any> {
 	let confirm = (resolve: (arg0: any) => void) => {
+		const embed = new MessageEmbed(prototype);
 		if (list.length <= 1) {
 			resolve(list[0]);
 			return list[0];
 		}
-		let embed = new MessageEmbed()
-			.setColor(blue)
-			.setFooter(`Type ${prefix}cancel to cancel.`);
-		if (iconURL) {
-			embed.setAuthor(title, iconURL);
-		} else {
-			embed.setTitle(title);
-		}
+		if (!embed.color) embed.setColor(blue);
+		if (!embed.footer) embed.setFooter(`Type ${prefix}cancel to cancel.`);
 
 		let items: string[] = [];
 		let i = 1;
@@ -1231,19 +1230,17 @@ function confirm_type(title: string, list: Array<any>, text_to_display: (_: any)
 				message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
 					const answer_msg = collected.first();
 					if (confirm_msg.deleted) return undefined;
-					if (answer_msg.deletable) answer_msg.delete();
-					if (confirm_msg.deletable) confirm_msg.delete();
+
 					if (answer_msg.content == prefix + 'cancel') {
 						resolve(undefined);
 						return undefined;
 					}
 					else if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
-						message.channel.send(new MessageEmbed()
+						if (confirm_msg.deletable) confirm_msg.delete();
+						confirm_msg.channel.send(new MessageEmbed()
 							.setDescription('Invalid answer, aborted.')
 							.setColor(red)
 						).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
-						if (answer_msg.deletable) answer_msg.delete();
-						if (confirm_msg.deletable) confirm_msg.delete();
 						resolve(undefined);
 						return undefined;
 					}
