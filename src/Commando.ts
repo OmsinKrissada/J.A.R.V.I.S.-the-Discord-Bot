@@ -373,7 +373,7 @@ commands.history = () => {
 
 commands.purge = () => {
 	function deletemsg(exceed_three: boolean) {
-		message.channel.bulkDelete(amount + (exceed_three ? 2 : 1)).then(() =>
+		(<TextChannel>message.channel).bulkDelete(amount + (exceed_three ? 2 : 1)).then(() =>
 			message.channel.send(`✅ Deleted ${amount} message${amount > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
 		)
 	}
