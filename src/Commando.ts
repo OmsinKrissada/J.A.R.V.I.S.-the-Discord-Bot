@@ -457,12 +457,14 @@ commands.info = async () => {
 
 					if (users.length && users.length > 0) {
 						confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users).then((usr: GuildMember) => {
+							console.log(usr.user)
 							printUserInfo(usr.user);
 						})
 						return;
 					}
 				}
 		}
+		console.log('passed here')
 		// if (message.deletable) message.delete();
 
 		// if (!(user == null || user.size == 0)) {
@@ -499,8 +501,10 @@ commands.info = async () => {
 			if (message.guild != undefined) { // if in a guild
 				if (message.guild.member(user)) {
 					const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+					if (rolesOfTheMember)
+						embeduserinfo
+							.addField('Roles', rolesOfTheMember)
 					embeduserinfo
-						.addField('Roles', rolesOfTheMember)
 						.setColor(message.guild.member(user).displayHexColor)
 						.addField('Joined Server At', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true);
 				}
