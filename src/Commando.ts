@@ -440,7 +440,8 @@ commands.info = async () => {
 				).then(msg => msg.delete({ timeout: 10000 }));
 			case 'me':
 				user = message.author;
-				break;
+				printUserInfo(user);
+				return;
 			default:
 				if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
 					user = message.mentions.members.first().user;
