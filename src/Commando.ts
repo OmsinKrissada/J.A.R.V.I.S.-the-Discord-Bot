@@ -247,10 +247,10 @@ commands.prefix = () => {
 
 commands.nick = () => {
 	if (args[0] != undefined) {
-		message.guild.member(bot.user).setNickname(args[0])
+		message.guild.member(bot.user).setNickname(longarg(0))
 		message.channel.send(new MessageEmbed()
 			.setTitle('Nickname Changed')
-			.setDescription(`Nickname has changed to **${args[0]}**`)
+			.setDescription(`Nickname has changed to **${longarg(0)}**`)
 			.setColor(green)
 		)
 	}
