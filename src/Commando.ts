@@ -24,7 +24,7 @@ interface CommandObject {
 }
 export const commands: CommandObject = {};
 
-export const non_dm_command: Array<string> = ['nick', 'purge', 'history', 'movevoice', 'play', 'queue', 'skip', 'volume', 'remove', 'pause', 'resume', 'search', 'nowplaying', 'join', 'leave', 'rickroll'];
+export const server_restricted_commands: Array<string> = ['nick', 'purge', 'history', 'movevoice', 'play', 'queue', 'skip', 'volume', 'remove', 'pause', 'resume', 'search', 'nowplaying', 'join', 'leave', 'rickroll'];
 
 export var message: Message;
 export var args: Array<string>;
@@ -39,7 +39,7 @@ export var ID: string;
 export async function run(command: string, argument_array: Array<string>, user_message: Message) {
 	args = argument_array;
 	message = user_message;
-	ID = message.guild ? message.guild.id : message.channel.id;
+	ID = message.guild === null ? message.guild.id : message.channel.id;
 	prefix = await DataManager.get(ID, 'prefix');
 	if (commands.hasOwnProperty(command)) {
 		await commands[command]();
@@ -565,6 +565,10 @@ commands.askimg = () => {
 		return;
 	}
 	Wolfram.getSimple(query, message);
+}
+
+commands.seen = () => {
+	console.log(message.content);
 }
 
 
