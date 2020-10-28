@@ -155,7 +155,7 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 })
 
 const app = express();
-const port = 8080;
+const port = 8081;
 
 app.use(express.json());
 
@@ -205,4 +205,3 @@ app.post('/api/github', (req, res) => {
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}`))
-// process.setuid()
