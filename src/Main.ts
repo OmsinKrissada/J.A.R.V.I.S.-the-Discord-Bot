@@ -1,12 +1,15 @@
 // Init sequence
 
 // Discord
-import { Client, MessageEmbed, Message } from 'discord.js';
+import { Client, MessageEmbed, Message, TextChannel } from 'discord.js';
 
 // Creates an instance of a Discord client
 export const bot = new Client();
 
 import fs from 'fs'
+import express from 'express';
+import { exec } from 'child_process';
+
 import * as Commando from "./Commando";
 import { Util } from "./Util";
 import * as DataManager from './DataManager'
@@ -16,11 +19,19 @@ import registered_commands from '../settings/alias.json'
 
 // Starts discord client
 import token from "../token.json"
+var client_id: string;
 bot.login(token.discord)
 bot.once('ready', async () => {
 
 	console.log('Logged in, ready.');
 	bot.user.setActivity('Ultron | !help', { type: "WATCHING" })
+	client_id = `<@!${bot.user.id}>`;
+
+	const jarvisLoginChannel = (<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('771047404719308810'));
+	jarvisLoginChannel.send(new MessageEmbed({
+		title: 'Logged in.',
+		color: Util.green
+	}).setTimestamp());
 
 	Util.refreshIp();
 
@@ -28,7 +39,6 @@ bot.once('ready', async () => {
 
 	await DataManager.connect()
 });
-const client_id = `<@!${bot.user.id}>`;
 
 
 // Checks if file directory exists, if not, creates them.
@@ -143,3 +153,56 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 	})
 
 })
+
+const app = express();
+const port = 8080;
+
+app.use(express.json());
+
+app.post('/api/github', (req, res) => {
+	res.sendStatus(200);
+
+	const sender = req.body.sender;
+	const jarvisChannel = (<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('709824110229979282'));
+
+	if (req.body.pusher) {
+		if (req.body.repository.id === 254853181) {
+			jarvisChannel.send(new MessageEmbed({
+				author: {
+					iconURL: sender.avatar_url,
+					name: `${sender.login} pushed to GitHub`
+				},
+				description: `\`push\` action was initiated by **${sender.login}**.\n\nPulling from GitHub.`,
+				color: Util.blue
+			}));
+
+			exec('git pull', (_err, _stdout, stderr) => {
+				if (stderr) {
+					jarvisChannel.send(`\`git pull\` produced errors, restarting process aborted.\n\`\`\`${stderr}\`\`\``)
+				} else {
+					console.log(`Received request from GitHub, restarting. (Pusher: ${sender.login})`);
+					jarvisChannel.send('`git pull` ran without errors. Restarting client . . .').then(() => {
+						process.exit();
+					});
+				}
+			})
+
+		} else {
+			console.log(`Received request from wrong repo on GitHub, ignoring request. (Pusher: ${sender.login})`);
+			jarvisChannel.send(new MessageEmbed({
+				author: {
+					iconURL: sender.avatar_url,
+					name: `${sender.login} pushed to GitHub`
+				},
+				description: `\`push\` action was received from a wrong repository, ignoring request.`,
+				color: Util.red
+			}))
+		}
+
+	} else {
+		console.log('Received from GitHub but there\'s no pusher in it, ignoring request.')
+	}
+})
+
+app.listen(port, () => console.log(`Listening on port ${port}`))
+// process.setuid()
