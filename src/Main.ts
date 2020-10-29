@@ -176,16 +176,17 @@ app.post('/api/github', (req, res) => {
 				color: Util.blue
 			}));
 
-			exec('git pull', (_err, _stdout, stderr) => {
+			exec('git pull', async (_err, _stdout, stderr) => {
 				if (stderr) {
 					jarvisChannel.send(`\`git pull\` produced errors, restarting process aborted.\n\`\`\`${stderr}\`\`\``)
 				} else {
 					console.log(`Received request from GitHub, restarting. (Pusher: ${sender.login})`);
-					jarvisChannel.send('`git pull` ran without errors. Restarting client . . .').then(() => {
+					await jarvisChannel.send('`git pull` ran without errors. Restarting client . . .')
+					exec('npm i', (_err, _stdout, stderr) => {
 						process.exit();
 					});
 				}
-			})
+			});
 
 		} else {
 			console.log(`Received request from wrong repo on GitHub, ignoring request. (Pusher: ${sender.login})`);
