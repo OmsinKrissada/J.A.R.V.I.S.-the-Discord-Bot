@@ -39,7 +39,7 @@ export var ID: string;
 export async function run(command: string, argument_array: Array<string>, user_message: Message) {
 	args = argument_array;
 	message = user_message;
-	ID = message.guild === null ? message.guild.id : message.channel.id;
+	ID = message.guild === null ? message.channel.id : message.guild.id;
 	prefix = await DataManager.get(ID, 'prefix');
 	if (commands.hasOwnProperty(command)) {
 		await commands[command]();
@@ -209,7 +209,7 @@ commands.reset = () => {
 }
 
 commands.prefix = () => {
-	if (args[0] == 'clear') {
+	if (args[0] === 'clear') {
 		if (message.guild === null) {
 			DataManager.set(message.channel.id, 'prefix', '');
 			message.channel.send(new MessageEmbed()
@@ -226,8 +226,8 @@ commands.prefix = () => {
 			);
 		}
 	}
-	else if (args[0] != undefined) {
-		let new_prefix = args[0];
+	else if (args[0] === 'set') {
+		let new_prefix = args[1];
 		DataManager.set(message.guild === null ? message.channel.id : message.guild.id, 'prefix', new_prefix);
 		message.channel.send(new MessageEmbed()
 			.setTitle('Prefix Changed')
@@ -238,7 +238,7 @@ commands.prefix = () => {
 	else {
 		message.channel.send(new MessageEmbed()
 			.setTitle('Current prefix is ' + Util.inlineCodeBlock(prefix) + '.')
-			.setDescription(`Usage: ${Util.inlineCodeBlock(`${prefix}prefix {new prefix}`)} or ${Util.inlineCodeBlock(`${prefix}prefix clear`)}`)
+			.setDescription(`Usage: ${Util.inlineCodeBlock(`${prefix}prefix set {new prefix}`)} or ${Util.inlineCodeBlock(`${prefix}prefix clear`)}`)
 			.setColor(blue)
 			.setFooter('Note: Blank prefix is only allowed in DM channels.')
 		);

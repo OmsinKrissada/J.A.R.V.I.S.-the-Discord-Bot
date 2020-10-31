@@ -77,7 +77,7 @@ function log(message: Message): void {
 // Handles the received messages
 bot.on('message', async (message) => {
 
-	const isDMMessage: boolean = message.guild === null;
+	const isDMMessage = message.guild === null;
 	const prefix: string = await DataManager.get(isDMMessage ? message.channel.id : message.guild.id, 'prefix');
 
 	if (message.author.bot || !((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
