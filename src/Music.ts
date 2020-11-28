@@ -111,7 +111,7 @@ export async function play(guild: Guild) {
 		}
 		else if (guild_music.queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
-			if (await DataManager.get(guild.id, 'settings.announceQueueEnd')) {
+			if ((await DataManager.get(guild.id)).settings.announceQueueEnd) {
 				song.textChannel.send('Queue Ended.');
 			}
 			guild_music.leaveTimeout = setTimeout(() => { leave(guild); }, 60000);
@@ -120,7 +120,7 @@ export async function play(guild: Guild) {
 	})
 	dispatcher.setVolume(MusicData.get(requester.guild.id).volume / 100);
 
-	if (await DataManager.get(guild.id, 'settings.announceSong')) {
+	if ((await DataManager.get(guild.id)).settings.announceSong) {
 		song.textChannel.send(new MessageEmbed()
 			.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Util.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
 			.setColor(Util.blue)
@@ -238,7 +238,7 @@ export function seek(guild: Guild, startsec: number) {
 		}
 		else if (guild_music.queue.length >= 1) play(guild); // Have next song
 		else { // Doesn't have next song
-			if (await DataManager.get(guild.id, 'settings.announceQueueEnd')) {
+			if ((await DataManager.get(guild.id)).settings.announceQueueEnd) {
 				currentSong.textChannel.send('Queue Ended.');
 			}
 			guild_music.leaveTimeout = setTimeout(() => { leave(guild); }, 60000);

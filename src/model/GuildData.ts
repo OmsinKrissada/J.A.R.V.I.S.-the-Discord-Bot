@@ -1,5 +1,11 @@
 import mongoose, { Document } from "mongoose";
 
+class VoiceHook {
+  type: string;
+  voiceChannel: string;
+  textChannel: string;
+}
+
 export interface IGuildData extends Document {
   ID: string;
   name: string;
@@ -10,13 +16,7 @@ export interface IGuildData extends Document {
     announceSong: boolean;
     announceQueueEnd: boolean;
   }
-  hooks?: [
-    {
-      text: string;
-      voice: string;
-      type: string;
-    }
-  ] | []
+  hooks?: VoiceHook[]
 }
 
 const guildData = new mongoose.Schema({

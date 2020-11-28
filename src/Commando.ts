@@ -41,10 +41,10 @@ export async function run(command: string, argument_array: Array<string>, user_m
 	args = argument_array;
 	message = user_message;
 	ID = message.guild === null ? message.channel.id : message.guild.id;
-	prefix = await DataManager.get(ID, 'prefix');
+	prefix = (await DataManager.get(ID)).prefix;
 	if (commands.hasOwnProperty(command)) {
 		await commands[command]();
-	} else if (command != 'cancel' && await DataManager.get(ID, 'settings.warnUnknownCommand')) commands.unknown();
+	} else if (command != 'cancel' && (await DataManager.get(ID)).settings.warnUnknownCommand) commands.unknown();
 }
 
 
@@ -293,7 +293,7 @@ commands.alias = () => {
 
 commands.settings = async () => {
 	if (!args[0]) {
-		let settings: object = await DataManager.get(ID, 'settings');
+		let settings: object = (await DataManager.get(ID)).settings;
 		let embed = new MessageEmbed().setTitle('Settings:').setColor(blue);
 		for (let setting in settings) {
 			embed.addField(setting, 'Value: ' + (settings[setting] ? '✅' : '❌'), true);
@@ -1130,20 +1130,20 @@ commands.hook = async () => {
 	// function hook(text, voice) {
 
 	class Hook {
-		text: string;
-		voice: string;
+		textChannel: string;
+		voiceChannel: string;
 		type: string;
 	}
 
-	let hooks: Hook[] = await DataManager.get(message.guild.id, 'hooks');
+	let hooks: Hook[] = (await DataManager.get(message.guild.id)).hooks;
 	if (!hooks) {
 		hooks = [];
 	}
 
 	if (args[0] == 'add') {
 		hooks.push({
-			text: args[1],
-			voice: args[2],
+			textChannel: args[1],
+			voiceChannel: args[2],
 			type: (args[3] ? args[3] : 'hard')
 		});
 		DataManager.set(message.guild.id, 'hooks', hooks);
@@ -1154,7 +1154,7 @@ commands.hook = async () => {
 		);
 	}
 	else if (args[0] == 'remove') {
-		hooks = hooks.filter((hook: { text: string; voice: string; }) => hook.text != args[1] && hook.voice != args[1]);
+		hooks = hooks.filter((hook: { textChannel: string; voiceChannel: string; }) => hook.textChannel != args[1] && hook.voiceChannel != args[1]);
 		DataManager.set(message.guild.id, 'hooks', hooks);
 	}
 	else if (args[0] == 'list') {
@@ -1165,7 +1165,7 @@ commands.hook = async () => {
 		let content = '';
 		let count = 1;
 		hooks.forEach(hook => {
-			content += `  ${Util.getNumberEmoji(count)} - :speech_balloon: **${message.guild.channels.resolve(hook.text)}**  :left_right_arrow:  :loud_sound: **${message.guild.channels.resolve(hook.voice).name}**\n\n`;
+			content += `  ${Util.getNumberEmoji(count)} - :speech_balloon: **${message.guild.channels.resolve(hook.textChannel)}**  :left_right_arrow:  :loud_sound: **${message.guild.channels.resolve(hook.voiceChannel).name}**\n\n`;
 			count++;
 		})
 		message.channel.send(new MessageEmbed()

@@ -34,23 +34,16 @@ export async function connect() {
 }
 
 // Load Data
-export async function get(guildID: string, item?: string) {
+export async function get(guildID: string, returnsData = true) {
 	let loaded = await Guilds.findOne({ ID: guildID }).exec()
-	if (item === undefined) {
+	if (!returnsData) {
 		return Guilds.findOne({ ID: guildID });
-		loaded.save().then(_ => console.log('saved new'))
 	}
-	return loaded.get(item);
+	return loaded;
 }
 
 export async function set(guildID: string, item: string, value: any): Promise<void> {
-	const loaded_guild = await Guilds.findOne({ id: guildID }).exec();
-	loaded_guild.set(item, value);
-	loaded_guild.save();
-}
-
-export async function update(guildID: string, item: string, value: any): Promise<void> {
-	const loaded_guild = await Guilds.findOne({ id: guildID }).exec();
+	const loaded_guild = await Guilds.findOne({ ID: guildID }).exec();
 	loaded_guild.set(item, value);
 	loaded_guild.save();
 }

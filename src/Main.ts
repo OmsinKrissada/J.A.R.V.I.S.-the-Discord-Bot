@@ -77,11 +77,15 @@ function log(message: Message): void {
 
 // Handles the received messages
 bot.on('message', async (message) => {
+	if (message.author.bot) return;
 
 	const isDMMessage = message.guild === null;
+	const referID = isDMMessage ? message.channel.id : message.guild.id;
+	const referName = isDMMessage ? message.author.username : message.guild.id;
+
 	if (await DataManager.get(message.guild.id) === null) {
 		console.log('Guild data not found, creating default data for this guild. ' + `[${message.guild.id}]`);
-		await DataManager.create(message.guild.id, message.guild.name, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
+		await DataManager.create(referID, referName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
 	}
 	// if (bot.guilds.resolve(guildID)) {
 	// 	loaded = new GuildData({
@@ -94,9 +98,9 @@ bot.on('message', async (message) => {
 	// 		prefix: CONFIG.defaultDMPrefix
 	// 	});
 	// }
-	const prefix: string = await DataManager.get(isDMMessage ? message.channel.id : message.guild.id, 'prefix');
+	const prefix: string = (await DataManager.get(referID)).prefix;
 
-	if (message.author.bot || !((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
+	if (!((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
 
 	log(message)
 
@@ -144,7 +148,7 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 	}
 
 	if (newState.member.user.bot) return;
-	let hooks: VoiceHook[] = await DataManager.get(newState.guild.id, 'hooks');
+	let hooks: VoiceHook[] = (await DataManager.get(newState.guild.id)).hooks;
 	console.log(hooks)
 	if (!hooks) {
 		hooks = [];
