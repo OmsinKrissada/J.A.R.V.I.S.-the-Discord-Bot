@@ -10,5 +10,5 @@ prefix.txt
 .node*
 token.json
 deploy.sh
-settings/appname
 settings/responses.json
+settings/config.yml
