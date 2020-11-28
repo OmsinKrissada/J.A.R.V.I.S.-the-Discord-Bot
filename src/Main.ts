@@ -81,7 +81,7 @@ bot.on('message', async (message) => {
 
 	const isDMMessage = message.guild === null;
 	const referID = isDMMessage ? message.channel.id : message.guild.id;
-	const referName = isDMMessage ? message.author.username : message.guild.id;
+	const referName = isDMMessage ? message.author.username : message.guild.name;
 
 	if (await DataManager.get(message.guild.id) === null) {
 		console.log('Guild data not found, creating default data for this guild. ' + `[${message.guild.id}]`);
