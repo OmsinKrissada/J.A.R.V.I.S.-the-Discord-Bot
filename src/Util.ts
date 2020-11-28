@@ -1,16 +1,13 @@
 import { exec } from 'child_process';
-import fs from 'fs';
-import yaml from 'js-yaml';
 import { TextChannel, MessageEmbed, MessageReaction, User } from 'discord.js';
-
-var config = yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8'));
+import { CONFIG } from './ConfigManager';
 
 class UtilClass {
 
-	red = config['colors']['red'];
-	green = config['colors']['green'];
-	blue = config['colors']['blue'];
-	yellow = config['colors']['yellow'];
+	red = CONFIG.colors.red;
+	green = CONFIG.colors.green;
+	blue = CONFIG.colors.blue;
+	yellow = CONFIG.colors.yellow;
 
 	inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
@@ -21,7 +18,7 @@ class UtilClass {
 		return new Promise((resolve, _reject) => {
 			exec('dig +short -4 myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
 				if (err) {
-					console.warn(err);
+					// console.warn(err);
 				}
 				resolve(stdout ? stdout : stderr);
 			});
@@ -163,6 +160,30 @@ class UtilClass {
 		})
 		return message;
 	}
+
+	// resolveUser(string: string) {
+	// 	if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
+	// 		user = message.mentions.members.first().user;
+	// 		printUserInfo(user);
+	// 		return;
+	// 	}
+	// 	else if (message.guild) { // If not mention
+
+	// 		let users: Array<GuildMember>;
+	// 		try {
+	// 			let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(1).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(1).toLowerCase()));
+	// 			users = userscollection.array();
+	// 		} catch (err) { }
+
+	// 		if (users.length && users.length > 0) {
+	// 			confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users).then((usr: GuildMember) => {
+	// 				console.log(usr.user)
+	// 				printUserInfo(usr.user);
+	// 			})
+	// 			return;
+	// 		}
+	// 	}
+	// }
 }
 
 export const Util = new UtilClass();

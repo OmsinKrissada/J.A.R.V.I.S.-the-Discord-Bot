@@ -33,6 +33,7 @@
     "typescript": "^3.9.7",
     "utf-8-validate": "^5.0.2",
     "xmlhttprequest": "^1.8.0",
+    "yaml-validator": "^3.0.0",
     "yt-search": "^2.3.3",
     "zlib-sync": "^0.1.7"
   },

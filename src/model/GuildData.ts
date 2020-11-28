@@ -1,14 +1,27 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
-export interface IGuildData {
+export interface IGuildData extends Document {
+  ID: string;
   name: string;
   prefix: string;
-  dm: boolean;
-  hooks: Array<Object>;
+  dm?: boolean;
+  settings?: {
+    warnUnknownCommand: boolean;
+    announceSong: boolean;
+    announceQueueEnd: boolean;
+  }
+  hooks?: [
+    {
+      text: string;
+      voice: string;
+      type: string;
+    }
+  ] | []
 }
 
 const guildData = new mongoose.Schema({
-  id: { type: Number },
+  ID: { type: String },
+  name: { type: String },
   prefix: { type: String, default: "!" },
   dm: { type: Boolean },
   settings: {
@@ -23,4 +36,4 @@ const guildData = new mongoose.Schema({
   }]
 })
 
-export let GuildData = mongoose.model("guild_options", guildData)
+export const Guilds = mongoose.model<IGuildData>("guilds", guildData)

@@ -23,19 +23,40 @@ But since it's already quite become a thing and I don't want it to just sit arou
 # Getting Started
 ### Installation
 1. Clone this repository and cd into it.
-   ```
+   ```sh
    git clone https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot.git
    cd J.A.R.V.I.S.-the-Discord-Bot
    ```
 
 2. Install dependencies required for the bot.
-   ```
+   ```sh
    npm install --production
    ```
    More info about the discord.js library [here](https://discord.js.org/#/).
 
-3. (Optional) Install **recommended packages** below:
+3. Create `config.yml` in `settings` directory using this template:
+   ```yaml
+   mongodb:
+      hostname: localhost
+      port: 27017
+      database: jarvis
+      authorizationEnabled: false
+      username: jarvisbot
+      password: "12345"
+   defaultPrefix: "!"
+   defaultDMPrefix: ""
+   defaultVolume: 20
+   colors:
+      red: 0xff0000
+      green: 0x04CF8D
+      blue: 0x28BAD4
+      yellow: 0xebc934
+
+   ```
+
+4. (Optional) Install **recommended packages** below:
    - nodemon (Info [below](#run-using-my-recommendation))
+   
 
 ### Getting it online:
 
@@ -44,7 +65,7 @@ You need to get a *token* from discord to get it online.
 In order to do that, please visit [Discord API Website](https://discordapp.com/developers).
 
 Then save your token in the root directory (where `package.json` is located) as a file named `token.json` in the following format.
-```
+```json
 {
    discord: "token here"
    wolfram: "token here"
@@ -61,10 +82,10 @@ npm start
 #### Run using my recommendation
 I recommend using **nodemon** to restart the bot automatically whenever the code is modified.
 **Install nodemon** and other development packages from *devDependencies* by running
-```
+```sh
 npm install --dev
 ```
 and now you can **start it** by running
-```
+```sh
 npm run dev
 ```

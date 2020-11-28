@@ -19,6 +19,7 @@ import registered_commands from '../settings/alias.json'
 
 // Starts discord client
 import token from "../token.json"
+import { CONFIG } from './ConfigManager';
 var client_id: string;
 bot.login(token.discord)
 bot.once('ready', async () => {
@@ -78,6 +79,21 @@ function log(message: Message): void {
 bot.on('message', async (message) => {
 
 	const isDMMessage = message.guild === null;
+	if (await DataManager.get(message.guild.id) === null) {
+		console.log('Guild data not found, creating default data for this guild. ' + `[${message.guild.id}]`);
+		await DataManager.create(message.guild.id, message.guild.name, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
+	}
+	// if (bot.guilds.resolve(guildID)) {
+	// 	loaded = new GuildData({
+	// 		id: guildID,
+	// 		prefix: CONFIG.defaultPrefix
+	// 	});
+	// } else {
+	// 	loaded = new GuildData({
+	// 		id: guildID,
+	// 		prefix: CONFIG.defaultDMPrefix
+	// 	});
+	// }
 	const prefix: string = await DataManager.get(isDMMessage ? message.channel.id : message.guild.id, 'prefix');
 
 	if (message.author.bot || !((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;

@@ -3,6 +3,7 @@ import { MessageEmbed, Message, User, UserResolvable, EmojiResolvable, GuildMemb
 import { bot } from '././Main'
 import { Util } from './Util';
 import * as DataManager from './DataManager'
+import { CONFIG } from './ConfigManager'
 import * as fs from 'fs'
 import { Wolfram } from './Wolfram';
 // import { Ranker } from '../files/Ranker';
@@ -141,7 +142,7 @@ commands.about = () => {
 		.addField('License', '[**MIT License**](https://en.wikipedia.org/wiki/MIT_License)', true)
 		.addField('Author', '[**OmsinKrissada**](https://github.com/OmsinKrissada)', true)
 		.addField('Source Code', '[**GitHub**](https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot)', true)
-		.addField('Default Prefix', Util.inlineCodeBlock(DataManager.CONFIG['defaultPrefix']), true)
+		.addField('Default Prefix', Util.inlineCodeBlock(CONFIG.defaultPrefix), true)
 		.addField('Guild Count', bot.guilds.cache.size, true)
 		.addField('Shard Count', bot.ws.shards.size, true)
 		.addField('HTTP API Version', bot.options.http.version, true)

@@ -64,7 +64,10 @@
 		},
 		"prefix": {
 			"description": "Changes the prefix of the bot.",
-			"usage": "prefix {prefix}"
+			"usage": [
+				"prefix set {prefix}",
+				"prefix clear"
+			]
 		},
 		"nick": {
 			"description": "Changes bot's nickname.",

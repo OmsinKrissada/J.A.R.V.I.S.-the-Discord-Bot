@@ -5,6 +5,7 @@ import yts from 'yt-search';
 import { Util } from './Util';
 import { message } from './Commando';
 import * as DataManager from './DataManager';
+import { CONFIG } from './ConfigManager';
 
 class Song {
 	title: string;
@@ -28,7 +29,7 @@ class GuildMusicData {
 	nowplaying: Song;
 	isLooping = false;
 	queue: Array<Song> = [];
-	volume: number = DataManager.CONFIG['defaultVolume'];
+	volume: number = CONFIG.defaultVolume;
 	leaveTimeout: NodeJS.Timeout;
 }
 const MusicData = new Map<GuildResolvable, GuildMusicData>();
