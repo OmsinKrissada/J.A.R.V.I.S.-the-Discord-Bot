@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node ./dist/src/Main.js",
     "dev": "ts-node-dev --respawn ./src/Main.ts",
-    "tsc": "tsc"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "OmsinKrissada",

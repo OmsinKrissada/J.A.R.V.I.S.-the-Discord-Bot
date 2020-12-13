@@ -10,10 +10,10 @@ import fs from 'fs'
 import express from 'express';
 import { exec } from 'child_process';
 
-import * as Commando from "./Commando";
 import { Util } from "./Util";
 import * as DataManager from './DataManager'
-import * as Music from './Music';
+// import * as Music from './Music';
+import * as CommandManager from './CommandManager';
 import registered_commands from '../settings/alias.json'
 
 
@@ -24,7 +24,7 @@ var client_id: string;
 bot.login(token.discord)
 bot.once('ready', async () => {
 
-	console.log('Logged in, ready.');
+	console.log(`Logged in to discord as >> '${bot.user.username}#${bot.user.discriminator}' [${bot.user.id}]\n`);
 	bot.user.setActivity('Ultron | !help', { type: "WATCHING" })
 	client_id = `<@!${bot.user.id}>`;
 
@@ -75,17 +75,18 @@ function log(message: Message): void {
 }
 
 
+
 // Handles the received messages
 bot.on('message', async (message) => {
 	if (message.author.bot) return;
 
 	const isDMMessage = message.guild === null;
-	const referID = isDMMessage ? message.channel.id : message.guild.id;
-	const referName = isDMMessage ? message.author.username : message.guild.name;
+	const sourceID = isDMMessage ? message.channel.id : message.guild.id;
+	const sourceName = isDMMessage ? message.author.username : message.guild.name;
 
 	if (await DataManager.get(message.guild.id) === null) {
 		console.log('Guild data not found, creating default data for this guild. ' + `[${message.guild.id}]`);
-		await DataManager.create(referID, referName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
+		await DataManager.create(sourceID, sourceName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
 	}
 	// if (bot.guilds.resolve(guildID)) {
 	// 	loaded = new GuildData({
@@ -98,7 +99,7 @@ bot.on('message', async (message) => {
 	// 		prefix: CONFIG.defaultDMPrefix
 	// 	});
 	// }
-	const prefix: string = (await DataManager.get(referID)).prefix;
+	const prefix: string = (await DataManager.get(sourceID)).prefix;
 
 	if (!((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
 
@@ -111,11 +112,11 @@ bot.on('message', async (message) => {
 		command_args = message.content.slice(prefix.length).trim().split(' ')
 	}
 
-	try {
-		Music.constructData(message.guild.id);
-	} catch (err) {
-		Music.constructData(message.channel.id);
-	}
+	// try {
+	// 	Music.constructData(message.guild.id);
+	// } catch (err) {
+	// 	Music.constructData(message.channel.id);
+	// }
 
 	let command = command_args[0].toLowerCase();
 	for (const aliases in registered_commands) {
@@ -124,15 +125,15 @@ bot.on('message', async (message) => {
 		}
 	}
 
-	if (isDMMessage && Commando.server_restricted_commands.includes(command)) {
-		message.channel.send(new MessageEmbed()
-			.setTitle('Not a DM Command')
-			.setDescription('This command is not available in DM channels')
-			.setColor(Util.red))
-		return 1;
-	}
+	// if (isDMMessage && Commando.server_restricted_commands.includes(command)) {
+	// 	message.channel.send(new MessageEmbed()
+	// 		.setTitle('Not a DM Command')
+	// 		.setDescription('This command is not available in DM channels')
+	// 		.setColor(Util.red))
+	// 	return 1;
+	// }
 
-	Commando.run(command, command_args.slice(1), message);
+	CommandManager.run(command, command_args.slice(1), { message, prefix, sourceID });
 
 });
 
@@ -225,4 +226,4 @@ app.post('/api/github', (req, res) => {
 	}
 })
 
-app.listen(port, () => console.log(`Listening on port ${port}`))
+app.listen(port, () => console.log(`Listening for AJAX calls on port ${port}\n`))

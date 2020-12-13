@@ -3,8 +3,6 @@ import mongoose from 'mongoose';
 
 import { Guilds, IGuildData } from './model/GuildData';
 import { CONFIG } from './ConfigManager';
-import { bot } from './Main';
-import { Guild } from 'discord.js';
 
 
 
@@ -13,11 +11,11 @@ const hostname = CONFIG.mongodb.hostname;
 const port = CONFIG.mongodb.port;
 const db = CONFIG.mongodb.database;
 
-const mongodb_username = CONFIG.mongodb.username;
-const mongodb_password = CONFIG.mongodb.password;
+const username = CONFIG.mongodb.username;
+const password = CONFIG.mongodb.password;
 
 export async function connect() {
-	const mongopath = CONFIG.mongodb.authorizationEnabled ? `mongodb://${mongodb_username}:${mongodb_password}@${hostname}:${port}/${db}?authSource=admin`
+	const mongopath = CONFIG.mongodb.authorizationEnabled ? `mongodb://${username}:${password}@${hostname}:${port}/${db}?authSource=admin`
 		: `mongodb://${hostname}:${port}/${db}`
 
 	await mongoose.connect(mongopath, {
