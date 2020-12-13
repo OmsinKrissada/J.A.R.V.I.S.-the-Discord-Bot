@@ -5,7 +5,7 @@ export default new Command({
 	category: "general",
 	examples: ['ping'],
 	requiredPermissions: [],
-	serverRestricted: false,
+	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.reply('Pong!')
 		message.channel.send(`Latency: ${m.createdTimestamp - message.createdTimestamp}ms`);
