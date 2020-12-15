@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { TextChannel, MessageEmbed, MessageReaction, User } from 'discord.js';
+import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions, Emoji } from 'discord.js';
 import { CONFIG } from './ConfigManager';
 
 class UtilClass {
@@ -158,32 +158,104 @@ class UtilClass {
 				message.reactions.resolve(reaction.emoji.name).users.remove(user);
 			}
 		})
+		collector.on('end', () => {
+			message.reactions.removeAll();
+		})
 		return message;
 	}
 
-	// resolveUser(string: string) {
-	// 	if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
-	// 		user = message.mentions.members.first().user;
-	// 		printUserInfo(user);
-	// 		return;
-	// 	}
-	// 	else if (message.guild) { // If not mention
+	/**
+ * 
+ * @param reactions Reaction(s) to use as choice
+ * @param timeout Time to wait for answer (ms)
+ * @returns An emoji which user selected, returns null if time limit hit.
+ */
+	async confirm_click(title: string, description: string, reactions: EmojiResolvable[], textChannel: TextChannel, allowedUser: User, timeout?: number): Promise<{ message: Message; emoji: EmojiResolvable | null; }> {
 
-	// 		let users: Array<GuildMember>;
-	// 		try {
-	// 			let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(1).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(1).toLowerCase()));
-	// 			users = userscollection.array();
-	// 		} catch (err) { }
+		let return_value: { message: Message, emoji: EmojiResolvable | null };
+		let embed = new MessageEmbed()
+			.setTitle(title)
+			.setDescription(description)
+			.setColor(Util.yellow);
+		if (timeout) {
+			embed.setFooter(`You have ${timeout / 1000} seconds to respond.`);
+		}
 
-	// 		if (users.length && users.length > 0) {
-	// 			confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users).then((usr: GuildMember) => {
-	// 				console.log(usr.user)
-	// 				printUserInfo(usr.user);
-	// 			})
-	// 			return;
-	// 		}
-	// 	}
-	// }
+		await textChannel.send(embed).then(async (confirm_msg) => {
+			reactions.forEach(reaction => {
+				confirm_msg.react(reaction);
+			})
+			await confirm_msg.awaitReactions((reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) && user == allowedUser, { max: 1, time: timeout, errors: ['time'] })
+				.then(collected => {
+					// console.log(collected.first().emoji.name)
+					// console.log(reactions)
+					return_value = { message: confirm_msg, emoji: collected.first().emoji.name };
+				}).catch(() => {
+					if (timeout) {
+						confirm_msg.edit(embed.setFooter('Time\'s up'));
+						confirm_msg.reactions.removeAll();
+					}
+					return_value = { message: confirm_msg, emoji: null };
+				})
+		});
+		return return_value;
+	}
+
+
+	confirm_type(prototype: MessageEmbed | MessageEmbedOptions, list: Array<any>, message: Message, prefix: string, text_to_display: (_: any) => string = (item) => item, is_delete = false): Promise<any> {
+		let confirm = (resolve: (arg0: any) => void) => {
+			const embed = new MessageEmbed(prototype);
+			if (list.length <= 1) {
+				resolve(list[0]);
+				return list[0];
+			}
+			if (!embed.color) embed.setColor(Util.blue);
+			if (!embed.footer) embed.setFooter(`Type ${prefix}cancel to cancel.`);
+
+			let items: string[] = [];
+			let i = 1;
+			list.forEach((item) => {
+				if (text_to_display) {
+					items.push(`${Util.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`);
+				} else {
+					items.push(`${Util.getNumberEmoji(i)} - ${item}\n\n`);
+				}
+				i++;
+			})
+			Util.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
+				.then((confirm_msg) => {
+					message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
+						const answer_msg = collected.first();
+						if (confirm_msg.deleted) return undefined;
+
+						if (answer_msg.content == prefix + 'cancel') {
+							resolve(undefined);
+							return undefined;
+						}
+						else if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
+							if (confirm_msg.deletable) confirm_msg.delete();
+							confirm_msg.channel.send(new MessageEmbed()
+								.setDescription('Invalid answer, aborted.')
+								.setColor(Util.red)
+							).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
+							resolve(undefined);
+							return undefined;
+						}
+						else {
+							let result = Array.from(list.keys())[Number(answer_msg.content) - 1];
+							if (confirm_msg.deletable) confirm_msg.delete();
+							if (answer_msg.deletable) answer_msg.delete();
+							console.log(result)
+							resolve(list[result]);
+							return list[result];
+						}
+					});
+				})
+			if (is_delete && message.deletable) message.delete();
+		}
+		return new Promise(confirm);
+	}
 }
+
 
 export const Util = new UtilClass();

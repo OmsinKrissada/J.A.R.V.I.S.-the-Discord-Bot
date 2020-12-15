@@ -13,10 +13,13 @@ export default new Command({
 	exec(message, prefix, args) {
 		let command_name = args[0] ? args[0].toLowerCase() : null;
 		for (let full_command in alias) { // check with alias
-			if (args[0] in alias[full_command]) {
+			if (alias[full_command] instanceof Array && alias[full_command].includes(args[0])) {
+				console.log(command_name)
+				console.log(full_command)
 				command_name = full_command;
 			}
 		}
+		console.log(command_name)
 		if (args[0] && CommandMap.has(command_name)) { // specific-command detail
 			const command = CommandMap.get(command_name);
 			let embed = new MessageEmbed()

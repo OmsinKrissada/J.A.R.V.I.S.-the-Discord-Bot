@@ -16,7 +16,7 @@ interface IConstructor {
 	examples: string[];
 	category: CommandCategory;
 	serverOnly: boolean;
-	requiredPermissions: Permissions[];
+	requiredPermissions: number[];
 	exec: (message: Message, prefix: string, args: string[], sourceID: string) => void;
 }
 
@@ -33,7 +33,7 @@ export class Command {
 		this.requiredPermissions = requiredPermissions;
 		this.exec = exec;
 
-		CommandMap.set(name, this);
+		CommandMap.set(name, this); // Do not forget about this ...
 	}
 
 	static readonly bot = bot;
@@ -44,7 +44,7 @@ export class Command {
 	readonly examples: string[];
 	readonly category: CommandCategory;
 	readonly serverOnly: boolean;
-	readonly requiredPermissions: Permissions[];
+	readonly requiredPermissions: number[];
 
 	readonly exec: (message: Message, prefix: string, args: string[], sourceID: string) => void;
 }
@@ -53,13 +53,12 @@ export class Command {
 fs.readdir(path.join(__dirname, 'commands'), (err, files) => {
 	if (err) console.error(err);
 	files.forEach(file => {
-		import(path.join(__dirname, 'commands', file)).then((command_definition: Command) => {
-			CommandMap.set(command_definition.name, command_definition)
-		})
-		console.log('Requested to register ' + file);
+		import(path.join(__dirname, 'commands', file)).then(() => console.log('Loaded ' + file))
+		// console.log('Requested to register ' + file);
 	});
 	console.log('');
 });
+
 
 export function sanitize(input: string) {
 
