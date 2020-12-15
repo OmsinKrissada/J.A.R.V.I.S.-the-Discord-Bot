@@ -18,7 +18,6 @@ export default new Command({
 		// const jarvisChannel = (<TextChannel>Command.bot.guilds.resolve('709824110229979278').channels.resolve('709824110229979282'));
 		message.channel.send('Pulling from GitHub . . .');
 		exec('git pull', async (_err, stdout, _stderr) => {
-			message.channel.send(`\`git pull\` executed, please confirm your action.\nOutput:\n\`\`\`${stdout}\`\`\``);
 			Util.confirm_click('Apply updates and restart?', 'This will apply updates from \`git pull\`, run \`npm ci\` and restart the bot.', ['✅', '❌'],
 				<TextChannel>message.channel, message.author, 60000).then(returnval => {
 					let msg = returnval.message;
