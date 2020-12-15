@@ -182,6 +182,7 @@ app.use(express.json());
 
 app.post('/api/github', (req, res) => {
 	res.sendStatus(200);
+	return;
 
 	const sender = req.body.sender;
 	const jarvisChannel = (<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('709824110229979282'));
