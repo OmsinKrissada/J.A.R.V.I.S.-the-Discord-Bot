@@ -16,7 +16,7 @@ new Command({
 new Command({
 	name: 'gnip',
 	description: 'Not simple ping command',
-	category: "general",
+	category: "hiden",
 	examples: ['gnip'],
 	requiredPermissions: [],
 	serverOnly: false,
