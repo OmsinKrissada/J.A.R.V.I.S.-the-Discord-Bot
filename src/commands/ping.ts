@@ -8,7 +8,7 @@ new Command({
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.reply('Pong!')
-		message.channel.send(`Old: ${m.createdTimestamp - message.createdTimestamp}ms`);
+		message.channel.send(`Latency: ${m.createdTimestamp - message.createdTimestamp}ms`);
 		message.channel.send(`API Latency ${Math.round(Command.bot.ws.ping)}ms`);
 	}
 })
