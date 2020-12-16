@@ -42,16 +42,16 @@ Command.bot.on('message', msg => {
 
 class MusicPlayer {
 
-	guild: Guild;
+	readonly guild: Guild;
 
 	voiceChannel: VoiceChannel;
 	requestedChannel: TextChannel; // Text Channel
 	connection: VoiceConnection;
-	nowplaying: Song;
-	isLooping = false;
-	queue: Array<Song> = [];
-	volume: number = CONFIG.defaultVolume;
-	leaveTimeout: NodeJS.Timeout;
+	private nowplaying: Song;
+	private isLooping = false;
+	private queue: Array<Song> = [];
+	private volume: number = CONFIG.defaultVolume;
+	private leaveTimeout: NodeJS.Timeout;
 
 	constructor(guild: Guild) {
 		this.guild = guild;
@@ -211,12 +211,16 @@ class MusicPlayer {
 		} else return false;
 	}
 
-	setLoop(value: boolean) {
+	setLooping(value: boolean) {
 		this.isLooping = value;
 	}
 
+	getLooping() {
+		return this.isLooping;
+	}
+
 	/** @returns Whether the song is looping after the action */
-	toggleLoop() {
+	toggleLooping() {
 		this.isLooping = !this.isLooping;
 		if (this.isLooping) return true;
 		else return false;
@@ -639,7 +643,7 @@ new Command({
 	requiredCallerPermissions: [],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		const isLooping = MusicPlayerMap.get(message.guild.id).toggleLoop();
+		const isLooping = MusicPlayerMap.get(message.guild.id).toggleLooping();
 		if (isLooping) {
 			message.channel.send('Looping! 🔂');
 		} else {
@@ -686,7 +690,7 @@ new Command({
 			.setThumbnail(current_song.thumbnail)
 			.addField('Song', `${current_song.title}`)
 			.addField('Link', current_song.url)
-			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}` + (MusicPlayerMap.get(message.guild.id).isLooping ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
+			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}` + (MusicPlayerMap.get(message.guild.id).getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
 			.addField('Voice Channel', current_song.voiceChannel, true)
 			.addField('Requester', `${current_song.requester}`, true)
@@ -713,11 +717,62 @@ new Command({
 })
 
 new Command({
-	name: '',
+	name: 'volume',
 	category: 'music',
-	description: '',
-	examples: [],
+	description: 'volume <new volume>',
+	examples: ['volume'],
 	requiredCallerPermissions: [],
 	serverOnly: true,
-	exec(message, prefix, args, sourceID) { }
-}) 
+	exec(message, prefix, args, sourceID) {
+		const player = MusicPlayerMap.get(message.guild.id);
+		// try {
+		if (args[0]) {
+			let volume = isNaN(Number(args[0])) ? -1 : Number(args[0]);
+			if (0 > volume || volume > 100) {
+				message.channel.send(new MessageEmbed()
+					.setTitle('Invalid Argument')
+					.setDescription('The number must fall in the range of 0 to 100.')
+					.setColor(Helper.red)
+				);
+				return;
+			}
+			let oldVolume = player.getVolume();
+			if (oldVolume == volume) {
+				message.channel.send(new MessageEmbed()
+					.setTitle('Volume Unchanged')
+					.setDescription(`Volume has not changed since it's already at \`${args[0]}%\``)
+					.setColor(Helper.blue)
+				);
+				return;
+			}
+			player.setVolume(volume);
+
+			// } catch (err) {
+			// 	console.log('error occured while changing the volume')
+			// }
+			message.channel.send(new MessageEmbed()
+				.setTitle('Volume Adjusted ' + (oldVolume < volume ? '🔺' : '🔻'))
+				.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[0]}%\`.\n\n**${Helper.progressBar(volume, 31)}**`)
+				.setColor(Helper.green)
+			);
+		}
+		else {
+			let volume = player.getVolume();
+			message.channel.send(new MessageEmbed()
+				.setTitle('Current Volume')
+				.setDescription(`The volume is at \`${volume}%\`\n\n**${Helper.progressBar(volume, 31)}**`)
+				.setColor(Helper.blue)
+			);
+		}
+	}
+})
+
+// new Command({
+// 	name: '',
+// 	category: 'music',
+// 	description: '',
+// 	examples: [],
+// 	requiredCallerPermissions: [],
+// 	serverOnly: true,
+// 	exec(message, prefix, args, sourceID) { }
+// }) 
