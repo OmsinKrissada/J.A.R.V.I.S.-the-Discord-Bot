@@ -1,6 +1,6 @@
 // import { Command } from '../CommandManager';
 // import { MessageEmbed } from 'discord.js';
-// import { Util } from '../Helper';
+// import { Helper } from '../Helper';
 // import * as DataManager from '../DataManager';
 // new Command({
 // 	name: 'join',
@@ -24,7 +24,7 @@
 // 				message.channel.send(new MessageEmbed()
 // 					.setTitle('Error')
 // 					.setDescription('**You must be in a voice channel** to use this command.')
-// 					.setColor(Util.red)
+// 					.setColor(Helper.red)
 // 				);
 // 				return;
 // 			}
@@ -50,7 +50,7 @@
 // 			);
 // 			return;
 // 		}
-// 		await Music.addQueue(message.member, longarg(0));
+// 		await Music.addQueue(message.member, Helper.longarg(0));
 // 	}
 // })
 

@@ -4,7 +4,7 @@ import path from 'path';
 import * as DataManager from './DataManager';
 import { bot } from './Main';
 
-import { Util } from './Helper';
+import { Helper } from './Helper';
 
 
 export const CommandMap = new Map<string, Command>();
@@ -80,18 +80,18 @@ export async function run(command_name: string, args: string[], { message: sourc
 			sourcemsg.channel.send(new MessageEmbed()
 				.setTitle('Not available in DM')
 				.setDescription(`Sorry, this command can only be used in servers.`)
-				.setColor(Util.red));
+				.setColor(Helper.red));
 		} else if (command.requiredCallerPermissions.length == 0 || noperm.length == 0) {
 			command.exec(sourcemsg, prefix, args, sourceID);
 		} else {
 			sourcemsg.channel.send(new MessageEmbed()
 				.setTitle('You don\'t have enough permission')
 				.setDescription(`You are lacking permission${noperm.length > 1 ? 's' : ''}: ` + noperm.map(perm => `\`${(perm)}\``).join(', '))
-				.setColor(Util.red));
+				.setColor(Helper.red));
 		}
 	} else if (command_name != 'cancel' && (await DataManager.get(sourceID)).settings.warnUnknownCommand)
 		sourcemsg.channel.send(new MessageEmbed()
 			.setTitle('Unknown Command')
-			.setDescription(`Invalid command, type ${Util.inlineCodeBlock(`${prefix}help`)} for list of commands.`)
-			.setColor(Util.red));
+			.setDescription(`Invalid command, type ${Helper.inlineCodeBlock(`${prefix}help`)} for list of commands.`)
+			.setColor(Helper.red));
 }

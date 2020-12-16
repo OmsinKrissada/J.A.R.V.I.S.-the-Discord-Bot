@@ -1,6 +1,6 @@
 import { MessageEmbed, Permissions } from 'discord.js';
 import { Command } from '../CommandManager';
-import { Util } from '../Helper';
+import { Helper } from '../Helper';
 
 export default new Command({
 	name: 'nick',
@@ -13,7 +13,7 @@ export default new Command({
 		if (!message.guild.member(Command.bot.user).hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Sorry!')
-				.setColor(Util.red)
+				.setColor(Helper.red)
 				.setDescription('I don\'t have permission to change my nickname')
 			);
 		}
@@ -22,7 +22,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Changed')
 				.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
-				.setColor(Util.green)
+				.setColor(Helper.green)
 			)
 		}
 		else {
@@ -30,7 +30,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Reset')
 				.setDescription(`Nickname has reset to **${Command.bot.user.username}**`)
-				.setColor(Util.green)
+				.setColor(Helper.green)
 			)
 		}
 	}

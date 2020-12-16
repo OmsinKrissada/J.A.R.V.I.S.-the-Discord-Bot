@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js';
-import { Util } from '../Helper';
+import { Helper } from '../Helper';
 import { Command, CommandMap } from '../CommandManager';
 import * as alias from '../../settings/alias.json';
 
@@ -23,18 +23,18 @@ export default new Command({
 		if (args[0] && CommandMap.has(command_name)) { // specific-command detail
 			const command = CommandMap.get(command_name);
 			let embed = new MessageEmbed()
-				.setTitle('Help | Command: ' + Util.inlineCodeBlock(command.name))
-				.setColor(Util.blue)
+				.setTitle('Help | Command: ' + Helper.inlineCodeBlock(command.name))
+				.setColor(Helper.blue)
 
 			embed.addField('Description:', command.description);
 			let usagestr = '';
-			command.examples.forEach((usage: string) => usagestr += Util.inlineCodeBlock(prefix + usage) + '\n');
+			command.examples.forEach((usage: string) => usagestr += Helper.inlineCodeBlock(prefix + usage) + '\n');
 
 			embed.addField('Usages:', usagestr);
-			let aliasstr = Util.inlineCodeBlock(command.name) + ', ';
+			let aliasstr = Helper.inlineCodeBlock(command.name) + ', ';
 			if (alias[command.name]) {
 				alias[command.name].forEach((available: string) => {
-					aliasstr += Util.inlineCodeBlock(available) + ', ';
+					aliasstr += Helper.inlineCodeBlock(available) + ', ';
 				});
 			}
 			embed.addField('Aliases', aliasstr.slice(0, -2));
@@ -54,11 +54,11 @@ export default new Command({
 				}
 			})
 
-			let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Util.inlineCodeBlock(prefix)}.`;
+			let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Helper.inlineCodeBlock(prefix)}.`;
 			let embed = new MessageEmbed()
 				.setTitle(header)
-				.setDescription(`Use ${Util.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
-				.setColor(Util.blue)
+				.setDescription(`Use ${Helper.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
+				.setColor(Helper.blue)
 				.attachFiles([{ attachment: './resources/rainbow.png' }])
 				.setAuthor('Help | Available Commands:', 'attachment://rainbow.png');
 
@@ -74,7 +74,7 @@ export default new Command({
 
 				let command_list = '';
 				cmd_by_categories[category].forEach((command: Command) => {
-					command_list += Util.inlineCodeBlock(command.name) + ', ';
+					command_list += Helper.inlineCodeBlock(command.name) + ', ';
 				})
 				command_list = command_list.slice(0, -2);
 				embed.addField(displayCategory, command_list ? command_list : '<none>');

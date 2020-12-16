@@ -1,8 +1,8 @@
 import { exec } from 'child_process';
-import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions, Emoji } from 'discord.js';
+import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions } from 'discord.js';
 import { CONFIG } from './ConfigManager';
 
-class UtilClass {
+class HelperClass {
 
 	red = CONFIG.colors.red;
 	green = CONFIG.colors.green;
@@ -180,7 +180,7 @@ class UtilClass {
 		let embed = new MessageEmbed()
 			.setTitle(title)
 			.setDescription(description)
-			.setColor(Util.yellow);
+			.setColor(Helper.yellow);
 		if (timeout) {
 			embed.setFooter(`You have ${timeout / 1000} seconds to respond.`);
 		}
@@ -213,20 +213,20 @@ class UtilClass {
 				resolve(list[0]);
 				return list[0];
 			}
-			if (!embed.color) embed.setColor(Util.blue);
+			if (!embed.color) embed.setColor(Helper.blue);
 			if (!embed.footer) embed.setFooter(`Type ${prefix}cancel to cancel.`);
 
 			let items: string[] = [];
 			let i = 1;
 			list.forEach((item) => {
 				if (text_to_display) {
-					items.push(`${Util.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`);
+					items.push(`${Helper.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`);
 				} else {
-					items.push(`${Util.getNumberEmoji(i)} - ${item}\n\n`);
+					items.push(`${Helper.getNumberEmoji(i)} - ${item}\n\n`);
 				}
 				i++;
 			})
-			Util.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
+			Helper.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
 				.then((confirm_msg) => {
 					message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
 						const answer_msg = collected.first();
@@ -240,7 +240,7 @@ class UtilClass {
 							if (confirm_msg.deletable) confirm_msg.delete();
 							confirm_msg.channel.send(new MessageEmbed()
 								.setDescription('Invalid answer, aborted.')
-								.setColor(Util.red)
+								.setColor(Helper.red)
 							).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
 							resolve(undefined);
 							return undefined;
@@ -262,4 +262,4 @@ class UtilClass {
 }
 
 
-export const Util = new UtilClass();
+export const Helper = new HelperClass();

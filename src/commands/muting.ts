@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { GuildMember, MessageEmbed, Permissions } from 'discord.js';
-import { Util } from '../Helper';
+import { Helper } from '../Helper';
 import * as DataManager from '../DataManager';
 
 let mutedUserID: string[] = [];

@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { Message, MessageEmbed, TextChannel, Permissions } from 'discord.js';
-import { Util } from '../Helper';
+import { Helper } from '../Helper';
 import * as DataManager from '../DataManager';
 export default new Command({
 	name: 'purge',
@@ -21,14 +21,14 @@ export default new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription(`The amount of messages must not below than 1 nor greater than 100.`)
-					.setColor(Util.red)
+					.setColor(Helper.red)
 				)
 			}
 			// Can purge
 			else {
 				let exceed_three = amount > 3;
 				if (exceed_three) {
-					Util.confirm_click('Confirmation Needed', `This action is going to delete the last **${amount}** messages.`, ['✅', '❌'], <TextChannel>message.channel, message.author, 10000).then(promise => {
+					Helper.confirm_click('Confirmation Needed', `This action is going to delete the last **${amount}** messages.`, ['✅', '❌'], <TextChannel>message.channel, message.author, 10000).then(promise => {
 						let response = promise.emoji;
 						let confirm_msg = promise.message;
 						if (response == '✅') {
@@ -37,7 +37,7 @@ export default new Command({
 						if (response == '❌') {
 							confirm_msg.edit(new MessageEmbed()
 								.setDescription('❌ Canceled!')
-								.setColor(Util.red)).then((msg: Message) => msg.delete({ timeout: 5000 }));
+								.setColor(Helper.red)).then((msg: Message) => msg.delete({ timeout: 5000 }));
 							confirm_msg.reactions.removeAll();
 						}
 					})
@@ -47,8 +47,8 @@ export default new Command({
 		else {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
-				.setDescription(`Usage: ${Util.inlineCodeBlock(prefix + 'purge <amount>')}`)
-				.setColor(Util.red)
+				.setDescription(`Usage: ${Helper.inlineCodeBlock(prefix + 'purge <amount>')}`)
+				.setColor(Helper.red)
 			)
 		}
 	}

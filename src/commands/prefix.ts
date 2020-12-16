@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
 import * as DataManager from '../DataManager';
-import { Util } from '../Helper';
+import { Helper } from '../Helper';
 export default new Command({
 	name: 'prefix',
 	category: 'settings',
@@ -19,14 +19,14 @@ export default new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Prefix Cleared')
 					.setDescription(`Prefix has cleared`)
-					.setColor(Util.green)
+					.setColor(Helper.green)
 				)
 			}
 			else {
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription(`Blank prefix is only allowed in DM channels.`)
-					.setColor(Util.red)
+					.setColor(Helper.red)
 				);
 			}
 		}
@@ -35,15 +35,15 @@ export default new Command({
 			DataManager.set(message.guild === null ? message.channel.id : message.guild.id, 'prefix', new_prefix);
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Changed')
-				.setDescription(`Prefix has changed to ${Util.inlineCodeBlock(new_prefix)}`)
-				.setColor(Util.green)
+				.setDescription(`Prefix has changed to ${Helper.inlineCodeBlock(new_prefix)}`)
+				.setColor(Helper.green)
 			)
 		}
 		else {
 			message.channel.send(new MessageEmbed()
-				.setTitle('Current prefix is ' + Util.inlineCodeBlock(prefix) + '.')
-				.setDescription(`Usage: ${Util.inlineCodeBlock(`${prefix}prefix set {new prefix}`)} or ${Util.inlineCodeBlock(`${prefix}prefix clear`)}`)
-				.setColor(Util.blue)
+				.setTitle('Current prefix is ' + Helper.inlineCodeBlock(prefix) + '.')
+				.setDescription(`Usage: ${Helper.inlineCodeBlock(`${prefix}prefix set {new prefix}`)} or ${Helper.inlineCodeBlock(`${prefix}prefix clear`)}`)
+				.setColor(Helper.blue)
 				.setFooter('Note: Blank prefix is only allowed in DM channels.')
 			);
 		}

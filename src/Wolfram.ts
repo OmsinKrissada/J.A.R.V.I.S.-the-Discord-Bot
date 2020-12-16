@@ -4,7 +4,7 @@ import { Message } from "discord.js";
 
 import token from "../token.json"
 const apitoken = token.wolfram;
-import { Util } from './Helper';
+import { Helper } from './Helper';
 
 const { MessageEmbed, MessageAttachment } = require('discord.js')
 import { XMLHttpRequest } from "xmlhttprequest"
@@ -28,7 +28,7 @@ class WolframInterface {
             message.channel.send(new MessageEmbed()
                 .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
                 .setDescription(`**Answer:** ${output}\n\n${message.author}`)
-                .setColor(Util.green)
+                .setColor(Helper.green)
                 .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
             );
         }
@@ -36,7 +36,7 @@ class WolframInterface {
             message.channel.send(new MessageEmbed()
                 .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
                 .setDescription(`Cannot recognize your question, try with less ambiguous phrases.\n\n${message.author}`)
-                .setColor(Util.red)
+                .setColor(Helper.red)
             );
         }
 
@@ -48,7 +48,7 @@ class WolframInterface {
         const img = new MessageAttachment(`https://api.wolframalpha.com/v1/simple?i=${input}&appid=${apitoken}`, "result.png");
         message.channel.send(new MessageEmbed()
             .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
-            .setColor(Util.green)
+            .setColor(Helper.green)
             .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
             .attachFiles(img)
             .setImage('attachment://result.png')

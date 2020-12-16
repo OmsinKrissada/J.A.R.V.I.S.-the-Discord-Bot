@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { GuildMember, MessageEmbed, User } from 'discord.js';
-import { Util } from '../Helper';
+import { Helper } from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DataManager';
 export default new Command({
@@ -21,9 +21,9 @@ export default new Command({
 			switch (longarg(1)) {
 				case "":
 					message.channel.send(new MessageEmbed()
-						.setTitle(`Assumed ${Util.inlineCodeBlock(prefix + 'userinfo me')}`)
-						.setDescription('Usage: ' + Util.inlineCodeBlock(prefix + 'userinfo') + ' or ' + Util.inlineCodeBlock(prefix + 'userinfo <member>'))
-						.setColor(Util.yellow)
+						.setTitle(`Assumed ${Helper.inlineCodeBlock(prefix + 'userinfo me')}`)
+						.setDescription('Usage: ' + Helper.inlineCodeBlock(prefix + 'userinfo') + ' or ' + Helper.inlineCodeBlock(prefix + 'userinfo <member>'))
+						.setColor(Helper.yellow)
 					).then(msg => msg.delete({ timeout: 10000 }));
 				case 'me':
 					user = message.author;
@@ -44,7 +44,7 @@ export default new Command({
 						} catch (err) { }
 
 						if (users.length && users.length > 0) {
-							Util.confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users, message, prefix).then((usr: GuildMember) => {
+							Helper.confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users, message, prefix).then((usr: GuildMember) => {
 								console.log(usr.user)
 								printUserInfo(usr.user);
 							})
@@ -69,7 +69,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Member Not Found')
 				.setDescription(`Cannot find the specified member: "${longarg(1)}"`)
-				.setColor(Util.red)
+				.setColor(Helper.red)
 			);
 			return;
 
@@ -78,7 +78,7 @@ export default new Command({
 				let embeduserinfo = new MessageEmbed();
 				embeduserinfo
 					.setTitle('User Info Card')
-					.setColor(Util.blue)
+					.setColor(Helper.blue)
 					.setThumbnail(user.displayAvatarURL())
 					.addField('Username', `${user.username}`, true)
 					.addField('Discriminator', '#' + user.discriminator, true)
@@ -111,7 +111,7 @@ export default new Command({
 			let guild = message.guild;
 			let embed = new MessageEmbed()
 				.setTitle('Server Info Card')
-				.setColor(Util.blue)
+				.setColor(Helper.blue)
 				.setThumbnail(guild.iconURL())
 				.addField('Name', guild.name, true)
 				.addField('ID', guild.id, true)

@@ -10,7 +10,7 @@ import fs from 'fs'
 import express from 'express';
 import { exec } from 'child_process';
 
-import { Util } from "./Helper";
+import { Helper } from "./Helper";
 import * as DataManager from './DataManager'
 // import * as Music from './Music';
 import * as CommandManager from './CommandManager';
@@ -31,12 +31,12 @@ bot.once('ready', async () => {
 	const jarvisLoginChannel = (<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('771047404719308810'));
 	jarvisLoginChannel.send(new MessageEmbed({
 		title: 'Logged in.',
-		color: Util.green
+		color: Helper.green
 	}).setTimestamp());
 
-	Util.refreshIp();
+	Helper.refreshIp();
 
-	logfile.write('# ' + Util.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
+	logfile.write('# ' + Helper.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
 
 	await DataManager.connect()
 });
@@ -61,7 +61,7 @@ if (fs.existsSync('./files/logs/latest.log')) {
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
 function log(message: Message): void {
 	let lines = message.content.split('\n')
-	let meta = '[' + Util.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + '] ';
+	let meta = '[' + Helper.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + '] ';
 	let indent = meta;
 	for (let line of lines) {
 		let str = indent + line + '\n';
@@ -195,7 +195,7 @@ app.post('/api/github', (req, res) => {
 					name: `${sender.login} pushed to GitHub`
 				},
 				description: `\`push\` action was initiated by **${sender.login}**.\n\nPulling from GitHub.`,
-				color: Util.blue
+				color: Helper.blue
 			}));
 
 			exec('git pull', async (_err, _stdout, stderr) => {
@@ -218,7 +218,7 @@ app.post('/api/github', (req, res) => {
 					name: `${sender.login} pushed to GitHub`
 				},
 				description: `\`push\` action was received from a wrong repository, ignoring request.`,
-				color: Util.red
+				color: Helper.red
 			}))
 		}
 
