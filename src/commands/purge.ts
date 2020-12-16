@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { Message, MessageEmbed, TextChannel, Permissions } from 'discord.js';
 import { Util } from '../Util';
 import * as DataManager from '../DataManager';
 export default new Command({
@@ -7,17 +7,13 @@ export default new Command({
 	category: 'features',
 	description: 'Deletes messages by the specified amount',
 	examples: ['purge <amount>'],
-	requiredPermissions: [],
+	requiredCallerPermissions: ['MANAGE_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		function deletemsg(exceed_three: boolean) {
 			(<TextChannel>message.channel).bulkDelete(amount + (exceed_three ? 2 : 1)).then(() =>
 				message.channel.send(`✅ Deleted ${amount} message${amount > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
 			)
-		}
-		if (!message.guild.member(message.author).hasPermission('MANAGE_MESSAGES')) {
-			message.channel.send('⛔ You don\'t have "Manage Messages" permission. This incident will be reported. ⛔');
-			return;
 		}
 		let amount = Number.parseInt(args[0]);
 		if (!isNaN((<any>args[0]))) {
@@ -51,7 +47,7 @@ export default new Command({
 		else {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
-				.setDescription(`Usage: ${prefix}purge <amount>`)
+				.setDescription(`Usage: ${Util.inlineCodeBlock(prefix + 'purge <amount>')}`)
 				.setColor(Util.red)
 			)
 		}

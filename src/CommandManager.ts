@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, Permissions } from 'discord.js';
+import { Message, MessageEmbed, Permissions, PermissionString } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import * as DataManager from './DataManager';
@@ -16,12 +16,12 @@ interface IConstructor {
 	examples: string[];
 	category: CommandCategory;
 	serverOnly: boolean;
-	requiredPermissions: number[];
+	requiredCallerPermissions: PermissionString[];
 	exec: (message: Message, prefix: string, args: string[], sourceID: string) => void;
 }
 
 export class Command {
-	constructor({ name, displayName, description, examples, category, serverOnly: serverOnly, requiredPermissions, exec }: IConstructor) {
+	constructor({ name, displayName, description, examples, category, serverOnly: serverOnly, requiredCallerPermissions: requiredCallerPermissions, exec }: IConstructor) {
 
 		// set values
 		this.name = name;
@@ -30,7 +30,7 @@ export class Command {
 		this.examples = examples;
 		this.category = category;
 		this.serverOnly = serverOnly;
-		this.requiredPermissions = requiredPermissions;
+		this.requiredCallerPermissions = requiredCallerPermissions;
 		this.exec = exec;
 
 		CommandMap.set(name, this); // Do not forget about this ...
@@ -44,7 +44,7 @@ export class Command {
 	readonly examples: string[];
 	readonly category: CommandCategory;
 	readonly serverOnly: boolean;
-	readonly requiredPermissions: number[];
+	readonly requiredCallerPermissions: PermissionString[];
 
 	readonly exec: (message: Message, prefix: string, args: string[], sourceID: string) => void;
 }
@@ -64,14 +64,34 @@ export function sanitize(input: string) {
 
 }
 
-export async function run(command: string, args: string[], { message, prefix, sourceID }: { message: Message, prefix: string, sourceID: string }) {
+export async function run(command_name: string, args: string[], { message: sourcemsg, prefix, sourceID }: { message: Message, prefix: string, sourceID: string }) {
 	prefix = (await DataManager.get(sourceID)).prefix;
-	console.log('checking for ' + command)
-	if (CommandMap.has(command)) {
-		CommandMap.get(command).exec(message, prefix, args, sourceID);
-	} else if (command != 'cancel' && (await DataManager.get(sourceID)).settings.warnUnknownCommand)
-		message.channel.send(new MessageEmbed()
-			.setTitle('Error')
+	console.log('checking for ' + command_name)
+	if (CommandMap.has(command_name)) { // check exist
+		const command = CommandMap.get(command_name);
+
+		let noperm: PermissionString[] = [];
+		command.requiredCallerPermissions.forEach(perm => {
+			if (!sourcemsg.member.permissions.has(perm))
+				noperm.push(perm);
+		})
+
+		if (command.serverOnly && sourcemsg.guild === null) { // check DM
+			sourcemsg.channel.send(new MessageEmbed()
+				.setTitle('Not available in DM')
+				.setDescription(`Sorry, this command can only be used in servers.`)
+				.setColor(Util.red));
+		} else if (command.requiredCallerPermissions.length == 0 || noperm.length == 0) {
+			command.exec(sourcemsg, prefix, args, sourceID);
+		} else {
+			sourcemsg.channel.send(new MessageEmbed()
+				.setTitle('You don\'t have enough permission')
+				.setDescription(`You are lacking permission${noperm.length > 1 ? 's' : ''}: ` + noperm.map(perm => `\`${(perm)}\``).join(', '))
+				.setColor(Util.red));
+		}
+	} else if (command_name != 'cancel' && (await DataManager.get(sourceID)).settings.warnUnknownCommand)
+		sourcemsg.channel.send(new MessageEmbed()
+			.setTitle('Unknown Command')
 			.setDescription(`Invalid command, type ${Util.inlineCodeBlock(`${prefix}help`)} for list of commands.`)
 			.setColor(Util.red));
 }

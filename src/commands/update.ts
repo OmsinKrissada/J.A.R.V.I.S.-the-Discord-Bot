@@ -12,7 +12,7 @@ export default new Command({
 	category: 'hiden',
 	description: 'Updates the bot with code from GitHub.',
 	examples: ['update'],
-	requiredPermissions: [],
+	requiredCallerPermissions: [],
 	serverOnly: false,
 	exec(message, prefix, args, sourceID) {
 		// const jarvisChannel = (<TextChannel>Command.bot.guilds.resolve('709824110229979278').channels.resolve('709824110229979282'));

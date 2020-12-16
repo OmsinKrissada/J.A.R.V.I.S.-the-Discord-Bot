@@ -12,7 +12,7 @@ export default new Command({
 		"info user me",
 		"info server"
 	],
-	requiredPermissions: [],
+	requiredCallerPermissions: [],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		if (args[0] == 'user') {

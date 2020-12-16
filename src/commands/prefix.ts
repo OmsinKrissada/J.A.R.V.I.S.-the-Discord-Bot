@@ -10,7 +10,7 @@ export default new Command({
 		"prefix set {prefix}",
 		"prefix clear"
 	],
-	requiredPermissions: [],
+	requiredCallerPermissions: [],
 	serverOnly: false,
 	exec(message, prefix, args, sourceID) {
 		if (args[0] === 'clear') {

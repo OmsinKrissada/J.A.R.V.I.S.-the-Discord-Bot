@@ -1,7 +1,7 @@
 // Init sequence
 
 // Discord
-import { Client, MessageEmbed, Message, TextChannel } from 'discord.js';
+import { Client, MessageEmbed, Message, TextChannel, DMChannel } from 'discord.js';
 
 // Creates an instance of a Discord client
 export const bot = new Client();
@@ -78,13 +78,13 @@ function log(message: Message): void {
 
 // Handles the received messages
 bot.on('message', async (message) => {
-	if (message.author.bot) return;
+	if (message.author == bot.user) return;
 
-	const isDMMessage = message.guild === null;
+	const isDMMessage = message.channel instanceof DMChannel;
 	const sourceID = isDMMessage ? message.channel.id : message.guild.id;
 	const sourceName = isDMMessage ? message.author.username : message.guild.name;
 
-	if (await DataManager.get(message.guild.id) === null) {
+	if (await DataManager.get(sourceID) === null) {
 		console.log('Guild data not found, creating default data for this guild. ' + `[${message.guild.id}]`);
 		await DataManager.create(sourceID, sourceName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
 	}

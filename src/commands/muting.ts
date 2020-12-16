@@ -25,7 +25,7 @@ new Command({
 	category: 'features',
 	description: 'Spam mute a user',
 	examples: ['mute <user id>'],
-	requiredPermissions: [Permissions.FLAGS.MUTE_MEMBERS],
+	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		mutedUserID.push(args[0]);
@@ -37,7 +37,7 @@ new Command({
 	category: 'features',
 	description: 'Unmutes a user',
 	examples: ['unmute <user id>'],
-	requiredPermissions: [Permissions.FLAGS.MUTE_MEMBERS],
+	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		mutedUserID = mutedUserID.filter(id => id != args[0]);

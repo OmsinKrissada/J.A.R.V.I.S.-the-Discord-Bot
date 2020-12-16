@@ -8,7 +8,7 @@ export default new Command({
 	category: 'general',
 	description: 'Shows this message',
 	examples: ['help'],
-	requiredPermissions: [],
+	requiredCallerPermissions: [],
 	serverOnly: false,
 	exec(message, prefix, args) {
 		let command_name = args[0] ? args[0].toLowerCase() : null;

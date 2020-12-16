@@ -4,7 +4,7 @@ new Command({
 	description: 'Simple ping command',
 	category: "general",
 	examples: ['ping'],
-	requiredPermissions: [],
+	requiredCallerPermissions: [],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.reply('Pong!')
@@ -18,7 +18,7 @@ new Command({
 	description: 'Not simple ping command',
 	category: "hiden",
 	examples: ['gnip'],
-	requiredPermissions: [],
+	requiredCallerPermissions: [],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.reply('Pong!')
