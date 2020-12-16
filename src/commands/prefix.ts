@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
 import * as DataManager from '../DataManager';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 export default new Command({
 	name: 'prefix',
 	category: 'settings',

@@ -10,7 +10,7 @@ import fs from 'fs'
 import express from 'express';
 import { exec } from 'child_process';
 
-import { Util } from "./Util";
+import { Util } from "./Helper";
 import * as DataManager from './DataManager'
 // import * as Music from './Music';
 import * as CommandManager from './CommandManager';

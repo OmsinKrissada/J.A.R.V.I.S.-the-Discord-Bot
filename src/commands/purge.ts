@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { Message, MessageEmbed, TextChannel, Permissions } from 'discord.js';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 import * as DataManager from '../DataManager';
 export default new Command({
 	name: 'purge',

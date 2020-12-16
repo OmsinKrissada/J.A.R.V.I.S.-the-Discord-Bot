@@ -4,7 +4,7 @@ import { Message } from "discord.js";
 
 import token from "../token.json"
 const apitoken = token.wolfram;
-import { Util } from './Util';
+import { Util } from './Helper';
 
 const { MessageEmbed, MessageAttachment } = require('discord.js')
 import { XMLHttpRequest } from "xmlhttprequest"

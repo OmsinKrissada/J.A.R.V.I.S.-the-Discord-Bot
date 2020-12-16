@@ -4,7 +4,7 @@ import path from 'path';
 import * as DataManager from './DataManager';
 import { bot } from './Main';
 
-import { Util } from './Util';
+import { Util } from './Helper';
 
 
 export const CommandMap = new Map<string, Command>();

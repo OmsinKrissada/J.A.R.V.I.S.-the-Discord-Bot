@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { EmojiResolvable, Message, MessageEmbed, TextChannel } from 'discord.js';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 import * as DataManager from '../DataManager';
 import { exec } from 'child_process';
 import path from 'path';

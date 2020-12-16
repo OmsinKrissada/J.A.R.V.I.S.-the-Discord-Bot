@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 import { Command, CommandMap } from '../CommandManager';
 import * as alias from '../../settings/alias.json';
 

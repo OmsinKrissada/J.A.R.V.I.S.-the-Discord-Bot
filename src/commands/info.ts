@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { GuildMember, MessageEmbed, User } from 'discord.js';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DataManager';
 export default new Command({

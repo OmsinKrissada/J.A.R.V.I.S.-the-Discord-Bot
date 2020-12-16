@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 import * as DataManager from '../DataManager';
 export default new Command({
 	name: 'reset',

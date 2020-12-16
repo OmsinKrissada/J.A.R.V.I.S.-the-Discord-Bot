@@ -1,6 +1,6 @@
 import { MessageEmbed, Permissions } from 'discord.js';
 import { Command } from '../CommandManager';
-import { Util } from '../Util';
+import { Util } from '../Helper';
 
 export default new Command({
 	name: 'nick',
