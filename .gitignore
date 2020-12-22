@@ -12,3 +12,4 @@ token.json
 deploy.sh
 settings/responses.json
 settings/config.yml
+resources/template
