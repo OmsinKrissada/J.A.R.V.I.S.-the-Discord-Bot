@@ -61,8 +61,8 @@ export default new Command({
 					guild.channels.resolve(origin)!.members.forEach((member) => {
 						if (origin.id != dest!.id) {
 							console.log('all')
-							console.log('from ' + origin.name + ' to ' + dest.name)
-							description += ` • ${member.user}: ${origin.name} ➡ ${dest.name}\n`
+							console.log('from ' + origin.name + ' to ' + dest!.name)
+							description += ` • ${member.user}: ${origin.name} ➡ ${dest!.name}\n`
 							member.voice.setChannel(dest);
 						}
 					})
