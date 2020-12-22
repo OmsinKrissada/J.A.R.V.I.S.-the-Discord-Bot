@@ -102,13 +102,13 @@ class HelperClass {
 			let page = new MessageEmbed(prototype);
 			let val = '';
 
-			let nextval = '';
+			let nextval = value[0];
 			for (let i = 0; val.length + nextval.length <= 1020 && value.length > 0; i++) {
 				nextval = value.shift()!;
-				val += nextval;
+				val += nextval + (inline ? '' : '\n');
 			}
 
-			if (val.length > 0) page.addFields({ name: name, value: val, inline: inline });
+			if (val.length > 0) page.addFields({ name: name, value: val });
 			pages.push(page);
 		}
 
