@@ -24,15 +24,17 @@ var client_id: string;
 bot.login(token.discord)
 bot.once('ready', async () => {
 
-	console.log(`Logged in to discord as >> '${bot.user.username}#${bot.user.discriminator}' [${bot.user.id}]\n`);
-	bot.user.setActivity('Ultron | !help', { type: "WATCHING" })
-	client_id = `<@!${bot.user.id}>`;
+	console.log(`Logged in to discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
+	bot.user!.setActivity('Ultron | !help', { type: "WATCHING" })
+	client_id = `<@!${bot.user!.id}>`;
 
-	const jarvisLoginChannel = (<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('771047404719308810'));
-	jarvisLoginChannel.send(new MessageEmbed({
-		title: 'Logged in.',
-		color: Helper.green
-	}).setTimestamp());
+	const jarvisLoginGuild = bot.guilds.resolve('709824110229979278');
+	if (jarvisLoginGuild && (<TextChannel>jarvisLoginGuild.channels.resolve('771047404719308810'))) {
+		(<TextChannel>jarvisLoginGuild.channels.resolve('771047404719308810')).send(new MessageEmbed({
+			title: 'Logged in.',
+			color: Helper.green
+		}).setTimestamp());
+	}
 
 	Helper.refreshIp();
 
@@ -81,11 +83,11 @@ bot.on('message', async (message) => {
 	if (message.author == bot.user) return;
 
 	const isDMMessage = message.channel instanceof DMChannel;
-	const sourceID = isDMMessage ? message.channel.id : message.guild.id;
-	const sourceName = isDMMessage ? message.author.username : message.guild.name;
+	const sourceID = isDMMessage ? message.channel.id : message.guild!.id;
+	const sourceName = isDMMessage ? message.author.username : message.guild!.name;
 
 	if (await DataManager.get(sourceID) === null) {
-		console.log('Guild data not found, creating default data for this guild. ' + `[${message.guild.id}]`);
+		console.log('Guild data not found, creating default data for this guild. ' + `[${sourceID}]`);
 		await DataManager.create(sourceID, sourceName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
 	}
 	// if (bot.guilds.resolve(guildID)) {
@@ -148,8 +150,8 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 		textChannel: string;
 	}
 
-	if (newState.member.user.bot) return;
-	let hooks: VoiceHook[] = (await DataManager.get(newState.guild.id)).hooks;
+	if (newState.member!.user.bot) return;
+	let hooks: VoiceHook[] = (await DataManager.get(newState.guild.id)).hooks!;
 	console.log(hooks)
 	if (!hooks) {
 		hooks = [];
@@ -157,18 +159,18 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 	hooks.forEach((hook: VoiceHook) => {
 		if (hook.type == 'hard') {
 			if (newState.channel && newState.channel.id == hook.voiceChannel) {
-				newState.guild.channels.resolve(hook.textChannel).createOverwrite(newState.member, { VIEW_CHANNEL: true });
+				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { VIEW_CHANNEL: true });
 			}
 			else {
-				newState.guild.channels.resolve(hook.textChannel).createOverwrite(newState.member, { VIEW_CHANNEL: null });
+				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { VIEW_CHANNEL: null });
 			}
 		}
 		else if (hook.type == 'soft') {
 			if (newState.channel && newState.channel.id == hook.voiceChannel) {
-				newState.guild.channels.resolve(hook.textChannel).createOverwrite(newState.member, { SEND_MESSAGES: true });
+				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { SEND_MESSAGES: true });
 			}
 			else {
-				newState.guild.channels.resolve(hook.textChannel).createOverwrite(newState.member, { SEND_MESSAGES: null });
+				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { SEND_MESSAGES: null });
 			}
 		}
 	})
@@ -185,7 +187,7 @@ app.post('/api/github', (req, res) => {
 	return;
 
 	const sender = req.body.sender;
-	const jarvisChannel = (<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('709824110229979282'));
+	const jarvisChannel = (<TextChannel>bot.guilds.resolve('709824110229979278')!.channels.resolve('709824110229979282'));
 
 	if (req.body.pusher) {
 		if (req.body.repository.id === 254853181) {

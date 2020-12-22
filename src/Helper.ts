@@ -4,10 +4,12 @@ import { CONFIG } from './ConfigManager';
 
 class HelperClass {
 
-	red = CONFIG.colors.red;
-	green = CONFIG.colors.green;
-	blue = CONFIG.colors.blue;
-	yellow = CONFIG.colors.yellow;
+	readonly ZERO_WIDTH = '​';
+
+	readonly red = CONFIG.colors.red;
+	readonly green = CONFIG.colors.green;
+	readonly blue = CONFIG.colors.blue;
+	readonly yellow = CONFIG.colors.yellow;
 
 	inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
@@ -79,8 +81,8 @@ class HelperClass {
 		return `${seconds / 3600 >= 1 ? this.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${this.min2(Math.floor(seconds / 60) % 60)}:${this.min2(seconds % 60)}`
 	}
 
-	shuffle(array: Array<any>): typeof array {
-		let shuffledArray = [];
+	shuffle(array: Array<any>): any[] {
+		let shuffledArray: any[] = [];
 		while (array.length > 0) {
 			let index = Math.floor(Math.random() * array.length);
 			console.log(index)
@@ -102,7 +104,7 @@ class HelperClass {
 
 			let nextval = '';
 			for (let i = 0; val.length + nextval.length <= 1020 && value.length > 0; i++) {
-				nextval = value.shift();
+				nextval = value.shift()!;
 				val += nextval;
 			}
 
@@ -130,26 +132,26 @@ class HelperClass {
 		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 })
 		collector.on('collect', (reaction, user) => {
 			if (reaction.emoji.name == '◀') {
-				message.reactions.resolve('◀').users.remove(user);
+				message.reactions.resolve('◀')!.users.remove(user);
 				if (current_page + 1 > 1) {
 					message.edit(pages[--current_page]);
 				}
 			}
 			else if (reaction.emoji.name == '▶') {
-				message.reactions.resolve('▶').users.remove(user);
+				message.reactions.resolve('▶')!.users.remove(user);
 				if (current_page + 1 < pages.length) {
 					message.edit(pages[++current_page]);
 				}
 			}
 			else if (reaction.emoji.name == '⏮') {
-				message.reactions.resolve('⏮').users.remove(user);
+				message.reactions.resolve('⏮')!.users.remove(user);
 				if (current_page + 1 > 1) {
 					message.edit(pages[0]);
 					current_page = 0;
 				}
 			}
 			else if (reaction.emoji.name == '⏭') {
-				message.reactions.resolve('⏭').users.remove(user);
+				message.reactions.resolve('⏭')!.users.remove(user);
 				if (current_page + 1 < pages.length) {
 					message.edit(pages[pages.length - 1]);
 					current_page = pages.length - 1;
@@ -159,7 +161,7 @@ class HelperClass {
 				if (message.deletable) message.delete();
 			}
 			else {
-				message.reactions.resolve(reaction.emoji.name).users.remove(user);
+				message.reactions.resolve(reaction.emoji.name)!.users.remove(user);
 			}
 		})
 		collector.on('end', () => {
@@ -193,7 +195,7 @@ class HelperClass {
 				.then(collected => {
 					// console.log(collected.first().emoji.name)
 					// console.log(reactions)
-					return_value = { message: confirm_msg, emoji: collected.first().emoji.name };
+					return_value = { message: confirm_msg, emoji: collected.first()!.emoji.name };
 				}).catch(() => {
 					if (timeout) {
 						confirm_msg.edit(embed.setFooter('Time\'s up'));
@@ -202,7 +204,7 @@ class HelperClass {
 					return_value = { message: confirm_msg, emoji: null };
 				})
 		});
-		return return_value;
+		return return_value!;
 	}
 
 
@@ -229,7 +231,7 @@ class HelperClass {
 			Helper.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
 				.then((confirm_msg) => {
 					message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
-						const answer_msg = collected.first();
+						const answer_msg = collected.first()!;
 						if (confirm_msg.deleted) return undefined;
 
 						if (answer_msg.content == prefix + 'cancel') {

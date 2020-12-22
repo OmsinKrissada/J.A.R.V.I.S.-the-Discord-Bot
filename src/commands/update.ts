@@ -26,7 +26,7 @@ export default new Command({
 					msg.reactions.removeAll();
 					if (emoji == '✅') {
 						message.channel.send('Running clean install . . .').then(() => {
-							exec((path.join(path.dirname(require.main.filename), 'scripts', 'updateandrestart.sh')), (_err, stdout, _stderr) => {
+							exec((path.join(path.dirname(require.main!.filename), 'scripts', 'updateandrestart.sh')), (_err, stdout, _stderr) => {
 								message.channel.send(stdout).then(process.exit());
 							});
 						})

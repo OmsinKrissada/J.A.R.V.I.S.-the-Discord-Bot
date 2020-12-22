@@ -11,17 +11,17 @@ export default new Command({
 	requiredCallerPermissions: [],
 	serverOnly: false,
 	exec(message, prefix, args) {
-		let command_name = args[0] ? args[0].toLowerCase() : null;
+		let command_name = args[0] ? args[0].toLowerCase() : '';
 		for (let full_command in alias) { // check with alias
-			if (alias[full_command] instanceof Array && alias[full_command].includes(args[0])) {
+			if (alias[full_command] instanceof Array && alias[full_command].includes(command_name)) {
 				console.log(command_name)
 				console.log(full_command)
 				command_name = full_command;
 			}
 		}
 		console.log(command_name)
-		if (args[0] && CommandMap.has(command_name)) { // specific-command detail
-			const command = CommandMap.get(command_name);
+		const command = CommandMap.get(command_name);
+		if (command_name && command) { // specific-command detail
 			let embed = new MessageEmbed()
 				.setTitle('Help | Command: ' + Helper.inlineCodeBlock(command.name))
 				.setColor(Helper.blue)
@@ -41,7 +41,7 @@ export default new Command({
 
 			message.channel.send(embed);
 		} else {
-			let cmd_by_categories = {
+			let cmd_by_categories: { general: Command[], settings: Command[], features: Command[], music: Command[], misc: Command[] } = {
 				"general": [],
 				"settings": [],
 				"features": [],
@@ -63,7 +63,7 @@ export default new Command({
 				.setAuthor('Help | Available Commands:', 'attachment://rainbow.png');
 
 			for (const category in cmd_by_categories) {
-				let displayCategory: string;
+				let displayCategory = '';
 				switch (category) {
 					case "general": displayCategory = "ℹ  General"; break;
 					case "settings": displayCategory = "🛠  Settings"; break;

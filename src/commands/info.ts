@@ -30,20 +30,20 @@ export default new Command({
 					printUserInfo(user);
 					return;
 				default:
-					if (message.mentions.members != undefined && message.mentions.members.first() != undefined) {
-						user = message.mentions.members.first().user;
+					if (message.mentions.members && message.mentions.members.first()) {
+						user = message.mentions.members.first()!.user;
 						printUserInfo(user);
 						return;
 					}
 					else if (message.guild) { // If not mention
 
-						let users: Array<GuildMember>;
+						let users: Array<GuildMember> = [];
 						try {
 							let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(1).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(1).toLowerCase()));
 							users = userscollection.array();
 						} catch (err) { }
 
-						if (users.length && users.length > 0) {
+						if (users.length > 0) {
 							Helper.confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users, message, prefix).then((usr: GuildMember) => {
 								console.log(usr.user)
 								printUserInfo(usr.user);
@@ -88,13 +88,13 @@ export default new Command({
 					.addField('User ID', user.id, true)
 				if (message.guild != undefined) { // if in a guild
 					if (message.guild.member(user)) {
-						const rolesOfTheMember = message.guild.member(user).roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+						const rolesOfTheMember = message.guild.member(user)!.roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
 						if (rolesOfTheMember)
 							embeduserinfo
 								.addField('Roles', rolesOfTheMember)
 						embeduserinfo
-							.setColor(message.guild.member(user).displayHexColor)
-							.addField('Joined Server At', new Date(message.guild.member(user).joinedTimestamp).toLocaleString(), true);
+							.setColor(message.guild.member(user)!.displayHexColor)
+							.addField('Joined Server At', new Date(message.guild.member(user)!.joinedTimestamp!).toLocaleString(), true);
 					}
 					embeduserinfo
 						.setFooter(`Requested by ${message.author.tag}`);
@@ -108,11 +108,11 @@ export default new Command({
 
 		}
 		else if (args[0] == 'server') {
-			let guild = message.guild;
+			let guild = message.guild!;
 			let embed = new MessageEmbed()
 				.setTitle('Server Info Card')
 				.setColor(Helper.blue)
-				.setThumbnail(guild.iconURL())
+				.setThumbnail(guild.iconURL()!)
 				.addField('Name', guild.name, true)
 				.addField('ID', guild.id, true)
 				.addField('Owner', guild.owner, true)

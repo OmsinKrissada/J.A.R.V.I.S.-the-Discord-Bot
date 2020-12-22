@@ -46,7 +46,7 @@ const validator = new YamlValidator({
 		}
 
 	},
-	onWarning: null,
+	onWarning: undefined,
 	writeJson: false
 });
 validator.validate(['./settings/config.yml']);

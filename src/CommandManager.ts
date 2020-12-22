@@ -68,11 +68,11 @@ export async function run(command_name: string, args: string[], { message: sourc
 	prefix = (await DataManager.get(sourceID)).prefix;
 	console.log('checking for ' + command_name)
 	if (CommandMap.has(command_name)) { // check exist
-		const command = CommandMap.get(command_name);
+		const command = CommandMap.get(command_name)!;
 
 		let noperm: PermissionString[] = [];
 		command.requiredCallerPermissions.forEach(perm => {
-			if (!sourcemsg.member.permissions.has(perm))
+			if (!sourcemsg.member!.permissions.has(perm))
 				noperm.push(perm);
 		})
 

@@ -14,7 +14,7 @@ export default new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('About Me')
 			.setColor(Helper.blue)
-			.setThumbnail(Command.bot.user.displayAvatarURL())
+			.setThumbnail(Command.bot.user!.displayAvatarURL())
 			.addField('Name', '**J.A.R.V.I.S.**', true)
 			.addField('Current Version', Helper.inlineCodeBlock(packageinfo.version), true)
 			.addField('License', '[**MIT License**](https://en.wikipedia.org/wiki/MIT_License)', true)
@@ -23,7 +23,7 @@ export default new Command({
 			.addField('Default Prefix', Helper.inlineCodeBlock(CONFIG.defaultPrefix), true)
 			.addField('Guild Count', Command.bot.guilds.cache.size, true)
 			.addField('Shard Count', Command.bot.ws.shards.size, true)
-			.addField('HTTP API Version', Command.bot.options.http.version, true)
+			.addField('HTTP API Version', Command.bot.options.http!.version, true)
 		)
 	}
 }) 

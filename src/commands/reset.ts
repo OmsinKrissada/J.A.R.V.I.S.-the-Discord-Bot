@@ -13,13 +13,13 @@ export default new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('Confirmation Needed')
 			.setDescription('This action will reset the current guild\'s data to default value, do you want to continue? (yes/no)')
-			.setColor(Helper.yellow)).then(() => {
-				Command.bot.user.lastMessage.react('✅');
-				Command.bot.user.lastMessage.react('❌');
-				Command.bot.user.lastMessage.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
+			.setColor(Helper.yellow)).then(msg => {
+				msg.react('✅');
+				msg.react('❌');
+				msg.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
 					.then(collected => {
-						console.log(collected.first().emoji.name)
-						if (collected.first().emoji.name == '✅') {
+						console.log(collected.first()!.emoji.name)
+						if (collected.first()!.emoji.name == '✅') {
 							if (message.guild) {
 								DataManager.purge(message.guild.id)
 							} else {

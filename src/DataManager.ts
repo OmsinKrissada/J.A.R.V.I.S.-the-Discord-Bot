@@ -32,33 +32,39 @@ export async function connect() {
 }
 
 // Load Data
-export async function get(guildID: string, returnsData = true) {
-	let loaded = await Guilds.findOne({ ID: guildID }).exec()
-	if (!returnsData) {
-		return Guilds.findOne({ ID: guildID });
-	}
-	return loaded;
+export async function get(sourceID: string) {
+	let loaded = await Guilds.findOne({ ID: sourceID }).exec()
+	return loaded!;
 }
 
-export async function set(guildID: string, item: string, value: any): Promise<void> {
-	const loaded_guild = await Guilds.findOne({ ID: guildID }).exec();
-	loaded_guild.set(item, value);
-	loaded_guild.save();
+export async function set(sourceID: string, item: string, value: any): Promise<void> {
+	const loaded_guild = await Guilds.findOne({ ID: sourceID }).exec();
+	loaded_guild!.set(item, value);
+	loaded_guild!.save();
 }
 
-export async function create(guild_id: string, name: string, prefix: string) {
+export async function create(sourceID: string, name: string, prefix: string) {
 	const guild_template = {
-		ID: guild_id,
+		ID: sourceID,
 		name: name,
 		prefix: prefix,
 	}
-	await Guilds.updateOne({ ID: guild_id }, guild_template, { upsert: true, setDefaultsOnInsert: true }).exec();
+	await Guilds.updateOne({ ID: sourceID }, guild_template, { upsert: true, setDefaultsOnInsert: true }).exec();
 }
 
-export async function purge(guildID: string) {
-	let loaded_guild = await Guilds.findOne({ id: guildID }).exec();
-	loaded_guild.deleteOne();
-	loaded_guild.save()
+export async function purge(sourceID: string) {
+	let loaded_guild = await Guilds.findOne({ id: sourceID }).exec();
+	if (loaded_guild) {
+		loaded_guild.deleteOne();
+		loaded_guild.save()
+	}
+
+}
+
+export async function checkExist(sourceID: string) {
+	if (await get(sourceID)) return true;
+	else false;
+	return false;
 }
 
 // export async function update(guildID: string) {

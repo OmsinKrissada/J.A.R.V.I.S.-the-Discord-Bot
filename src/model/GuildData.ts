@@ -10,13 +10,13 @@ export interface IGuildData extends Document {
   ID: string;
   name: string;
   prefix: string;
-  dm?: boolean;
-  settings?: {
+  dm: boolean;
+  settings: {
     warnUnknownCommand: boolean;
     announceSong: boolean;
     announceQueueEnd: boolean;
   }
-  hooks?: VoiceHook[]
+  hooks: VoiceHook[]
 }
 
 const guildData = new mongoose.Schema({

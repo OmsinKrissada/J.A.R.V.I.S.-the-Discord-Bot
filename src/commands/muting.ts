@@ -6,9 +6,9 @@ import * as DataManager from '../DataManager';
 let mutedUserID: string[] = [];
 
 Command.bot.on('voiceStateUpdate', (_old, vs) => {
-	console.log(vs.member.id)
-	if (mutedUserID.includes(vs.member.id) && !vs.mute) {
-		console.log(vs.member.id)
+	console.log(vs.member!.id)
+	if (mutedUserID.includes(vs.member!.id) && !vs.mute) {
+		console.log(vs.member!.id)
 		vs.setMute(true);
 		console.log(vs.mute)
 	}
