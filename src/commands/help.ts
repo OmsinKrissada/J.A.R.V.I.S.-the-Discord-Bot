@@ -24,7 +24,7 @@ export default new Command({
 		if (command_name && command) { // specific-command detail
 			let embed = new MessageEmbed()
 				.setTitle('Help | Command: ' + Helper.inlineCodeBlock(command.name))
-				.setColor(Helper.blue)
+				.setColor(Helper.BLUE)
 
 			embed.addField('Description:', command.description);
 			let usagestr = '';
@@ -58,7 +58,7 @@ export default new Command({
 			let embed = new MessageEmbed()
 				.setTitle(header)
 				.setDescription(`Use ${Helper.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
-				.setColor(Helper.blue)
+				.setColor(Helper.BLUE)
 				.attachFiles([{ attachment: './resources/rainbow.png' }])
 				.setAuthor('Help | Available Commands:', 'attachment://rainbow.png');
 

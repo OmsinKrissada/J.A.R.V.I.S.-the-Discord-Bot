@@ -13,7 +13,7 @@ export default new Command({
 		if (!message.guild!.member(Command.bot.user!)!.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Sorry!')
-				.setColor(Helper.red)
+				.setColor(Helper.RED)
 				.setDescription('I don\'t have permission to change my nickname')
 			);
 		}
@@ -22,7 +22,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Changed')
 				.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
-				.setColor(Helper.green)
+				.setColor(Helper.GREEN)
 			)
 		}
 		else {
@@ -30,7 +30,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Reset')
 				.setDescription(`Nickname has reset to **${Command.bot.user!.username}**`)
-				.setColor(Helper.green)
+				.setColor(Helper.GREEN)
 			)
 		}
 	}

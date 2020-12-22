@@ -13,7 +13,7 @@ export default new Command({
 	exec(message) {
 		message.channel.send(new MessageEmbed()
 			.setTitle('About Me')
-			.setColor(Helper.blue)
+			.setColor(Helper.BLUE)
 			.setThumbnail(Command.bot.user!.displayAvatarURL())
 			.addField('Name', '**J.A.R.V.I.S.**', true)
 			.addField('Current Version', Helper.inlineCodeBlock(packageinfo.version), true)

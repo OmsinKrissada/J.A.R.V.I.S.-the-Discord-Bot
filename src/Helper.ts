@@ -6,10 +6,10 @@ class HelperClass {
 
 	readonly ZERO_WIDTH = '​';
 
-	readonly red = CONFIG.colors.red;
-	readonly green = CONFIG.colors.green;
-	readonly blue = CONFIG.colors.blue;
-	readonly yellow = CONFIG.colors.yellow;
+	readonly RED = CONFIG.colors.red;
+	readonly GREEN = CONFIG.colors.green;
+	readonly BLUE = CONFIG.colors.blue;
+	readonly YELLOW = CONFIG.colors.yellow;
 
 	inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
@@ -182,7 +182,7 @@ class HelperClass {
 		let embed = new MessageEmbed()
 			.setTitle(title)
 			.setDescription(description)
-			.setColor(Helper.yellow);
+			.setColor(Helper.YELLOW);
 		if (timeout) {
 			embed.setFooter(`You have ${timeout / 1000} seconds to respond.`);
 		}
@@ -215,7 +215,7 @@ class HelperClass {
 				resolve(list[0]);
 				return list[0];
 			}
-			if (!embed.color) embed.setColor(Helper.blue);
+			if (!embed.color) embed.setColor(Helper.BLUE);
 			if (!embed.footer) embed.setFooter(`Type ${prefix}cancel to cancel.`);
 
 			let items: string[] = [];
@@ -242,7 +242,7 @@ class HelperClass {
 							if (confirm_msg.deletable) confirm_msg.delete();
 							confirm_msg.channel.send(new MessageEmbed()
 								.setDescription('Invalid answer, aborted.')
-								.setColor(Helper.red)
+								.setColor(Helper.RED)
 							).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
 							resolve(undefined);
 							return undefined;

@@ -21,7 +21,7 @@ export default new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription(`The amount of messages must not below than 1 nor greater than 100.`)
-					.setColor(Helper.red)
+					.setColor(Helper.RED)
 				)
 			}
 			// Can purge
@@ -37,7 +37,7 @@ export default new Command({
 						if (response == '❌') {
 							confirm_msg.edit(new MessageEmbed()
 								.setDescription('❌ Canceled!')
-								.setColor(Helper.red)).then((msg: Message) => msg.delete({ timeout: 5000 }));
+								.setColor(Helper.RED)).then((msg: Message) => msg.delete({ timeout: 5000 }));
 							confirm_msg.reactions.removeAll();
 						}
 					})
@@ -48,7 +48,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription(`Usage: ${Helper.inlineCodeBlock(prefix + 'purge <amount>')}`)
-				.setColor(Helper.red)
+				.setColor(Helper.RED)
 			)
 		}
 	}

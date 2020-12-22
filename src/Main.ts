@@ -32,7 +32,7 @@ bot.once('ready', async () => {
 	if (jarvisLoginGuild && (<TextChannel>jarvisLoginGuild.channels.resolve('771047404719308810'))) {
 		(<TextChannel>jarvisLoginGuild.channels.resolve('771047404719308810')).send(new MessageEmbed({
 			title: 'Logged in.',
-			color: Helper.green
+			color: Helper.GREEN
 		}).setTimestamp());
 	}
 
@@ -197,7 +197,7 @@ app.post('/api/github', (req, res) => {
 					name: `${sender.login} pushed to GitHub`
 				},
 				description: `\`push\` action was initiated by **${sender.login}**.\n\nPulling from GitHub.`,
-				color: Helper.blue
+				color: Helper.BLUE
 			}));
 
 			exec('git pull', async (_err, _stdout, stderr) => {
@@ -220,7 +220,7 @@ app.post('/api/github', (req, res) => {
 					name: `${sender.login} pushed to GitHub`
 				},
 				description: `\`push\` action was received from a wrong repository, ignoring request.`,
-				color: Helper.red
+				color: Helper.RED
 			}))
 		}
 

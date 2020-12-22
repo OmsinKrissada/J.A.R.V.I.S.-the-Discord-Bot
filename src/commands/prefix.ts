@@ -19,14 +19,14 @@ export default new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Prefix Cleared')
 					.setDescription(`Prefix has cleared`)
-					.setColor(Helper.green)
+					.setColor(Helper.GREEN)
 				)
 			}
 			else {
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription(`Blank prefix is only allowed in DM channels.`)
-					.setColor(Helper.red)
+					.setColor(Helper.RED)
 				);
 			}
 		}
@@ -36,14 +36,14 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Changed')
 				.setDescription(`Prefix has changed to ${Helper.inlineCodeBlock(new_prefix)}`)
-				.setColor(Helper.green)
+				.setColor(Helper.GREEN)
 			)
 		}
 		else {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Current prefix is ' + Helper.inlineCodeBlock(prefix) + '.')
 				.setDescription(`Usage: ${Helper.inlineCodeBlock(`${prefix}prefix set {new prefix}`)} or ${Helper.inlineCodeBlock(`${prefix}prefix clear`)}`)
-				.setColor(Helper.blue)
+				.setColor(Helper.BLUE)
 				.setFooter('Note: Blank prefix is only allowed in DM channels.')
 			);
 		}

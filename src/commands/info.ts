@@ -23,7 +23,7 @@ export default new Command({
 					message.channel.send(new MessageEmbed()
 						.setTitle(`Assumed ${Helper.inlineCodeBlock(prefix + 'userinfo me')}`)
 						.setDescription('Usage: ' + Helper.inlineCodeBlock(prefix + 'userinfo') + ' or ' + Helper.inlineCodeBlock(prefix + 'userinfo <member>'))
-						.setColor(Helper.yellow)
+						.setColor(Helper.YELLOW)
 					).then(msg => msg.delete({ timeout: 10000 }));
 				case 'me':
 					user = message.author;
@@ -69,7 +69,7 @@ export default new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Member Not Found')
 				.setDescription(`Cannot find the specified member: "${longarg(1)}"`)
-				.setColor(Helper.red)
+				.setColor(Helper.RED)
 			);
 			return;
 
@@ -78,7 +78,7 @@ export default new Command({
 				let embeduserinfo = new MessageEmbed();
 				embeduserinfo
 					.setTitle('User Info Card')
-					.setColor(Helper.blue)
+					.setColor(Helper.BLUE)
 					.setThumbnail(user.displayAvatarURL())
 					.addField('Username', `${user.username}`, true)
 					.addField('Discriminator', '#' + user.discriminator, true)
@@ -111,7 +111,7 @@ export default new Command({
 			let guild = message.guild!;
 			let embed = new MessageEmbed()
 				.setTitle('Server Info Card')
-				.setColor(Helper.blue)
+				.setColor(Helper.BLUE)
 				.setThumbnail(guild.iconURL()!)
 				.addField('Name', guild.name, true)
 				.addField('ID', guild.id, true)

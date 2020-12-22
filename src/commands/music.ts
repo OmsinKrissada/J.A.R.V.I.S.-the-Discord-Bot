@@ -106,7 +106,7 @@ class MusicPlayer {
 		referTextChannel.send(new MessageEmbed()
 			.setAuthor('Song Queued', member.user.displayAvatarURL())
 			.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
-			.setColor(Helper.green)
+			.setColor(Helper.GREEN)
 			.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration())}\``, true)
 			.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
 			.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime())}\``, true)
@@ -199,7 +199,7 @@ class MusicPlayer {
 			if ((await DataManager.get(this.guild.id)).settings.announceSong) {
 				song.textChannel.send(new MessageEmbed()
 					.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
-					.setColor(Helper.blue)
+					.setColor(Helper.BLUE)
 				)
 			}
 		}
@@ -353,7 +353,7 @@ new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription('**You must be in a voice channel** to use this command.')
-					.setColor(Helper.red)
+					.setColor(Helper.RED)
 				);
 				return;
 			}
@@ -375,7 +375,7 @@ new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('**You must be in a voice channel** to use this command.')
-				.setColor(Helper.red)
+				.setColor(Helper.RED)
 			);
 			return;
 		}
@@ -426,7 +426,7 @@ new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('I am **NOT** in a voice channel.')
-				.setColor(Helper.red)
+				.setColor(Helper.RED)
 			);
 		}
 	}
@@ -476,7 +476,7 @@ new Command({
 		if (!current_song) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('No Playing Song')
-				.setColor(Helper.blue)
+				.setColor(Helper.BLUE)
 			);
 			return;
 		}
@@ -485,7 +485,7 @@ new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('🎧 Now Playing')
 			// .setDescription(content)
-			.setColor(Helper.blue)
+			.setColor(Helper.BLUE)
 			.setThumbnail(current_song.thumbnail)
 			.addField('Song', `${current_song.title}`)
 			.addField('Link', current_song.url)
@@ -531,7 +531,7 @@ new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Invalid Argument')
 					.setDescription('The number must fall in the range of 0 to 100.')
-					.setColor(Helper.red)
+					.setColor(Helper.RED)
 				);
 				return;
 			}
@@ -540,7 +540,7 @@ new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Volume Unchanged')
 					.setDescription(`Volume has not changed since it's already at \`${args[0]}%\``)
-					.setColor(Helper.blue)
+					.setColor(Helper.BLUE)
 				);
 				return;
 			}
@@ -552,7 +552,7 @@ new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Volume Adjusted ' + (oldVolume < volume ? '🔺' : '🔻'))
 				.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[0]}%\`.\n\n**${Helper.progressBar(volume, 31)}**`)
-				.setColor(Helper.green)
+				.setColor(Helper.GREEN)
 			);
 		}
 		else {
@@ -560,7 +560,7 @@ new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Current Volume')
 				.setDescription(`The volume is at \`${volume}%\`\n\n**${Helper.progressBar(volume, 31)}**`)
-				.setColor(Helper.blue)
+				.setColor(Helper.BLUE)
 			);
 		}
 	}
@@ -584,7 +584,7 @@ new Command({
 
 		let embed = new MessageEmbed()
 			.setTitle('Song Queue 🎶')
-			.setColor(Helper.blue);
+			.setColor(Helper.BLUE);
 
 		let currentSong = player.getCurrentSong();
 		if (currentSong) {

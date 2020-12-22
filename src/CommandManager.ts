@@ -80,18 +80,18 @@ export async function run(command_name: string, args: string[], { message: sourc
 			sourcemsg.channel.send(new MessageEmbed()
 				.setTitle('Not available in DM')
 				.setDescription(`Sorry, this command can only be used in servers.`)
-				.setColor(Helper.red));
+				.setColor(Helper.RED));
 		} else if (command.requiredCallerPermissions.length == 0 || noperm.length == 0) {
 			command.exec(sourcemsg, prefix, args, sourceID);
 		} else {
 			sourcemsg.channel.send(new MessageEmbed()
 				.setTitle('You don\'t have enough permission')
 				.setDescription(`You are lacking permission${noperm.length > 1 ? 's' : ''}: ` + noperm.map(perm => `\`${(perm)}\``).join(', '))
-				.setColor(Helper.red));
+				.setColor(Helper.RED));
 		}
 	} else if (command_name != 'cancel' && (await DataManager.get(sourceID)).settings.warnUnknownCommand)
 		sourcemsg.channel.send(new MessageEmbed()
 			.setTitle('Unknown Command')
 			.setDescription(`Invalid command, type ${Helper.inlineCodeBlock(`${prefix}help`)} for list of commands.`)
-			.setColor(Helper.red));
+			.setColor(Helper.RED));
 }
