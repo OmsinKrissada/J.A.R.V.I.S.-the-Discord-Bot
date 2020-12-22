@@ -159,13 +159,14 @@ class MusicPlayer {
 		dispatcher.on('unpipe', () => {
 			console.log('unpiped')
 			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
+			this.previousSong = this.currentSong;
 			this.currentSong = undefined;
 		});
 		// dispatcher.on('unpipe', () => { console.log('unpiped') });
 		dispatcher.on('finish', async () => {
 			// console.log('finished')
-			if (this.isLooping && this.currentSong) {
-				this.play(this.currentSong);
+			if (this.isLooping && this.previousSong) {
+				this.play(this.previousSong);
 			}
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
@@ -261,8 +262,7 @@ class MusicPlayer {
 	/** @returns Whether the song is looping after the action */
 	toggleLooping() {
 		this.isLooping = !this.isLooping;
-		if (this.isLooping) return true;
-		else return false;
+		return this.isLooping;
 	}
 
 	shuffle() {
@@ -436,16 +436,29 @@ new Command({
 new Command({
 	name: 'loop',
 	category: 'music',
-	description: 'Toggles songs looping',
-	examples: [],
+	description: 'Toggles or sets song looping',
+	examples: ['loop', 'loop <on/off>'],
 	requiredCallerPermissions: [],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		const isLooping = MusicPlayerMap.get(message.guild!.id)!.toggleLooping();
-		if (isLooping) {
-			message.channel.send('Looping! 🔂');
+		const player = MusicPlayerMap.get(message.guild!.id)!;
+		if (args[0]) {
+			if (args[0].toLowerCase() == 'on') {
+				player.setLooping(true);
+				message.channel.send('Looping! 🔂');
+			} else if (args[0].toLowerCase() == 'off') {
+				player.setLooping(false);
+				message.channel.send('Stopped Looping! ➡');
+			} else {
+				message.channel.send(`❌ Invalid value ${Helper.inlineCodeBlock(args[0])}`)
+			}
 		} else {
-			message.channel.send('Stopped Looping! ➡');
+			const isLooping = player.toggleLooping();
+			if (isLooping) {
+				message.channel.send('Looping! 🔂');
+			} else {
+				message.channel.send('Stopped Looping! ➡');
+			}
 		}
 	}
 })
