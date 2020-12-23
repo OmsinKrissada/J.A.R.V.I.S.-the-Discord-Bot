@@ -622,12 +622,37 @@ new Command({
 	}
 })
 
-// new Command({
-// 	name: '',
-// 	category: 'music',
-// 	description: '',
-// 	examples: [],
-// 	requiredCallerPermissions: [],
-// 	serverOnly: true,
-// 	exec(message, prefix, args, sourceID) { }
-// }) 
+new Command({
+	name: 'remove',
+	category: 'music',
+	description: 'Removes a song from music queue',
+	examples: ['remove <song position>'],
+	requiredCallerPermissions: [],
+	serverOnly: true,
+	exec(message, prefix, args, sourceID) {
+		if (Number(args[0]) - 1 < 0) {
+			message.channel.send(new MessageEmbed()
+				.setTitle('Song Not Found')
+				.setDescription('Please do not use negative numbers.')
+				.setColor(Helper.RED)
+			);
+			return;
+		}
+		const player = MusicPlayerMap.get(sourceID)!;
+		let song = player.removeSong(Number(args[0]) - 1);
+		if (!song) {
+			message.channel.send(new MessageEmbed()
+				.setTitle('Song Not Found')
+				.setDescription('Please use any number displayed in ' + Helper.inlineCodeBlock(prefix + 'queue') + '.')
+				.setColor(Helper.RED)
+			);
+			return;
+		}
+		message.channel.send(new MessageEmbed()
+			.setAuthor('🗑️ Song Removed')
+			.setDescription(`Removed [${song.title}](${song.url}) [${song.requester}]`)
+			.setColor(Helper.GREEN)
+		);
+
+	}
+}) 
