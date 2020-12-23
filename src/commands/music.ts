@@ -17,10 +17,10 @@ class Song {
 	readonly textChannel: TextChannel;
 	readonly voiceChannel: VoiceChannel;
 
-	constructor(obj: { title: string, url: string, thubnail: string, duration: number, requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel }) {
+	constructor(obj: { title: string, url: string, thumbnail: string, duration: number, requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel }) {
 		this.title = obj.title;
 		this.url = obj.url;
-		this.thumbnail = obj.thubnail;
+		this.thumbnail = obj.thumbnail;
 		this.duration = obj.duration;
 		this.requester = obj.requester;
 		this.textChannel = obj.textChannel;
@@ -84,10 +84,11 @@ class MusicPlayer {
 		}
 		if (textField == '') return true;
 
-		let songObj: any = {
+		let songObj: { requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel, title: string, url: string, duration: number, thumbnail: string } = {
 			requester: member,
 			textChannel: referTextChannel,
-			voiceChannel: musicChannel
+			voiceChannel: musicChannel,
+			title: '', url: '', duration: 0, thumbnail: ''
 		};
 		if (ytdl.validateURL(textField)) {
 			let info = await ytdl.getInfo(textField);
