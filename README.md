@@ -19,6 +19,7 @@ But since it's already quite become a thing and I don't want it to just sit arou
 
 # Prerequisites:
 - [node.js](https://nodejs.org/en/download/) (obviously... with *npm* installed)
+- MongoDB access
 
 # Getting Started
 ### Installation
