@@ -74,7 +74,11 @@ class MusicPlayer {
 	async appendQueue(member: GuildMember, musicChannel: VoiceChannel, referTextChannel: TextChannel, textField: string) {
 		if (this.connection) {
 			if (this.voiceChannel.id != musicChannel.id)
-				referTextChannel.send("I'm in a different voice channel. Please join the one I'm currently in.");
+				referTextChannel.send(new MessageEmbed({
+					title: 'Warning',
+					description: "I'm in a different voice channel. You won't be able to enjoy your music unless you join the one I'm currently in.",
+					color: Helper.YELLOW
+				}));
 		} else {
 			await this.connect(referTextChannel, musicChannel);
 		}
@@ -442,22 +446,29 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
+		if (!player.connection) {
+			message.channel.send(new MessageEmbed({
+				title: "I'm not in a voice channel.",
+				color: Helper.RED
+			}))
+			return;
+		}
 		if (args[0]) {
 			if (args[0].toLowerCase() == 'on') {
 				player.setLooping(true);
-				message.channel.send('Looping! 🔂');
+				message.channel.send('🔂 Looping Enabled!');
 			} else if (args[0].toLowerCase() == 'off') {
 				player.setLooping(false);
-				message.channel.send('Stopped Looping! ➡');
+				message.channel.send('✋ Looping Disabled!');
 			} else {
 				message.channel.send(`❌ Invalid value ${Helper.inlineCodeBlock(args[0])}`)
 			}
 		} else {
 			const isLooping = player.toggleLooping();
 			if (isLooping) {
-				message.channel.send('Looping! 🔂');
+				message.channel.send('🔂 Looping Enabled!');
 			} else {
-				message.channel.send('Stopped Looping! ➡');
+				message.channel.send('✋ Looping Disabled!');
 			}
 		}
 	}

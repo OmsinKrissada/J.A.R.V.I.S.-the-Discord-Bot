@@ -9,6 +9,7 @@ export const bot = new Client();
 import fs from 'fs'
 import express from 'express';
 import { exec } from 'child_process';
+import linereader from 'n-readlines';
 
 import { Helper } from "./Helper";
 import * as DataManager from './DataManager'
@@ -55,15 +56,18 @@ if (!fs.existsSync('./files/logs')) {
 
 // renames latest.log to its appropriate name
 if (fs.existsSync('./files/logs/latest.log')) {
-	const linereader = require('n-readlines');
-	fs.renameSync('./files/logs/latest.log', './files/logs/' + new linereader('./files/logs/latest.log').next().toString().substr(2) + '.log')
+	const reader = new linereader('./files/logs/latest.log');
+	const filename = './files/logs/' + reader.next().toString().substr(2) + '.log';
+	if (reader.next())
+		fs.renameSync('./files/logs/latest.log', filename);
+	else fs.rmSync('./files/logs/latest.log');
 }
 
 
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
 function log(message: Message): void {
 	let lines = message.content.split('\n')
-	let meta = '[' + Helper.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.name) + '|' + message.author.username + '] ';
+	let meta = '[' + Helper.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.id) + '|' + message.author.id + '] ';
 	let indent = meta;
 	for (let line of lines) {
 		let str = indent + line + '\n';
@@ -140,42 +144,6 @@ bot.on('message', async (message) => {
 });
 
 
-// Personal-use
-
-bot.on('voiceStateUpdate', async (_oldState, newState) => {
-
-	class VoiceHook {
-		type: string;
-		voiceChannel: string;
-		textChannel: string;
-	}
-
-	if (newState.member!.user.bot) return;
-	let hooks: VoiceHook[] = (await DataManager.get(newState.guild.id)).hooks!;
-	console.log(hooks)
-	if (!hooks) {
-		hooks = [];
-	}
-	hooks.forEach((hook: VoiceHook) => {
-		if (hook.type == 'hard') {
-			if (newState.channel && newState.channel.id == hook.voiceChannel) {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { VIEW_CHANNEL: true });
-			}
-			else {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { VIEW_CHANNEL: null });
-			}
-		}
-		else if (hook.type == 'soft') {
-			if (newState.channel && newState.channel.id == hook.voiceChannel) {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { SEND_MESSAGES: true });
-			}
-			else {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { SEND_MESSAGES: null });
-			}
-		}
-	})
-
-})
 
 const app = express();
 const port = 8081;

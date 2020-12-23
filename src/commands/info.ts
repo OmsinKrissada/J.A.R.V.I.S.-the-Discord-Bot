@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import { GuildMember, MessageEmbed, User } from 'discord.js';
+import { DiscordAPIError, GuildMember, Message, MessageEmbed, User } from 'discord.js';
 import { Helper } from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DataManager';
@@ -52,13 +52,6 @@ export default new Command({
 						}
 					}
 			}
-			console.log('passed here')
-			// if (message.deletable) message.delete();
-
-			// if (!(user == null || user.size == 0)) {
-			// 	printUserInfo(user);
-			// 	return;
-			// }
 			if (!isNaN((<any>args[1]))) {
 				try {
 					let fetcheduser = await Command.bot.users.fetch(args[1]);
@@ -103,12 +96,27 @@ export default new Command({
 					.addField('Created Account At', user.createdAt.toLocaleString(), true)
 					.setTimestamp()
 				message.channel.send(embeduserinfo);
-				// if (message.deletable) message.delete();
 			}
 
 		}
 		else if (args[0] == 'server') {
 			let guild = message.guild!;
+			if (args[1]) {
+				if (!isNaN((<any>args[1]))) {
+					const fetchedGuild = await Command.bot.guilds.fetch(args[1]).catch((err: DiscordAPIError) => {
+						if (err.code == 50001)
+							message.channel.send(new MessageEmbed({
+								title: 'No Access',
+								description: "I don't have permission to view content of this server.",
+								color: Helper.RED
+							}))
+						return;
+					});
+					console.log(fetchedGuild)
+					if (!fetchedGuild) return;
+					guild = fetchedGuild;
+				}
+			}
 			let embed = new MessageEmbed()
 				.setTitle('Server Info Card')
 				.setColor(Helper.BLUE)
