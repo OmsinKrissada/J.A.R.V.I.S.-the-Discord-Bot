@@ -26,7 +26,7 @@ bot.login(token.discord)
 bot.once('ready', async () => {
 
 	console.log(`Logged in to discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
-	bot.user!.setActivity('Ultron | !help', { type: "WATCHING" })
+	bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
 	client_id = `<@!${bot.user!.id}>`;
 
 	const jarvisLoginGuild = bot.guilds.resolve('709824110229979278');
@@ -39,9 +39,9 @@ bot.once('ready', async () => {
 
 	Helper.refreshIp();
 
-	logfile.write('# ' + Helper.getDateTimeString(new Date()).replace(/:|\//g, '_') + '\n')
+	logfile.write('# ' + new Date().toISOString() + '\n');
 
-	await DataManager.connect()
+	await DataManager.connect();
 });
 
 
@@ -59,7 +59,7 @@ if (fs.existsSync('./files/logs/latest.log')) {
 	const reader = new linereader('./files/logs/latest.log');
 	const filename = './files/logs/' + reader.next().toString().substr(2) + '.log';
 	if (reader.next())
-		fs.renameSync('./files/logs/latest.log', filename);
+		fs.renameSync('./files/logs/latest.log', filename.replace(/:/g, '-'));
 	else fs.rmSync('./files/logs/latest.log');
 }
 
@@ -67,7 +67,7 @@ if (fs.existsSync('./files/logs/latest.log')) {
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
 function log(message: Message): void {
 	let lines = message.content.split('\n')
-	let meta = '[' + Helper.getDateTimeString(new Date()) + '|' + (message.guild === null ? '<DM>' : message.guild.id) + '|' + message.author.id + '] ';
+	let meta = '[' + new Date().toISOString() + '|' + (message.guild === null ? '<DM>' : message.guild.id) + '|' + message.author.id + '] ';
 	let indent = meta;
 	for (let line of lines) {
 		let str = indent + line + '\n';

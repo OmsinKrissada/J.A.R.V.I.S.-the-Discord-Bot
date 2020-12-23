@@ -27,10 +27,6 @@ class HelperClass {
 		});
 	}
 
-	getDateTimeString(date: Date) {
-		return `${this.min2(date.getDate())}/${this.min2(date.getMonth())}/${this.min2(date.getFullYear())}-${this.min2(date.getHours())}:${this.min2(date.getMinutes())}:${this.min2(date.getSeconds())}`;
-	}
-
 	min2(num: number) {
 		return ('0' + num).slice(-2);
 	}
