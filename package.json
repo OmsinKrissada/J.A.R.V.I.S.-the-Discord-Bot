@@ -18,7 +18,7 @@
     "@types/mongoose": "^5.10.3",
     "@types/yt-search": "^2.3.0",
     "bufferutil": "^4.0.2",
-    "discord-ytdl-core": "^4.1.5",
+    "discord-ytdl-core": "^5.0.0",
     "discord.js": "^12.5.1",
     "erlpack": "github:discordapp/erlpack",
     "express": "^4.17.1",
@@ -35,6 +35,7 @@
     "xmlhttprequest": "^1.8.0",
     "yaml-validator": "^3.0.0",
     "yt-search": "^2.5.1",
+    "ytdl-core": "^4.2.1",
     "zlib-sync": "^0.1.7"
   },
   "devDependencies": {
