@@ -69,6 +69,14 @@ export default new Command({
 
 			function printUserInfo(user: User) {
 				let embeduserinfo = new MessageEmbed();
+				let statusstr = '';
+				const userstatus = user.presence.status;
+				switch (userstatus) {
+					case 'offline': statusstr = '⚫ Offline'; break;
+					case 'dnd': statusstr = '🔴 DnD'; break;
+					case 'idle': statusstr = '🟡 Idle'; break;
+					case 'online': statusstr = '🟢 Online'; break;
+				}
 				embeduserinfo
 					.setTitle('User Info Card')
 					.setColor(Helper.BLUE)
@@ -76,8 +84,8 @@ export default new Command({
 					.addField('Username', `${user.username}`, true)
 					.addField('Discriminator', '#' + user.discriminator, true)
 					.addField('Display Name', user, true)
-					.addField('Current Status', user.presence.status.toUpperCase(), true)
-					.addField('Bot?', user.bot ? 'Yes' : 'No', true)
+					.addField('Current Status', statusstr, true)
+					.addField('Account Type', user.bot ? 'Bot' : 'User', true)
 					.addField('User ID', user.id, true)
 				if (message.guild != undefined) { // if in a guild
 					if (message.guild.member(user)) {
@@ -87,13 +95,13 @@ export default new Command({
 								.addField('Roles', rolesOfTheMember)
 						embeduserinfo
 							.setColor(message.guild.member(user)!.displayHexColor)
-							.addField('Joined Server At', new Date(message.guild.member(user)!.joinedTimestamp!).toLocaleString(), true);
+							.addField('Joined Server Since', new Date(message.guild.member(user)!.joinedTimestamp!).toUTCString(), true);
 					}
 					embeduserinfo
 						.setFooter(`Requested by ${message.author.tag}`);
 				}
 				embeduserinfo
-					.addField('Created Account At', user.createdAt.toLocaleString(), true)
+					.addField('Created Account Since', user.createdAt.toUTCString(), true)
 					.setTimestamp()
 				message.channel.send(embeduserinfo);
 			}
