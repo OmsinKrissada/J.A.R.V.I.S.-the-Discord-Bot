@@ -1,2 +1,1 @@
-npm ci
-systemctl --user restart jarvis
+npm ci && systemctl --user restart jarvis
