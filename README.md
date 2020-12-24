@@ -35,8 +35,21 @@ But since it's already quite become a thing and I don't want it to just sit arou
    ```
    More info about the discord.js library [here](https://discord.js.org/#/).
 
-3. Create `config.yml` in `settings` directory using this template:
+3. (Optional) Install **recommended packages** below:
+   - nodemon (Info [below](#run-using-my-recommendation))
+   
+
+### Getting it online:
+
+You need to get a *token* from discord to get it online.
+
+In order to do that, please visit [Discord API Website](https://discordapp.com/developers).
+
+Create `config.yml` in `settings` directory using this template:
    ```yaml
+   token:
+      discord: "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxx.xxxxxx-xxxxxxxxxxxxxxxxxxxx"
+      wolfram: "xxxxxx-xxxxxxxxx"
    mongodb:
       hostname: localhost
       port: 27017
@@ -54,24 +67,6 @@ But since it's already quite become a thing and I don't want it to just sit arou
       yellow: 0xebc934
 
    ```
-
-4. (Optional) Install **recommended packages** below:
-   - nodemon (Info [below](#run-using-my-recommendation))
-   
-
-### Getting it online:
-
-You need to get a *token* from discord to get it online.
-
-In order to do that, please visit [Discord API Website](https://discordapp.com/developers).
-
-Then save your token in the root directory (where `package.json` is located) as a file named `token.json` in the following format.
-```json
-{
-   discord: "token here"
-   wolfram: "token here"
-}
-```
 
 #### If you're ready, you can now run
 ```

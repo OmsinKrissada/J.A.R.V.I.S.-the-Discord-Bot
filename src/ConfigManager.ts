@@ -3,26 +3,35 @@ import yaml from 'js-yaml';
 import YamlValidator from 'yaml-validator';
 
 
-interface IMongoDBConfig {
-	hostname: string;
-	port: number;
-	database: string;
-	authorizationEnabled: boolean;
-	username: string;
-	password: string;
-};
-interface IColor {
-	red: number;
-	green: number;
-	blue: number;
-	yellow: number;
-}
+
+/*
+ * Please sync structure in IConfig and validator
+ * Hope you won't miss it :)
+ */
+
+
 interface IConfig {
-	mongodb: IMongoDBConfig;
+	mongodb: {
+		hostname: string;
+		port: number;
+		database: string;
+		authorizationEnabled: boolean;
+		username: string;
+		password: string;
+	};
+	token: {
+		discord: string,
+		wolfram: string
+	};
 	defaultPrefix: string;
 	defaultDMPrefix: string;
 	defaultVolume: number;
-	colors: IColor;
+	colors: {
+		red: number;
+		green: number;
+		blue: number;
+		yellow: number;
+	};
 }
 
 const validator = new YamlValidator({
@@ -34,6 +43,10 @@ const validator = new YamlValidator({
 			authorizationEnabled: 'boolean',
 			username: 'string',
 			password: 'string'
+		},
+		token: {
+			discord: 'string',
+			wolfram: 'string'
 		},
 		defaultPrefix: 'string',
 		defaultDMPrefix: 'string',

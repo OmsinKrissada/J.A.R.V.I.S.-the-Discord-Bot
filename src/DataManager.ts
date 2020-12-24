@@ -22,7 +22,7 @@ export async function connect() {
 		useNewUrlParser: true,
 		useUnifiedTopology: true
 	}).catch(err => {
-		console.error('MongoDB failed to connect to ' + mongopath);
+		console.error('ERROR: MongoDB failed to connect to ' + mongopath);
 		console.error(err);
 		process.exit(1);
 	});

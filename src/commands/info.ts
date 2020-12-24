@@ -71,6 +71,7 @@ export default new Command({
 				let embeduserinfo = new MessageEmbed();
 				let statusstr = '';
 				const userstatus = user.presence.status;
+				console.log(user.presence)
 				switch (userstatus) {
 					case 'offline': statusstr = '⚫ Offline'; break;
 					case 'dnd': statusstr = '🔴 DnD'; break;

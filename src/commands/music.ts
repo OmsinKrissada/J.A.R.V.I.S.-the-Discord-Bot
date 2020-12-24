@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import { Guild, GuildMember, MessageEmbed, Snowflake, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
+import { DMChannel, Guild, GuildMember, MessageEmbed, Snowflake, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
 import { Helper } from '../Helper';
 import * as DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
@@ -329,6 +329,7 @@ class MusicPlayer {
 
 
 Command.bot.on('message', msg => {
+	if (msg.channel instanceof DMChannel) return;
 	if (!MusicPlayerMap.has(msg.guild!.id))
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));
 })

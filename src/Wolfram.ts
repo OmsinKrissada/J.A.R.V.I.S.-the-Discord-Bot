@@ -2,14 +2,14 @@
 
 import { Message } from "discord.js";
 
-import token from "../token.json"
-const apitoken = token.wolfram;
 import { Helper } from './Helper';
-
-const { MessageEmbed, MessageAttachment } = require('discord.js')
+import { MessageEmbed, MessageAttachment } from 'discord.js';
 import { XMLHttpRequest } from "xmlhttprequest"
+import { CONFIG } from "./ConfigManager";
 
-function httpGet(theUrl) {
+const apitoken = CONFIG.token.wolfram;
+
+function httpGet(theUrl: string) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", theUrl, false); // false for synchronous request
     xmlHttp.send(null);
@@ -50,7 +50,7 @@ class WolframInterface {
             .setAuthor(`Q: ${input}`, message.author.displayAvatarURL())
             .setColor(Helper.GREEN)
             .setFooter('Results and information from this site are not a certified or definitive source of information that can be relied on for legal, financial, medical, life-safety or any other critical purposes.')
-            .attachFiles(img)
+            .attachFiles([img])
             .setImage('attachment://result.png')
         ).then(console.log);
     }

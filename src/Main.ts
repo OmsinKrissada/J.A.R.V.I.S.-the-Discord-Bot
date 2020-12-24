@@ -19,10 +19,9 @@ import registered_commands from '../settings/alias.json'
 
 
 // Starts discord client
-import token from "../token.json"
 import { CONFIG } from './ConfigManager';
 var client_id: string;
-bot.login(token.discord)
+bot.login(CONFIG.token.discord)
 bot.once('ready', async () => {
 
 	console.log(`Logged in to discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
