@@ -12,14 +12,14 @@ import { exec } from 'child_process';
 import linereader from 'n-readlines';
 
 import { Helper } from "./Helper";
-import * as DataManager from './DataManager'
+import DataManager from './DataManager'
 // import * as Music from './Music';
 import * as CommandManager from './CommandManager';
 import registered_commands from '../settings/alias.json'
 
 
 // Starts discord client
-import { CONFIG } from './ConfigManager';
+import CONFIG from './ConfigManager';
 var client_id: string;
 bot.login(CONFIG.token.discord)
 bot.once('ready', async () => {

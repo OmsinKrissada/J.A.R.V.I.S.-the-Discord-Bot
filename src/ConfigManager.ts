@@ -68,4 +68,4 @@ if (validator.report()) {
 	process.exit();
 }
 
-export const CONFIG: IConfig = <IConfig>(yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8')));
+export default <IConfig>(yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8')));

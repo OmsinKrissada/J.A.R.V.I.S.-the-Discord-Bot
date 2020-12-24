@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions } from 'discord.js';
-import { CONFIG } from './ConfigManager';
+import CONFIG from './ConfigManager';
 
 class HelperClass {
 

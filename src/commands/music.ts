@@ -1,11 +1,10 @@
 import { Command } from '../CommandManager';
 import { DMChannel, Guild, GuildMember, MessageEmbed, Snowflake, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
 import { Helper } from '../Helper';
-import * as DataManager from '../DataManager';
+import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
-import { CONFIG } from '../ConfigManager';
-import { text } from 'express';
+import CONFIG from '../ConfigManager';
 
 
 class Song {

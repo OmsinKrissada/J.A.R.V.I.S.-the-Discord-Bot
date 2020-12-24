@@ -6,6 +6,11 @@ class VoiceHook {
   textChannel: string;
 }
 
+/*
+ * Please keep IGuildData and the following schema in-synced
+ * Hope you won't miss it :)
+ */
+
 export interface IGuildData extends Document {
   ID: string;
   name: string;

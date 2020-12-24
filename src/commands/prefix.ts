@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
-import * as DataManager from '../DataManager';
+import DataManager from '../DataManager';
 import { Helper } from '../Helper';
 export default new Command({
 	name: 'prefix',
@@ -32,7 +32,7 @@ export default new Command({
 		}
 		else if (args[0] === 'set') {
 			let new_prefix = args[1];
-			DataManager.set(message.guild === null ? message.channel.id : message.guild.id, 'prefix', new_prefix);
+			DataManager.set(sourceID, 'prefix', new_prefix);
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Changed')
 				.setDescription(`Prefix has changed to ${Helper.inlineCodeBlock(new_prefix)}`)

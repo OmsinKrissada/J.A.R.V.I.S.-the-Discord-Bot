@@ -5,7 +5,7 @@ import { Message } from "discord.js";
 import { Helper } from './Helper';
 import { MessageEmbed, MessageAttachment } from 'discord.js';
 import { XMLHttpRequest } from "xmlhttprequest"
-import { CONFIG } from "./ConfigManager";
+import CONFIG from "./ConfigManager";
 
 const apitoken = CONFIG.token.wolfram;
 
