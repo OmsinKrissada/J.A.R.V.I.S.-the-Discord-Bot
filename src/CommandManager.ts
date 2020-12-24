@@ -1,7 +1,7 @@
 import { Message, MessageEmbed, Permissions, PermissionString } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import * as DataManager from './DataManager';
+import DataManager from './DataManager';
 import { bot } from './Main';
 
 import { Helper } from './Helper';

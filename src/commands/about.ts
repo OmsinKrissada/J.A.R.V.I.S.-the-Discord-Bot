@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
-import { CONFIG } from '../ConfigManager';
+import CONFIG from '../ConfigManager';
 import { Helper } from '../Helper';
 import packageinfo from '../../package.json';
 export default new Command({
