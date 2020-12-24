@@ -121,7 +121,6 @@ class MusicPlayer {
 		} else {
 			referTextChannel.send('Null Error')
 		}
-		console.log(this.currentSong ? 'exist' : 'undefined')
 		if (!this.currentSong && this.queue.length > 0) this.playNext();
 		return true;
 	}
@@ -161,7 +160,7 @@ class MusicPlayer {
 
 	configDispatcher(dispatcher: StreamDispatcher) {
 		dispatcher.on('unpipe', () => {
-			console.log('unpiped')
+			// console.log('unpiped')
 			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
 			this.previousSong = this.currentSong;
 			this.currentSong = undefined;
@@ -183,7 +182,6 @@ class MusicPlayer {
 	}
 
 	async play(song: Song) {
-		console.log('play')
 		const play = async (song: Song) => {
 			clearTimeout(this.leaveTimeout);
 
@@ -198,7 +196,7 @@ class MusicPlayer {
 			const dispatcher = this.connection!.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" });
 			this.configDispatcher(dispatcher);
 			this.currentSong = song;
-			console.log('set new song -> ' + (this.currentSong ? 'exist' : 'undefined'))
+			// console.log('set new song -> ' + (this.currentSong ? 'exist' : 'undefined'))
 
 
 			if ((await DataManager.get(this.guild.id)).settings.announceSong) {
@@ -215,7 +213,6 @@ class MusicPlayer {
 	}
 
 	async playNext() {
-		console.log('playnext')
 		if (this.connection && this.connection.dispatcher && this.connection.dispatcher.paused) { // first resume
 			this.resume();
 		}
@@ -244,7 +241,6 @@ class MusicPlayer {
 	}
 
 	skip() {
-		console.log('skip')
 		if (this.queue.length > 0) {
 			this.playNext();
 		} else if (this.connection && this.connection.dispatcher) {
@@ -280,7 +276,7 @@ class MusicPlayer {
 	}
 
 	seek(startsec: number) {
-		console.log(startsec)
+		// console.log(startsec)
 		if (!this.currentSong) {
 			this.respondChannel.send("I'm not playing any song.");
 			return;

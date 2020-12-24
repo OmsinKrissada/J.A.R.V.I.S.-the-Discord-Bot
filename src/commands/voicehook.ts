@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import * as DataManager from '../DataManager';
+import DataManager from '../DataManager';
 
 Command.bot.on('voiceStateUpdate', async (_oldState, newState) => {
 

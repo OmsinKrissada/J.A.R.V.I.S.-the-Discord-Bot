@@ -1,7 +1,6 @@
 import { Command } from '../CommandManager';
-import { EmojiResolvable, Message, MessageEmbed, TextChannel } from 'discord.js';
+import { TextChannel } from 'discord.js';
 import { Helper } from '../Helper';
-import * as DataManager from '../DataManager';
 import { exec } from 'child_process';
 import path from 'path';
 
@@ -14,7 +13,7 @@ export default new Command({
 	examples: ['update'],
 	requiredCallerPermissions: [],
 	serverOnly: false,
-	exec(message, prefix, args, sourceID) {
+	exec(message) {
 		// const jarvisChannel = (<TextChannel>Command.bot.guilds.resolve('709824110229979278').channels.resolve('709824110229979282'));
 		message.channel.send('Pulling from GitHub . . .');
 		exec('git pull', async (_err, stdout, _stderr) => {
