@@ -11,7 +11,7 @@ Command.bot.on('voiceStateUpdate', async (_oldState, newState) => {
 
 	if (newState.member!.user.bot) return;
 	let hooks: VoiceHook[] = (await DataManager.get(newState.guild.id)).hooks!;
-	console.log(hooks)
+	// console.log(hooks)
 	if (!hooks) {
 		hooks = [];
 	}

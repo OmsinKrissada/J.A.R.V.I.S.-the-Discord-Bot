@@ -100,5 +100,9 @@
 		"mv",
 		"move",
 		"movequeue"
+	],
+	"rmrange":[
+		"removerange",
+		"rmr"
 	]
 }

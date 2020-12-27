@@ -444,6 +444,10 @@ class MusicPlayer {
 		return this.queue.splice(index, 1)[0];
 	}
 
+	removeSongRange(from: number, end: number) {
+		this.queue.splice(from, end - from + 1);
+	}
+
 	clearQueue() {
 		if (this) this.queue = [];
 	}
@@ -736,7 +740,7 @@ new Command({
 		if (currentSong) {
 			let secondsPlayed = Math.floor(currentSong.getPlayedTimeSec()); // currentSong.getPlayedTime()
 			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}`)
-				.addField('Total Time', `**${Helper.prettyTime(player.getTotalTime())}**`, true)
+				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime())}\``, true)
 				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
 		}
 		Helper.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))
@@ -792,5 +796,48 @@ new Command({
 			.setDescription('Music queue for this server has been reset.')
 			.setColor(Helper.GREEN)
 		);
+	}
+})
+
+new Command({
+	name: 'rmrange',
+	category: 'music',
+	description: 'Removes songs in specified range from music queue',
+	examples: ['rmrange <from> <to>'],
+	requiredCallerPermissions: [],
+	serverOnly: true,
+	exec(message, prefix, args, sourceID) {
+		const from = Number(args[0]);
+		const to = Number(args[1]);
+		const player = MusicPlayerMap.get(message.guild!.id)!;
+		if (!(args[0] && args[1]) || isNaN(from) || isNaN(to)) {
+			message.channel.send(new MessageEmbed({
+				title: "Usage",
+				description: 'rmrange <from (number)> <to (number)>',
+				color: Helper.RED,
+			}));
+		} else if (from > to) {
+			message.channel.send(new MessageEmbed({
+				title: "Invalid Range",
+				description: 'Position must be from lower to higher',
+				color: Helper.RED,
+			}));
+		} else if (from - 1 < 0 || to - 1 < 0 || from > player.getQueue().length || to > player.getQueue().length) {
+			message.channel.send(new MessageEmbed({
+				title: 'Song Not Found',
+				description: `Please use positions that exist in ${prefix}queue`,
+				color: Helper.RED,
+			})
+			);
+			return;
+		} else {
+			player.removeSongRange(from - 1, to - 1);
+			message.channel.send(new MessageEmbed({
+				title: 'Songs Removed',
+				description: `${to - from + 1} songs have been removed from the queue.`,
+				color: Helper.GREEN,
+			})
+			);
+		}
 	}
 }) 

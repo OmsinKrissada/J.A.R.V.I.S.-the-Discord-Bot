@@ -68,7 +68,7 @@ class HelperClass {
 		for (let i = 0; i < length - show; i++) {
 			progress += '─';
 		}
-		console.log(progress)
+		// console.log(progress)
 		return '`|' + progress + '|`';
 	}
 
@@ -81,7 +81,7 @@ class HelperClass {
 		let shuffledArray: any[] = [];
 		while (array.length > 0) {
 			let index = Math.floor(Math.random() * array.length);
-			console.log(index)
+			// console.log(index)
 			shuffledArray.push(array[index]);
 			array = array.filter(item => array.indexOf(item) != index);
 		}
@@ -247,7 +247,7 @@ class HelperClass {
 							let result = Array.from(list.keys())[Number(answer_msg.content) - 1];
 							if (confirm_msg.deletable) confirm_msg.delete();
 							if (answer_msg.deletable) answer_msg.delete();
-							console.log(result)
+							// console.log(result)
 							resolve(list[result]);
 							return list[result];
 						}
