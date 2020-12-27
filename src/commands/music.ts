@@ -776,4 +776,21 @@ new Command({
 		);
 
 	}
+})
+
+new Command({
+	name: 'clear',
+	category: 'music',
+	description: 'Removes all songs from music queue',
+	examples: ['clear'],
+	requiredCallerPermissions: [],
+	serverOnly: true,
+	exec(message, prefix, args, sourceID) {
+		MusicPlayerMap.get(message.guild!.id)!.clearQueue();
+		message.channel.send(new MessageEmbed()
+			.setTitle('Queue Cleared')
+			.setDescription('Music queue for this server has been reset.')
+			.setColor(Helper.GREEN)
+		);
+	}
 }) 
