@@ -20,6 +20,7 @@ export interface IGuildData extends Document {
     warnUnknownCommand: boolean;
     announceSong: boolean;
     announceQueueEnd: boolean;
+    queueInOrder: boolean;
   }
   hooks: VoiceHook[]
 }
@@ -32,7 +33,8 @@ const guildData = new mongoose.Schema({
   settings: {
     warnUnknownCommand: { type: Boolean, default: true },
     announceSong: { type: Boolean, default: true },
-    announceQueueEnd: { type: Boolean, default: false }
+    announceQueueEnd: { type: Boolean, default: false },
+    queueInOrder: { type: Boolean, default: true },
   },
   hooks: [{
     text: { type: String },

@@ -1,10 +1,13 @@
 import { Command } from '../CommandManager';
 import { DMChannel, Guild, GuildMember, MessageEmbed, Snowflake, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
 import { Helper } from '../Helper';
+import axios from 'axios';
+
 import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
+
 
 
 class Song {
@@ -37,6 +40,21 @@ class Song {
 		return MusicPlayerMap.get(this.requester.guild.id)!.getPlayedTime() / 1000;
 	}
 }
+
+
+class Playlist {
+	readonly title: string;
+	readonly url: string;
+	readonly thumbnail: string;
+	readonly songs: Song[];
+	constructor(title: string, url: string, thumbnail: string, songs: Song[]) {
+		this.title = title;
+		this.url = url;
+		this.thumbnail = thumbnail;
+		this.songs = songs;
+	}
+}
+
 const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 
 
@@ -67,10 +85,87 @@ class MusicPlayer {
 		return totaltime;
 	}
 
+	private getYtdlVideoInfo(query: string) {
+
+	}
+
+	async findSongYoutube(query: string, { member, voiceChan, textChan }: { member: GuildMember, voiceChan: VoiceChannel, textChan: TextChannel }): Promise<Song | Playlist | undefined> {
+		let songObj: { requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel, title: string, url: string, duration: number, thumbnail: string } = {
+			requester: member,
+			textChannel: textChan,
+			voiceChannel: voiceChan,
+			title: '', url: '', duration: 0, thumbnail: ''
+		};
+
+		if (query.includes("list=")) {
+			const listID = query.split(/&|\?/g).filter(arg => arg.startsWith('list='))[0].slice(5);
+			// console.log('list: ' + listID)
+			let playlistResponse: any;
+			try {
+				playlistResponse = await axios.get(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${listID}&key=${CONFIG.token.youtube}&maxResults=50`, {});
+			} catch {
+				console.log('playlist not found')
+				return undefined;
+			}
+			const playlist = playlistResponse.data;
+			// getNextPage
+
+			const playlistInfo = (await axios.get(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${listID}&key=${CONFIG.token.youtube}`)).data.items[0].snippet;
+			const nextPage: string = playlist.nextPageToken;
+			const songs: Song[] = [];
+			textChan.send('Getting videos, please wait . . .');
+			if ((await DataManager.get(member.guild.id)).settings.queueInOrder)
+				for (const vid of playlist.items) {
+					const snippet = vid.snippet;
+					const info = await ytdl.getBasicInfo(snippet.resourceId.videoId);
+					songObj.title = info.videoDetails.title;
+					songObj.url = info.videoDetails.video_url;
+					songObj.duration = Number(info.videoDetails.lengthSeconds);
+					songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
+					songs.push(new Song(songObj));
+				} else await Promise.all(playlist.items.map(async (vid: any) => {
+					const snippet = vid.snippet;
+					const info = await ytdl.getBasicInfo(snippet.resourceId.videoId);
+					songObj.title = info.videoDetails.title;
+					songObj.url = info.videoDetails.video_url;
+					songObj.duration = Number(info.videoDetails.lengthSeconds);
+					songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
+					songs.push(new Song(songObj));
+				}));
+			// console.log(songs)
+			return new Playlist(playlistInfo.title, `https://youtube.com/playlist?list=${listID}`, playlistInfo.thumbnails.default.url, songs);
+
+			// if (next) {
+			// }
+		}
+
+		if (ytdl.validateURL(query)) {
+			const info = await ytdl.getInfo(query);
+			songObj.title = info.videoDetails.title;
+			songObj.url = query;
+			songObj.duration = Number(info.videoDetails.lengthSeconds);
+			songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
+		} else {
+			const searchResult = await yts({ query: query, pageStart: 1, pageEnd: 1 });
+			const video = searchResult.videos[0];
+			if (searchResult == null) return undefined;
+			songObj.title = video.title;
+			songObj.url = video.url;
+			songObj.duration = video.duration.seconds;
+			songObj.thumbnail = video.thumbnail;
+		}
+		let song = new Song(songObj);
+		return song;
+	}
+
+	// findSongSpotify(query: string): Song[] {
+
+	// }
+
 	/**
 	  * @returns Returns true if success, otherwise returns false.
 	  */
-	async appendQueue(member: GuildMember, musicChannel: VoiceChannel, referTextChannel: TextChannel, textField: string) {
+	async appendQueue(member: GuildMember, musicChannel: VoiceChannel, referTextChannel: TextChannel, query: string) {
 		if (this.connection) {
 			if (this.voiceChannel.id != musicChannel.id)
 				referTextChannel.send(new MessageEmbed({
@@ -81,46 +176,53 @@ class MusicPlayer {
 		} else {
 			await this.connect(referTextChannel, musicChannel);
 		}
-		if (textField == '') return true;
+		if (query == '') return true;
 
-		let songObj: { requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel, title: string, url: string, duration: number, thumbnail: string } = {
-			requester: member,
-			textChannel: referTextChannel,
-			voiceChannel: musicChannel,
-			title: '', url: '', duration: 0, thumbnail: ''
-		};
-		if (ytdl.validateURL(textField)) {
-			let info = await ytdl.getInfo(textField);
-			songObj.title = info.videoDetails.title;
-			songObj.url = textField;
-			songObj.duration = Number(info.videoDetails.lengthSeconds);
-			songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
 
+		let result: Song | Playlist | undefined;
+		if (query.match(/https?:\/\/open.spotify.com\/(\w+)\/\w+/gi)) { // If matches Spotify URL format
+			referTextChannel.send('Spotify search is not supported yet.')
+			// result=bla bla bla
 		} else {
-			const searchResult = await yts({ query: textField, pageStart: 1, pageEnd: 1 });
-			const video = searchResult.videos[0];
-			if (searchResult == null) return false;
-			songObj.title = video.title;
-			songObj.url = video.url;
-			songObj.duration = video.duration.seconds;
-			songObj.thumbnail = video.thumbnail;
+			result = await this.findSongYoutube(query, { member: member, voiceChan: musicChannel, textChan: referTextChannel });
 		}
-		let song = new Song(songObj);
 
-		referTextChannel.send(new MessageEmbed()
-			.setAuthor('Song Queued', member.user.displayAvatarURL())
-			.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
-			.setColor(Helper.GREEN)
-			.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration())}\``, true)
-			.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
-			.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime())}\``, true)
-			.setThumbnail(song.thumbnail)
-		);
-		if (song != null) { // Null check
+		if (result instanceof Song) {
+			const song = result;
+			referTextChannel.send(new MessageEmbed()
+				.setAuthor('Song Queued', member.user.displayAvatarURL())
+				.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
+				.setColor(Helper.GREEN)
+				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration())}\``, true)
+				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
+				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime())}\``, true)
+				.setThumbnail(song.thumbnail)
+			);
 			this.queue.push(song);
-		} else {
-			referTextChannel.send('Null Error')
+		} else if (result instanceof Playlist) {
+			const playlist = result;
+			let totalDuration = 0;
+			playlist.songs.forEach(song => totalDuration += song.getDuration());
+			referTextChannel.send(new MessageEmbed()
+				.setAuthor('Playlist Queued', member.user.displayAvatarURL())
+				.setDescription('Queued songs from playlist ' + `**[${playlist.title}](${playlist.url})**` + '.\n')
+				.setColor(Helper.GREEN)
+				.addField('Playlist Duration', `\`${Helper.prettyTime(totalDuration)}\``, true)
+				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\` to \`${this.currentSong ? this.queue.length + playlist.songs.length : playlist.songs.length - 1}\``, true)
+				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime())}\``, true)
+				.setThumbnail(playlist.thumbnail)
+			);
+			this.queue = this.queue.concat(playlist.songs);
+
+		} else if (!result) {
+			referTextChannel.send(new MessageEmbed({
+				title: "No Songs Found",
+				description: "Sorry, we experienced difficulties finding your song. Try again with other phrases.",
+				color: Helper.RED
+			}));
+			return;
 		}
+
 		if (!this.currentSong && this.queue.length > 0) this.playNext();
 		return true;
 	}
@@ -380,9 +482,7 @@ new Command({
 			);
 			return;
 		}
-		if (!(await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.member!.voice.channel, <TextChannel>message.channel, Helper.longarg(0, args)))) {
-			message.channel.send('Sorry, we experienced difficulties finding your song. Try with other phrases.');
-		}
+		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.member!.voice.channel, <TextChannel>message.channel, Helper.longarg(0, args));
 	}
 })
 
@@ -600,7 +700,7 @@ new Command({
 		let i = 0;
 		player.getQueue().forEach(song => {
 			i++;
-			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration())}\` __[${song.title}](${song.url})__ [${song.requester}]\n\n`);
+			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration())}\` __[${song.title}](${song.url})__ [${song.requester}]\n`);
 		})
 
 		let embed = new MessageEmbed()

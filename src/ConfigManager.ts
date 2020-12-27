@@ -21,7 +21,8 @@ interface IConfig {
 	};
 	token: {
 		discord: string,
-		wolfram: string
+		wolfram: string,
+		youtube: string,
 	};
 	defaultPrefix: string;
 	defaultDMPrefix: string;
@@ -42,11 +43,12 @@ const validator = new YamlValidator({
 			port: 'number',
 			authorizationEnabled: 'boolean',
 			username: 'string',
-			password: 'string'
+			password: 'string',
 		},
 		token: {
 			discord: 'string',
-			wolfram: 'string'
+			wolfram: 'string',
+			youtube: 'string',
 		},
 		defaultPrefix: 'string',
 		defaultDMPrefix: 'string',
@@ -55,7 +57,7 @@ const validator = new YamlValidator({
 			red: 'number',
 			green: 'number',
 			blue: 'number',
-			yellow: 'number'
+			yellow: 'number',
 		}
 
 	},
