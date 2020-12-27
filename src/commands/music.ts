@@ -1,7 +1,8 @@
 import { Command } from '../CommandManager';
 import { DMChannel, Guild, GuildMember, MessageEmbed, Snowflake, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
 import { Helper } from '../Helper';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import moment from 'moment';
 
 import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
@@ -99,40 +100,64 @@ class MusicPlayer {
 
 		if (query.includes("list=")) {
 			const listID = query.split(/&|\?/g).filter(arg => arg.startsWith('list='))[0].slice(5);
-			// console.log('list: ' + listID)
-			let playlistResponse: any;
-			try {
-				playlistResponse = await axios.get(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${listID}&key=${CONFIG.token.youtube}&maxResults=50`, {});
-			} catch {
-				console.log('playlist not found')
-				return undefined;
-			}
-			const playlist = playlistResponse.data;
-			// getNextPage
+
+			let nextPage = undefined;
+			const songs: Song[] = [];
+			const waitmsg = textChan.send('Getting videos, please wait . . .');
+			do {
+				const songsstr: string[] = [];
+				let paramObj: any = {
+					key: CONFIG.token.youtube,
+					part: 'contentDetails',
+					playlistId: listID,
+					fields: 'nextPageToken,prevPageToken,items/contentDetails/videoId',
+					maxResults: 50,
+				};
+				if (nextPage) paramObj.pageToken = nextPage;
+				let playlistItemRes: AxiosResponse;
+				try {
+					playlistItemRes = (await axios({
+						method: 'GET',
+						url: 'https://www.googleapis.com/youtube/v3/playlistItems/',
+						params: paramObj
+					}));
+				} catch (err) {
+					if ((await waitmsg).deletable) (await waitmsg).delete();
+					return undefined;
+				}
+				const playlistdata = playlistItemRes.data;
+				for (const song of playlistdata.items) {
+					songsstr.push(song.contentDetails.videoId)
+				}
+				const videosRes = await axios({
+					method: "GET",
+					url: 'https://www.googleapis.com/youtube/v3/videos/',
+					params: {
+						key: CONFIG.token.youtube,
+						part: 'contentDetails,snippet',
+						id: songsstr.join(','),
+						fields: 'items/id,items/contentDetails/duration,items/snippet/thumbnails/default,items/snippet/title'
+					}
+				})
+
+				for (const vid of videosRes.data.items) {
+					songs.push(new Song({
+						title: vid.snippet.title,
+						duration: moment.duration(vid.contentDetails.duration).asSeconds(),
+						thumbnail: vid.snippet.thumbnails.default.url,
+						url: `https://youtube.com/watch?v=${vid.id}`,
+						requester: member,
+						textChannel: textChan,
+						voiceChannel: voiceChan,
+					}))
+					nextPage = playlistdata.nextPageToken;
+				}
+			} while (nextPage);
 
 			const playlistInfo = (await axios.get(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${listID}&key=${CONFIG.token.youtube}`)).data.items[0].snippet;
-			const nextPage: string = playlist.nextPageToken;
-			const songs: Song[] = [];
-			textChan.send('Getting videos, please wait . . .');
-			if ((await DataManager.get(member.guild.id)).settings.queueInOrder)
-				for (const vid of playlist.items) {
-					const snippet = vid.snippet;
-					const info = await ytdl.getBasicInfo(snippet.resourceId.videoId);
-					songObj.title = info.videoDetails.title;
-					songObj.url = info.videoDetails.video_url;
-					songObj.duration = Number(info.videoDetails.lengthSeconds);
-					songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
-					songs.push(new Song(songObj));
-				} else await Promise.all(playlist.items.map(async (vid: any) => {
-					const snippet = vid.snippet;
-					const info = await ytdl.getBasicInfo(snippet.resourceId.videoId);
-					songObj.title = info.videoDetails.title;
-					songObj.url = info.videoDetails.video_url;
-					songObj.duration = Number(info.videoDetails.lengthSeconds);
-					songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
-					songs.push(new Song(songObj));
-				}));
+
 			// console.log(songs)
+			if ((await waitmsg).deletable) (await waitmsg).delete();
 			return new Playlist(playlistInfo.title, `https://youtube.com/playlist?list=${listID}`, playlistInfo.thumbnails.default.url, songs);
 
 			// if (next) {
@@ -205,7 +230,7 @@ class MusicPlayer {
 			playlist.songs.forEach(song => totalDuration += song.getDuration());
 			referTextChannel.send(new MessageEmbed()
 				.setAuthor('Playlist Queued', member.user.displayAvatarURL())
-				.setDescription('Queued songs from playlist ' + `**[${playlist.title}](${playlist.url})**` + '.\n')
+				.setDescription(`Queued ${playlist.songs.length} songs from playlist **[${playlist.title}](${playlist.url})**.\n`)
 				.setColor(Helper.GREEN)
 				.addField('Playlist Duration', `\`${Helper.prettyTime(totalDuration)}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\` to \`${this.currentSong ? this.queue.length + playlist.songs.length : playlist.songs.length - 1}\``, true)
