@@ -281,6 +281,7 @@ class MusicPlayer {
 		if (this.connection) {
 			this.connection.disconnect();
 			this.connection = undefined;
+			this.queue = [];
 			return true;
 		} else return false;
 	}

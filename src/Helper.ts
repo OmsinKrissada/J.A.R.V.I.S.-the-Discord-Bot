@@ -99,7 +99,7 @@ class HelperClass {
 			let val = '';
 
 			let nextval = value[0];
-			for (let i = 0; val.length + nextval.length <= 1020 && value.length > 0; i++) {
+			for (let i = 0; val.length + nextval.length <= 1000 && value.length > 0; i++) {
 				nextval = value.shift()!;
 				val += nextval + (inline ? '' : '\n');
 			}
