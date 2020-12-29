@@ -66,6 +66,7 @@ class MusicPlayer {
 	voiceChannel: VoiceChannel;
 	respondChannel: TextChannel; // Text Channel
 	connection: VoiceConnection | undefined;
+	dispatcher: StreamDispatcher;
 	private currentSong: Song | undefined;
 	private previousSong: Song | undefined;
 	private isLooping = false;
@@ -206,7 +207,7 @@ class MusicPlayer {
 
 		let result: Song | Playlist | undefined;
 		if (query.match(/https?:\/\/open.spotify.com\/(\w+)\/\w+/gi)) { // If matches Spotify URL format
-			referTextChannel.send('Spotify search is not supported yet.')
+			referTextChannel.send('Spotify support coming soon.')
 			// result=bla bla bla
 		} else {
 			result = await this.findSongYoutube(query, { member: member, voiceChan: musicChannel, textChan: referTextChannel });
@@ -287,6 +288,7 @@ class MusicPlayer {
 	}
 
 	configDispatcher(dispatcher: StreamDispatcher) {
+		this.dispatcher = dispatcher
 		dispatcher.on('unpipe', () => {
 			// console.log('unpiped')
 			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
@@ -404,6 +406,7 @@ class MusicPlayer {
 	}
 
 	seek(startsec: number) {
+
 		// console.log(startsec)
 		if (!this.currentSong) {
 			this.respondChannel.send("I'm not playing any song.");
@@ -413,11 +416,18 @@ class MusicPlayer {
 			this.respondChannel.send('An unknown error occured, please contact Omsin for debug.');
 			return;
 		}
+		const thissongiamplaying = new Song(this.currentSong);
+		this.connection.dispatcher.on('unpipe', _ => seek(startsec))
 		this.connection.dispatcher.destroy();
-		const dispatcher = this.connection.play(ytdl(this.currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
-		this.configDispatcher(dispatcher);
-		this.currentSong.getPlayedTimeSec = () => {
-			return (this.connection!.dispatcher.streamTime + startsec * 1000) / 1000;
+		const seek = async (startsec: number) => {
+			clearTimeout(this.leaveTimeout);
+			this.currentSong = thissongiamplaying;
+			const dispatcher = this.connection!.play(ytdl(this.currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
+			this.configDispatcher(dispatcher);
+			this.currentSong = thissongiamplaying;
+			this.currentSong.getPlayedTimeSec = () => {
+				return (this.connection!.dispatcher.streamTime + startsec * 1000) / 1000;
+			}
 		}
 	}
 
@@ -426,7 +436,7 @@ class MusicPlayer {
 	}
 
 	getPlayedTime() {
-		return this.connection ? this.connection.dispatcher.streamTime : -1;
+		return this.connection ? this.dispatcher.streamTime : -1;
 	}
 
 	getCurrentSong() {
@@ -840,5 +850,36 @@ new Command({
 			})
 			);
 		}
+	}
+})
+
+
+
+
+new Command({
+	name: 'seek',
+	category: 'music',
+	description: 'Seeks to a specific second in the song',
+	examples: ['seek <target second>'],
+	requiredCallerPermissions: [],
+	serverOnly: true,
+	exec(message, prefix, args, sourceID) {
+		const player = MusicPlayerMap.get(message.guild!.id)!
+		if (!player.connection) {
+			message.channel.send(new MessageEmbed({
+				title: 'No Playing Song',
+				description: 'I am not playing any song at the moment.',
+				color: Helper.RED
+			}))
+		}
+		player.seek(<any>args[0]);
+		const current_song = player.getCurrentSong();
+		if (!current_song) return;
+		const secondsPlayed = Math.floor(current_song.getPlayedTimeSec());
+		message.channel.send(new MessageEmbed()
+			.setTitle('Seeked!')
+			.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
+			.setColor(Helper.GREEN)
+		)
 	}
 }) 
