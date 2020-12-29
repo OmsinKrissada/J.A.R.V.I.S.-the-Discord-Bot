@@ -37,7 +37,7 @@ class Song {
 	/**
 	 * @returns Seconds played through the song
 	 */
-	getPlayedTimeSec() {
+	getPlayedTimeSec() { // Why don't I add this to MusicPlayer??? Ans: When you use !seek, it will need to change the played time so it needs to be song-specific (see this.seek() for detail)
 		return MusicPlayerMap.get(this.requester.guild.id)!.getPlayedTime() / 1000;
 	}
 }
@@ -405,7 +405,7 @@ class MusicPlayer {
 		queue.splice(newPosition - 1, 0, transferingSong);
 	}
 
-	seek(startsec: number) {
+	seek(startsec: number, responseChannel: TextChannel) {
 
 		// console.log(startsec)
 		if (!this.currentSong) {
@@ -428,6 +428,13 @@ class MusicPlayer {
 			this.currentSong.getPlayedTimeSec = () => {
 				return (this.connection!.dispatcher.streamTime + startsec * 1000) / 1000;
 			}
+			if (!this.currentSong) return;
+			const secondsPlayed = Math.floor(this.currentSong.getPlayedTimeSec());
+			responseChannel.send(new MessageEmbed()
+				.setTitle('Seeked!')
+				.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration() * 100), 45)}`)
+				.setColor(Helper.GREEN)
+			)
 		}
 	}
 
@@ -872,14 +879,7 @@ new Command({
 				color: Helper.RED
 			}))
 		}
-		player.seek(<any>args[0]);
-		const current_song = player.getCurrentSong();
-		if (!current_song) return;
-		const secondsPlayed = Math.floor(current_song.getPlayedTimeSec());
-		message.channel.send(new MessageEmbed()
-			.setTitle('Seeked!')
-			.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
-			.setColor(Helper.GREEN)
-		)
+		player.seek(<any>args[0], <TextChannel>message.channel);
+
 	}
 }) 
