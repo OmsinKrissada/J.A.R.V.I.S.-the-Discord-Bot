@@ -222,7 +222,7 @@ class MusicPlayer {
 				.setAuthor('Song Queued', member.user.displayAvatarURL())
 				.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
 				.setColor(Helper.GREEN)
-				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration())}\``, true)
+				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration().asSeconds())}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
 				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime().asSeconds())}\``, true)
 				.setThumbnail(song.thumbnail)
@@ -334,7 +334,7 @@ class MusicPlayer {
 
 			if ((await DataManager.get(this.guild.id)).settings.announceSong) {
 				song.textChannel.send(new MessageEmbed()
-					.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration())}\` ` + `[${song.requester.user}]`)
+					.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
 					.setColor(Helper.BLUE)
 				)
 			}
@@ -435,7 +435,7 @@ class MusicPlayer {
 			const secondsPlayed = Math.floor(this.currentSong.getPlayedTime().asSeconds());
 			responseChannel.send(new MessageEmbed()
 				.setTitle('Seeked!')
-				.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
+				.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
 				.setColor(Helper.GREEN)
 			)
 		}
@@ -660,7 +660,7 @@ new Command({
 			.setThumbnail(current_song.thumbnail)
 			.addField('Song', `${current_song.title}`)
 			.addField('Link', current_song.url)
-			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}` + (player.getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
+			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration().asSeconds())}` + (player.getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
 			.addField('Voice Channel', current_song.voiceChannel, true)
 			.addField('Requester', `${current_song.requester}`, true)
@@ -750,7 +750,7 @@ new Command({
 		let i = 0;
 		player.getQueue().forEach(song => {
 			i++;
-			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration())}\` __[${song.title}](${song.url})__ [${song.requester}]\n`);
+			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration().asSeconds())}\` __[${song.title}](${song.url})__ [${song.requester}]\n`);
 		})
 
 		let embed = new MessageEmbed()

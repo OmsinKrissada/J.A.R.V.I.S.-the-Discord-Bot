@@ -73,10 +73,9 @@ class HelperClass {
 		return '`|' + progress + '|`';
 	}
 
-	prettyTime(seconds: number | moment.Duration) {
-		let duration: moment.Duration;
-		if (seconds instanceof Number) duration = moment.duration(seconds, 'seconds');
-		else duration = <moment.Duration>seconds;
+	prettyTime(seconds: number) {
+		const duration = moment.duration(seconds, 'seconds');
+
 		const hours = Math.floor(duration.hours());
 		const mins = duration.minutes();
 		const secs = duration.seconds();
