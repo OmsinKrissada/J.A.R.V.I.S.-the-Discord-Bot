@@ -15,12 +15,12 @@ class Song {
 	readonly title: string;
 	readonly url: string;
 	readonly thumbnail: string;
-	readonly duration: number;
+	readonly duration: moment.Duration;
 	readonly requester: GuildMember;
 	readonly textChannel: TextChannel;
 	readonly voiceChannel: VoiceChannel;
 
-	constructor(obj: { title: string, url: string, thumbnail: string, duration: number, requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel }) {
+	constructor(obj: { title: string, url: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel }) {
 		this.title = obj.title;
 		this.url = obj.url;
 		this.thumbnail = obj.thumbnail;
@@ -35,10 +35,10 @@ class Song {
 	}
 
 	/**
-	 * @returns Seconds played through the song
+	 * @returns Time played through the song
 	 */
-	getPlayedTimeSec() { // Why don't I add this to MusicPlayer??? Ans: When you use !seek, it will need to change the played time so it needs to be song-specific (see this.seek() for detail)
-		return MusicPlayerMap.get(this.requester.guild.id)!.getPlayedTime() / 1000;
+	getPlayedTime() { // Why don't I add this to MusicPlayer??? Ans: When you use !seek, it will need to change the played time so it needs to be song-specific (see this.seek() for detail)
+		return moment.duration(MusicPlayerMap.get(this.requester.guild.id)!.getPlayedTime(), 'milliseconds');
 	}
 }
 
@@ -78,13 +78,16 @@ class MusicPlayer {
 		this.guild = guild;
 	}
 
+	/**
+	 * @returns Total duration of all songs in the queue.
+	 */
 	getTotalTime() {
 		let totaltime = 0;
 		this.queue.forEach(song => {
-			totaltime += song.duration;
+			totaltime += song.duration.asSeconds();
 		});
-		if (this.currentSong) totaltime += this.currentSong.duration - this.currentSong.getPlayedTimeSec();
-		return totaltime;
+		if (this.currentSong) totaltime += this.currentSong.duration.subtract(this.currentSong.getPlayedTime()).asSeconds();
+		return moment.duration(totaltime, 'seconds');
 	}
 
 	private getYtdlVideoInfo(query: string) {
@@ -92,11 +95,11 @@ class MusicPlayer {
 	}
 
 	async findSongYoutube(query: string, { member, voiceChan, textChan }: { member: GuildMember, voiceChan: VoiceChannel, textChan: TextChannel }): Promise<Song | Playlist | undefined> {
-		let songObj: { requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel, title: string, url: string, duration: number, thumbnail: string } = {
+		let songObj: { requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel, title: string, url: string, duration: moment.Duration, thumbnail: string } = {
 			requester: member,
 			textChannel: textChan,
 			voiceChannel: voiceChan,
-			title: '', url: '', duration: 0, thumbnail: ''
+			title: '', url: '', duration: moment.duration(0), thumbnail: ''
 		};
 
 		if (query.includes("list=")) {
@@ -144,7 +147,7 @@ class MusicPlayer {
 				for (const vid of videosRes.data.items) {
 					songs.push(new Song({
 						title: vid.snippet.title,
-						duration: moment.duration(vid.contentDetails.duration).asSeconds(),
+						duration: moment.duration(vid.contentDetails.duration),
 						thumbnail: vid.snippet.thumbnails.default.url,
 						url: `https://youtube.com/watch?v=${vid.id}`,
 						requester: member,
@@ -169,7 +172,7 @@ class MusicPlayer {
 			const info = await ytdl.getInfo(query);
 			songObj.title = info.videoDetails.title;
 			songObj.url = query;
-			songObj.duration = Number(info.videoDetails.lengthSeconds);
+			songObj.duration = moment.duration(info.videoDetails.lengthSeconds, 'seconds');
 			songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
 		} else {
 			const searchResult = await yts({ query: query, pageStart: 1, pageEnd: 1 });
@@ -177,7 +180,7 @@ class MusicPlayer {
 			if (searchResult == null) return undefined;
 			songObj.title = video.title;
 			songObj.url = video.url;
-			songObj.duration = video.duration.seconds;
+			songObj.duration = moment.duration(video.duration.seconds, 'seconds');
 			songObj.thumbnail = video.thumbnail;
 		}
 		let song = new Song(songObj);
@@ -221,21 +224,21 @@ class MusicPlayer {
 				.setColor(Helper.GREEN)
 				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration())}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
-				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime())}\``, true)
+				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime().asSeconds())}\``, true)
 				.setThumbnail(song.thumbnail)
 			);
 			this.queue.push(song);
 		} else if (result instanceof Playlist) {
 			const playlist = result;
 			let totalDuration = 0;
-			playlist.songs.forEach(song => totalDuration += song.getDuration());
+			playlist.songs.forEach(song => totalDuration += song.getDuration().asSeconds());
 			referTextChannel.send(new MessageEmbed()
 				.setAuthor('Playlist Queued', member.user.displayAvatarURL())
 				.setDescription(`Queued ${playlist.songs.length} songs from playlist **[${playlist.title}](${playlist.url})**.\n`)
 				.setColor(Helper.GREEN)
 				.addField('Playlist Duration', `\`${Helper.prettyTime(totalDuration)}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\` to \`${this.currentSong ? this.queue.length + playlist.songs.length : playlist.songs.length - 1}\``, true)
-				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime())}\``, true)
+				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime().asSeconds())}\``, true)
 				.setThumbnail(playlist.thumbnail)
 			);
 			this.queue = this.queue.concat(playlist.songs);
@@ -425,14 +428,14 @@ class MusicPlayer {
 			const dispatcher = this.connection!.play(ytdl(this.currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
 			this.configDispatcher(dispatcher);
 			this.currentSong = thissongiamplaying;
-			this.currentSong.getPlayedTimeSec = () => {
-				return (this.connection!.dispatcher.streamTime + startsec * 1000) / 1000;
+			this.currentSong.getPlayedTime = () => {
+				return moment.duration(this.connection!.dispatcher.streamTime + startsec * 1000, 'milliseconds');
 			}
 			if (!this.currentSong) return;
-			const secondsPlayed = Math.floor(this.currentSong.getPlayedTimeSec());
+			const secondsPlayed = Math.floor(this.currentSong.getPlayedTime().asSeconds());
 			responseChannel.send(new MessageEmbed()
 				.setTitle('Seeked!')
-				.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration() * 100), 45)}`)
+				.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
 				.setColor(Helper.GREEN)
 			)
 		}
@@ -649,7 +652,7 @@ new Command({
 			return;
 		}
 
-		const secondsPlayed = Math.floor(current_song.getPlayedTimeSec());
+		const secondsPlayed = Math.floor(current_song.getPlayedTime().asSeconds());
 		message.channel.send(new MessageEmbed()
 			.setTitle('🎧 Now Playing')
 			// .setDescription(content)
@@ -657,7 +660,7 @@ new Command({
 			.setThumbnail(current_song.thumbnail)
 			.addField('Song', `${current_song.title}`)
 			.addField('Link', current_song.url)
-			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}` + (player.getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration() * 100), 45)}`)
+			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration())}` + (player.getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
 			.addField('Voice Channel', current_song.voiceChannel, true)
 			.addField('Requester', `${current_song.requester}`, true)
@@ -756,9 +759,9 @@ new Command({
 
 		let currentSong = player.getCurrentSong();
 		if (currentSong) {
-			let secondsPlayed = Math.floor(currentSong.getPlayedTimeSec()); // currentSong.getPlayedTime()
-			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration() * 100))}`)
-				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime())}\``, true)
+			let secondsPlayed = Math.floor(currentSong.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
+			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
+				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` (about ${moment.duration(player.getTotalTime(), 'seconds').humanize()})`, true)
 				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
 		}
 		Helper.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))

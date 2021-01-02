@@ -3,6 +3,7 @@ import { DiscordAPIError, GuildMember, Message, MessageEmbed, User } from 'disco
 import { Helper } from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DataManager';
+import moment from 'moment';
 export default new Command({
 	name: 'info',
 	category: 'features',
@@ -96,13 +97,13 @@ export default new Command({
 								.addField('Roles', rolesOfTheMember)
 						embeduserinfo
 							.setColor(message.guild.member(user)!.displayHexColor)
-							.addField('Joined Server Since', new Date(message.guild.member(user)!.joinedTimestamp!).toUTCString(), true);
+							.addField('Server Joined', moment.utc(message.guild.member(user)!.joinedTimestamp!).format('lll z'), true);
 					}
 					embeduserinfo
 						.setFooter(`Requested by ${message.author.tag}`);
 				}
 				embeduserinfo
-					.addField('Created Account Since', user.createdAt.toUTCString(), true)
+					.addField('Account Created Since', moment.utc(user.createdAt).format('lll z'), true)
 					.setTimestamp()
 				message.channel.send(embeduserinfo);
 			}

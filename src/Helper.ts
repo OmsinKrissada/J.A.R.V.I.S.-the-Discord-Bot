@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions } from 'discord.js';
+import moment from 'moment';
 import CONFIG from './ConfigManager';
 
 class HelperClass {
@@ -72,9 +73,14 @@ class HelperClass {
 		return '`|' + progress + '|`';
 	}
 
-	prettyTime(seconds: number): string {
-		seconds = Math.round(seconds)
-		return `${seconds / 3600 >= 1 ? this.min2(Math.floor(seconds / 3600)) + ':' : ''}` + `${this.min2(Math.floor(seconds / 60) % 60)}:${this.min2(seconds % 60)}`
+	prettyTime(seconds: number | moment.Duration) {
+		let duration: moment.Duration;
+		if (seconds instanceof Number) duration = moment.duration(seconds, 'seconds');
+		else duration = <moment.Duration>seconds;
+		const hours = Math.floor(duration.hours());
+		const mins = duration.minutes();
+		const secs = duration.seconds();
+		return `\`${hours > 0 ? Helper.min2(hours) + ':' : ''}${Helper.min2(mins)}:${Helper.min2(secs)}\``;
 	}
 
 	shuffle(array: Array<any>): any[] {
