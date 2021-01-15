@@ -8,7 +8,8 @@ export default new Command({
 	category: 'features',
 	description: 'Moves',
 	examples: ['movevoice'],
-	requiredCallerPermissions: [],
+	requiredCallerPermissions: ['MOVE_MEMBERS'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MOVE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const guild = message.guild!

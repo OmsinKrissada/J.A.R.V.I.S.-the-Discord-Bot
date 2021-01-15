@@ -9,6 +9,7 @@ export default new Command({
 	description: 'Shows basic information about the bot',
 	examples: ['about'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: false,
 	exec(message) {
 		message.channel.send(new MessageEmbed()

@@ -5,6 +5,7 @@ new Command({
 	category: "general",
 	examples: ['ping'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.reply('Pong!')
@@ -19,6 +20,7 @@ new Command({
 	category: "hiden",
 	examples: ['gnip'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.reply('Pong!')

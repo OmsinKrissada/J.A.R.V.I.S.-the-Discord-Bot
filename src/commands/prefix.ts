@@ -11,6 +11,7 @@ export default new Command({
 		"prefix clear"
 	],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: false,
 	exec(message, prefix, args, sourceID) {
 		if (args[0] === 'clear') {

@@ -26,6 +26,7 @@ new Command({
 	description: 'Mutes a user',
 	examples: ['mute <user id>/<mention>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const member = message.guild!.member(args[0]);
@@ -50,6 +51,7 @@ new Command({
 	description: 'Unmutes a user',
 	examples: ['unmute <user id>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		mutedUserID = mutedUserID.filter(id => id != args[0]);

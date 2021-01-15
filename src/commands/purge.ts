@@ -9,6 +9,7 @@ export default new Command({
 	description: 'Deletes messages by the specified amount',
 	examples: ['purge <amount>'],
 	requiredCallerPermissions: ['MANAGE_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		function deletemsg(exceed_three: boolean) {

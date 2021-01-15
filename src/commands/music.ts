@@ -489,6 +489,7 @@ new Command({
 	description: 'Joins the voice channel user is currently in',
 	examples: ['join'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'CONNECT'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
@@ -522,6 +523,7 @@ new Command({
 	description: '',
 	examples: [],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'CONNECT', 'SPEAK'],
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) { // Some part of code is from discord.js
 		if (!message.member!.voice.channel) {
@@ -542,6 +544,7 @@ new Command({
 	description: 'Pauses song',
 	examples: ['pause'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.pause();
@@ -555,6 +558,7 @@ new Command({
 	description: 'Resumes song',
 	examples: ['resume'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.resume();
@@ -568,6 +572,7 @@ new Command({
 	description: 'Disconnects from voice channel',
 	examples: ['leave'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
@@ -590,6 +595,7 @@ new Command({
 	description: 'Toggles or sets song looping',
 	examples: ['loop', 'loop <on/off>'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
@@ -627,6 +633,7 @@ new Command({
 	description: 'Shuffles current queue',
 	examples: ['shuffle'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.shuffle();
@@ -640,6 +647,7 @@ new Command({
 	description: 'Shows currently playing song',
 	examples: ['nowplaying'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
@@ -675,6 +683,7 @@ new Command({
 	description: 'Skips current song',
 	examples: ['skip'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
@@ -692,6 +701,7 @@ new Command({
 	description: 'Adjusts music volume',
 	examples: ['volume <new volume(0-100)>'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
@@ -743,6 +753,7 @@ new Command({
 	description: 'Shows current music queue',
 	examples: ['queue'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!
@@ -774,6 +785,7 @@ new Command({
 	description: 'Removes a song from music queue',
 	examples: ['remove <song position>'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		if (Number(args[0]) - 1 < 0) {
@@ -809,6 +821,7 @@ new Command({
 	description: 'Removes all songs from music queue',
 	examples: ['clear'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.clearQueue();
@@ -826,6 +839,7 @@ new Command({
 	description: 'Removes songs in specified range from music queue',
 	examples: ['rmrange <from> <to>'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const from = Number(args[0]);
@@ -870,8 +884,9 @@ new Command({
 	name: 'seek',
 	category: 'music',
 	description: 'Seeks to a specific second in the song',
-	examples: ['seek <target second>'],
+	examples: ['seek <"forward/backward/to"> <duration>'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!
@@ -881,6 +896,22 @@ new Command({
 				description: 'I am not playing any song at the moment.',
 				color: Helper.RED
 			}))
+			return;
+		}
+		if (!player.connection) {
+			message.channel.send(new MessageEmbed({
+				title: 'Invalid Option',
+				description: `Use ${Helper.inlineCodeBlock(prefix + 'help seek')} for info.`,
+				color: Helper.RED
+			}))
+			return;
+		}
+		switch (args[0]) {
+			case 'forward':
+			case 'backward':
+			case 'to':
+			default:
+
 		}
 		player.seek(<any>args[0], <TextChannel>message.channel);
 

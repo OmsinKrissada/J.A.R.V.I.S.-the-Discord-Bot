@@ -8,6 +8,7 @@ export default new Command({
 	description: 'Changes bot\'s nickname',
 	examples: ['nick', 'nick <nickname>'],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'CHANGE_NICKNAME'],
 	serverOnly: true,
 	exec(message, _prefix, args, _sourceID) {
 		if (!message.guild!.member(Command.bot.user!)!.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {

@@ -15,6 +15,7 @@ new Command({
 	description: '',
 	examples: [],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
 	serverOnly: false,
 	exec(message) {
 		const guild = message.guild!;
@@ -38,6 +39,7 @@ new Command({
 	description: '',
 	examples: [],
 	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
 	serverOnly: false,
 	exec(message) {
 		const guild = message.guild!;
