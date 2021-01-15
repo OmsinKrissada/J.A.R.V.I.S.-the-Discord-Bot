@@ -116,8 +116,10 @@ new Command({
 			const users: string[] = [];
 
 			channel.members.forEach(user => {
-				user.voice.setMute(true);
-				users.push(user.user.toString());
+				if (!user.voice.serverMute) {
+					user.voice.setMute(true);
+					users.push(user.user.toString());
+				}
 			})
 
 			message.channel.send(new MessageEmbed({
@@ -152,8 +154,10 @@ new Command({
 			const users: string[] = [];
 
 			channel.members.forEach(user => {
-				user.voice.setMute(false);
-				users.push(user.user.toString());
+				if (user.voice.serverMute) {
+					user.voice.setMute(false);
+					users.push(user.user.toString());
+				}
 			})
 
 			message.channel.send(new MessageEmbed({
