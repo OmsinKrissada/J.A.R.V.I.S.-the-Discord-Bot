@@ -23,12 +23,24 @@ Command.bot.on('message', msg => {
 new Command({
 	name: 'mute',
 	category: 'features',
-	description: 'Spam mute a user',
-	examples: ['mute <user id>'],
+	description: 'Mutes a user',
+	examples: ['mute <user id>/<mention>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		mutedUserID.push(args[0]);
+		const member = message.guild!.member(args[0]);
+		if (member) {
+			member.voice.setMute(true);
+			message.channel.send(new MessageEmbed({
+				description: '🔇 Successfully muted ' + member.toString(),
+				color: Helper.GREEN
+			}))
+		} else {
+			message.channel.send(new MessageEmbed({
+				description: `User with id \`${args[0]}\` not found`,
+				color: Helper.RED
+			}))
+		}
 	}
 })
 

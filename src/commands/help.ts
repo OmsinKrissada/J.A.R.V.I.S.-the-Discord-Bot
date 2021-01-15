@@ -57,7 +57,7 @@ export default new Command({
 			let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Helper.inlineCodeBlock(prefix)}.`;
 			let embed = new MessageEmbed()
 				.setTitle(header)
-				.setDescription(`Use ${Helper.inlineCodeBlock(prefix + 'help {command}')} to get usage information.`)
+				.setDescription(`Use ${Helper.inlineCodeBlock(prefix + 'help [command]')} to get usage information.\n\`<...>\` indicates **required** field.\n\`[...]\` indicates **optional** field.`)
 				.setColor(Helper.BLUE)
 				.attachFiles([{ attachment: './resources/rainbow.png' }])
 				.setAuthor('Help | Available Commands:', 'attachment://rainbow.png');
