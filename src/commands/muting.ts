@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import { GuildMember, MessageEmbed, Permissions } from 'discord.js';
+import { GuildMember, MessageEmbed, Permissions, User } from 'discord.js';
 import { Helper } from '../Helper';
 import * as DataManager from '../DataManager';
 
@@ -97,5 +97,77 @@ new Command({
 				color: Helper.RED
 			}))
 		}
+	}
+})
+
+new Command({
+	name: 'muteall',
+	category: 'features',
+	description: 'Mutes all users in a voice channel',
+	examples: ['mute <channelid>'],
+	requiredCallerPermissions: ['MUTE_MEMBERS'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
+	serverOnly: true,
+	exec(message, prefix, args, sourceID) {
+		const channel = message.guild!.channels.resolve(args[0]);
+
+		if (channel && channel.type == 'voice') {
+
+			const users: string[] = [];
+
+			channel.members.forEach(user => {
+				user.voice.setMute(true);
+				users.push(user.user.toString());
+			})
+
+			message.channel.send(new MessageEmbed({
+				title: `🔇 Muted users in ${Helper.inlineCodeBlock(channel.name)}`,
+				description: users.join('\n'),
+				color: Helper.GREEN
+			}));
+
+		} else {
+			message.channel.send(new MessageEmbed({
+				description: `Channel with id ${Helper.inlineCodeBlock(args[0])} is either not a voice channel or not exist`,
+				color: Helper.RED
+			}));
+		}
+
+	}
+})
+
+new Command({
+	name: 'unmuteall',
+	category: 'features',
+	description: 'Unmutes all users in a voice channel',
+	examples: ['mute <channelid>'],
+	requiredCallerPermissions: ['MUTE_MEMBERS'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
+	serverOnly: true,
+	exec(message, prefix, args, sourceID) {
+		const channel = message.guild!.channels.resolve(args[0]);
+
+		if (channel && channel.type == 'voice') {
+
+			const users: string[] = [];
+
+			channel.members.forEach(user => {
+				user.voice.setMute(false);
+				users.push(user.user.toString());
+			})
+
+			message.channel.send(new MessageEmbed({
+				title: `🔉 Unmuted users in ${Helper.inlineCodeBlock(channel.name)}`,
+				description: users.join('\n'),
+				color: Helper.GREEN
+			}));
+
+		} else {
+			message.channel.send(new MessageEmbed({
+				description: `Channel with id ${Helper.inlineCodeBlock(args[0])} is either not a voice channel or not exist`,
+				color: Helper.RED
+			}));
+		}
+
 	}
 })
