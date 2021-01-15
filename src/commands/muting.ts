@@ -29,13 +29,28 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		const member = message.guild!.member(args[0]);
+		const member = message.mentions.members!.size > 0 ? message.mentions.members!.first() : message.guild!.member(args[0]);
 		if (member) {
-			member.voice.setMute(true);
-			message.channel.send(new MessageEmbed({
-				description: '🔇 Successfully muted ' + member.toString(),
-				color: Helper.GREEN
-			}))
+			if (member.voice.channel) {
+				if (member.voice.serverMute) {
+					message.channel.send(new MessageEmbed({
+						description: member.toString() + ' is already server-muted',
+						color: Helper.YELLOW
+					}))
+				} else {
+					member.voice.setMute(true);
+					message.channel.send(new MessageEmbed({
+						description: '🔇 Successfully muted ' + member.toString(),
+						color: Helper.GREEN
+					}))
+				}
+			}
+			else {
+				message.channel.send(new MessageEmbed({
+					description: member.toString() + ' isn\'t in a voice channel',
+					color: Helper.RED
+				}))
+			}
 		} else {
 			message.channel.send(new MessageEmbed({
 				description: `User with id \`${args[0]}\` not found`,
@@ -54,6 +69,33 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		mutedUserID = mutedUserID.filter(id => id != args[0]);
+		const member = message.mentions.members!.size > 0 ? message.mentions.members!.first() : message.guild!.member(args[0]);
+		if (member) {
+			if (member.voice.channel) {
+				if (!member.voice.serverMute) {
+					message.channel.send(new MessageEmbed({
+						description: member.toString() + ' is not server-muted',
+						color: Helper.YELLOW
+					}))
+				} else {
+					member.voice.setMute(false);
+					message.channel.send(new MessageEmbed({
+						description: '🔉 Successfully unmuted ' + member.toString(),
+						color: Helper.GREEN
+					}))
+				}
+			}
+			else {
+				message.channel.send(new MessageEmbed({
+					description: member.toString() + ' isn\'t in a voice channel',
+					color: Helper.RED
+				}))
+			}
+		} else {
+			message.channel.send(new MessageEmbed({
+				description: `User with id \`${args[0]}\` not found`,
+				color: Helper.RED
+			}))
+		}
 	}
 })
