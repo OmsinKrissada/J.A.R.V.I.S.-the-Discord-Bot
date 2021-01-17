@@ -25,7 +25,7 @@ bot.login(CONFIG.token.discord)
 bot.once('ready', async () => {
 
 	console.log(`Logged in to discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
-	bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
+	// bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
 	client_id = `<@!${bot.user!.id}>`;
 
 	const jarvisLoginGuild = bot.guilds.resolve('709824110229979278');
