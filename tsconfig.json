@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./dist/", // path to output directory
     "sourceMap": false, // allow sourcemap support
-    "strictNullChecks": true, // enable strict null checks as a best practice
+    "strictNullChecks": false, // enable strict null checks as a best practice
     "module": "commonjs", // specify module code generation
     // "jsx": "react",             // use typescript to transpile jsx to js
     "target": "ES2020", // specify ECMAScript target version
