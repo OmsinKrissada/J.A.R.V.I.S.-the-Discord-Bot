@@ -19,12 +19,12 @@ class DataManager {
 		const mongopath = CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
 			: `mongodb://${this.hostname}:${this.port}/${this.db}`
 
+		console.log('MongoDB connecting to database ...');
 		await mongoose.connect(mongopath, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true
 		}).catch(err => {
-			console.error('ERROR: MongoDB failed to connect to ' + mongopath);
-			console.error(err);
+			console.error('ERROR: MongoDB failed to connect to ' + mongopath + ': ' + err.message);
 			process.exit(1);
 		});
 		console.log('MongoDB connected to ' + mongopath);

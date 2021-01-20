@@ -44,7 +44,7 @@ export default new Command({
 
 		// Confirm destination channel
 		if (origin_all) {
-			Helper.confirm_type({ title: 'Choose Destination Channel' }, Array.from(dests.keys()), message, prefix).then(deststr => {
+			Helper.confirm_type({ title: 'Choose Destination Channel' }, Array.from(dests.keys()), message).then(deststr => {
 				console.log(deststr)
 				let dest = guild.channels.resolve(deststr);
 				if (origins.size == 0) message.channel.send(new MessageEmbed()
@@ -78,8 +78,8 @@ export default new Command({
 			})
 		}
 		else { // Confirm origin channel
-			Helper.confirm_type({ title: 'Choose Origin Channel' }, Array.from(origins.keys()), message, prefix).then(originstr => {
-				Helper.confirm_type({ title: 'Choose Destination Channel' }, Array.from(dests.keys()), message, prefix).then(deststr => {
+			Helper.confirm_type({ title: 'Choose Origin Channel' }, Array.from(origins.keys()), message).then(originstr => {
+				Helper.confirm_type({ title: 'Choose Destination Channel' }, Array.from(dests.keys()), message).then(deststr => {
 					let origin = guild.channels.resolve(originstr);
 					let dest = guild.channels.resolve(deststr);
 					// Tell the errors

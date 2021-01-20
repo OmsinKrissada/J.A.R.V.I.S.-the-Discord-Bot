@@ -11,6 +11,7 @@ import express from 'express';
 import { exec } from 'child_process';
 import linereader from 'n-readlines';
 
+
 import { Helper } from "./Helper";
 import DataManager from './DataManager'
 // import * as Music from './Music';
@@ -22,9 +23,10 @@ import registered_commands from '../settings/alias.json'
 import CONFIG from './ConfigManager';
 var client_id: string;
 bot.login(CONFIG.token.discord)
+console.log('Logging in to Discord ...');
 bot.once('ready', async () => {
 
-	console.log(`Logged in to discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
+	console.log(`Logged in to Discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
 	// bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
 	client_id = `<@!${bot.user!.id}>`;
 
@@ -80,9 +82,15 @@ function log(message: Message): void {
 }
 
 
+process.on('unhandledRejection', (reason, promise) => {
+	console.log(reason);
+	(<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('726864824205836348')).send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
+})
+process.on('promiseRejected', console.log)
 
-// Handles the received messages
+// Handles received messages
 bot.on('message', async (message) => {
+	message = Object.create(message)
 	if (message.author == bot.user) return;
 
 	const isDMMessage = message.channel instanceof DMChannel;

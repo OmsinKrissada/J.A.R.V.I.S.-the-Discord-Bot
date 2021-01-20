@@ -115,7 +115,7 @@ class HelperClass {
 
 		let pagenum = 1;
 		pages.forEach(page => {
-			page.setFooter(page.footer ? page.footer.text + `\n\nPage ${pagenum++} / ${pages.length}` : `Page ${pagenum++} / ${pages.length}`);
+			page.setFooter(page.footer ? page.footer.text + `\nPage ${pagenum++} / ${pages.length}` : `Page ${pagenum++} / ${pages.length}`);
 		})
 
 
@@ -166,7 +166,7 @@ class HelperClass {
 			}
 		})
 		collector.on('end', () => {
-			message.reactions.removeAll();
+			message.reactions.removeAll().catch(() => { });
 		})
 		return message;
 	}
@@ -209,58 +209,49 @@ class HelperClass {
 	}
 
 
-	confirm_type(prototype: MessageEmbed | MessageEmbedOptions, list: Array<any>, message: Message, prefix: string, text_to_display: (_: any) => string = (item) => item, is_delete = false): Promise<any> {
-		let confirm = (resolve: (arg0: any) => void) => {
-			const embed = new MessageEmbed(prototype);
-			if (list.length <= 1) {
-				resolve(list[0]);
-				return list[0];
-			}
-			if (!embed.color) embed.setColor(Helper.BLUE);
-			if (!embed.footer) embed.setFooter(`Type ${prefix}cancel to cancel.`);
-
-			let items: string[] = [];
-			let i = 1;
-			list.forEach((item) => {
-				if (text_to_display) {
-					items.push(`${Helper.getNumberEmoji(i)} - ${text_to_display(item)}\n\n`);
-				} else {
-					items.push(`${Helper.getNumberEmoji(i)} - ${item}\n\n`);
-				}
-				i++;
-			})
-			Helper.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
-				.then((confirm_msg) => {
-					message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 }).then((collected) => {
-						const answer_msg = collected.first()!;
-						if (confirm_msg.deleted) return undefined;
-
-						if (answer_msg.content == prefix + 'cancel') {
-							resolve(undefined);
-							return undefined;
-						}
-						else if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
-							if (confirm_msg.deletable) confirm_msg.delete();
-							confirm_msg.channel.send(new MessageEmbed()
-								.setDescription('Invalid answer, aborted.')
-								.setColor(Helper.RED)
-							).then(msg => { if (msg.deletable) msg.delete({ timeout: 10000 }) })
-							resolve(undefined);
-							return undefined;
-						}
-						else {
-							let result = Array.from(list.keys())[Number(answer_msg.content) - 1];
-							if (confirm_msg.deletable) confirm_msg.delete();
-							if (answer_msg.deletable) answer_msg.delete();
-							// console.log(result)
-							resolve(list[result]);
-							return list[result];
-						}
-					});
-				})
-			if (is_delete && message.deletable) message.delete();
+	async confirm_type(prototype: MessageEmbed | MessageEmbedOptions, list: any[], message: Message, text_to_display: (_: any) => string = (item) => item): Promise<typeof list[0] | null> {
+		const embed = new MessageEmbed(prototype);
+		if (list.length <= 1) {
+			return list[0];
 		}
-		return new Promise(confirm);
+		if (!embed.color) embed.setColor(Helper.BLUE);
+		if (!embed.footer) embed.setFooter(`Type "cancel" to cancel.`);
+
+		let items: string[] = [];
+		let i = 1;
+		list.forEach((item) => {
+			if (text_to_display) {
+				items.push(`\`${i}\` - ${text_to_display(item)}`);
+			} else {
+				items.push(`\`${i}\` - ${item}`);
+			}
+			i++;
+		})
+		const confirm_msg = await Helper.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
+		const collected = await message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 });
+
+		const answer_msg = collected.first()!;
+
+		if (message.channel instanceof TextChannel) message.channel.bulkDelete([confirm_msg, answer_msg]);
+
+		if (answer_msg.content.toLowerCase() == 'cancel') {
+			message.channel.send(new MessageEmbed({
+				title: `Canceled`,
+				color: Helper.RED
+			}));
+			return null;
+		}
+		else if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
+			message.channel.send(new MessageEmbed({
+				description: `Invalid index (${Helper.inlineCodeBlock(answer_msg.content)}), aborted.`,
+				color: Helper.RED
+			}));
+			return null;
+		}
+		else {
+			const result = list[Number(answer_msg.content) - 1];
+			return result;
+		}
 	}
 }
 
