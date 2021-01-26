@@ -311,7 +311,7 @@ class MusicPlayer {
 		this.dispatcher = dispatcher
 		dispatcher.on('unpipe', () => {
 			// console.log('unpiped')
-			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 5000);
+			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
 			this.previousSong = this.currentSong;
 			this.currentSong = undefined;
 		});
@@ -376,6 +376,7 @@ class MusicPlayer {
 	pause() {
 		if (this.connection && this.connection.dispatcher) {
 			this.connection.dispatcher.pause();
+			clearTimeout(this.leaveTimeout);
 		}
 	}
 
