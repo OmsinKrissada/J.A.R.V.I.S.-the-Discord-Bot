@@ -10,7 +10,7 @@ import YamlValidator from 'yaml-validator';
  */
 
 
-interface IConfig {
+interface ConfigOption {
 	mongodb: {
 		hostname: string;
 		port: number;
@@ -33,6 +33,8 @@ interface IConfig {
 		blue: number;
 		yellow: number;
 	};
+	loggingChannel: string;
+	maxCPUPercent: number;
 }
 
 const validator = new YamlValidator({
@@ -58,8 +60,9 @@ const validator = new YamlValidator({
 			green: 'number',
 			blue: 'number',
 			yellow: 'number',
-		}
-
+		},
+		loggingChannel: 'string',
+		maxCPUPercent: 'number',
 	},
 	onWarning: undefined,
 	writeJson: false
@@ -70,4 +73,4 @@ if (validator.report()) {
 	process.exit();
 }
 
-export default <IConfig>(yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8')));
+export default <ConfigOption>(yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8')));

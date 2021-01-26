@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import { DMChannel, Guild, GuildMember, MessageEmbed, Snowflake, StreamDispatcher, TextChannel, VoiceChannel, VoiceConnection } from 'discord.js';
+import { DMChannel, Guild, GuildMember, MessageEmbed, MessageReaction, Snowflake, StreamDispatcher, TextChannel, User, VoiceChannel, VoiceConnection } from 'discord.js';
 import { Helper } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
@@ -9,7 +9,24 @@ import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
 
+import os from 'os-utils';
 
+if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
+	if (percent * 100 > CONFIG.maxCPUPercent) {
+		MusicPlayerMap.forEach(player => {
+			if (player.getCurrentSong()) {
+				player.pause();
+				player.respondChannel.send('Your song has been paused due to high CPU activity. Please try again in a moment.\nClick rection below or use resume command to try again.').then(msg => {
+					msg.react('😀');
+					msg.awaitReactions((reaction: MessageReaction, user: User) => user.id != Command.bot.user.id && reaction.emoji.name == '😀', { max: 1 }).then(() => {
+						player.resume();
+						console.log('Resumed.')
+					})
+				})
+			}
+		});
+	}
+}), 5000)
 
 class Song {
 	readonly title: string;
@@ -294,7 +311,7 @@ class MusicPlayer {
 		this.dispatcher = dispatcher
 		dispatcher.on('unpipe', () => {
 			// console.log('unpiped')
-			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
+			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 5000);
 			this.previousSong = this.currentSong;
 			this.currentSong = undefined;
 		});

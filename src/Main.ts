@@ -21,7 +21,10 @@ import registered_commands from '../settings/alias.json'
 
 // Starts discord client
 import CONFIG from './ConfigManager';
+
 var client_id: string;
+var loggingChannel: TextChannel;
+
 bot.login(CONFIG.token.discord)
 console.log('Logging in to Discord ...');
 bot.once('ready', async () => {
@@ -30,9 +33,10 @@ bot.once('ready', async () => {
 	// bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
 	client_id = `<@!${bot.user!.id}>`;
 
-	const jarvisLoginGuild = bot.guilds.resolve('709824110229979278');
-	if (jarvisLoginGuild && (<TextChannel>jarvisLoginGuild.channels.resolve('771047404719308810'))) {
-		(<TextChannel>jarvisLoginGuild.channels.resolve('771047404719308810')).send(new MessageEmbed({
+	const lchannel = await bot.channels.fetch(CONFIG.loggingChannel);
+	if (lchannel instanceof TextChannel) loggingChannel = lchannel;
+	if (loggingChannel) {
+		loggingChannel.send(new MessageEmbed({
 			title: 'Logged in.',
 			color: Helper.GREEN
 		}).setTimestamp());
@@ -82,11 +86,13 @@ function log(message: Message): void {
 }
 
 
-process.on('unhandledRejection', (reason, promise) => {
-	console.log(reason);
-	(<TextChannel>bot.guilds.resolve('709824110229979278').channels.resolve('726864824205836348')).send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
-})
-process.on('promiseRejected', console.log)
+if (loggingChannel)
+	process.on('unhandledRejection', (reason, promise) => {
+		if (!reason) return;
+		console.log(reason);
+		loggingChannel.send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
+	})
+
 
 // Handles received messages
 bot.on('message', async (message) => {
