@@ -42,11 +42,12 @@ export default new Command({
 
 			message.channel.send(embed);
 		} else {
-			let cmd_by_categories: { general: Command[], settings: Command[], features: Command[], music: Command[], misc: Command[] } = {
+			let cmd_by_categories: { general: Command[], settings: Command[], features: Command[], music: Command[], moderation: Command[], misc: Command[] } = {
 				"general": [],
 				"settings": [],
 				"features": [],
 				"music": [],
+				"moderation": [],
 				"misc": [],
 			}
 			CommandMap.forEach(command => {
@@ -70,7 +71,8 @@ export default new Command({
 					case "settings": displayCategory = "🛠  Settings"; break;
 					case "features": displayCategory = "💡  Features"; break;
 					case "music": displayCategory = "🎵  Music"; break;
-					case "misc": displayCategory = "😂  Misc"; break;
+					case "misc": displayCategory = "👑  Moderation"; break;
+					case "misc": displayCategory = "🙄  Misc"; break;
 				}
 
 				let command_list = '';

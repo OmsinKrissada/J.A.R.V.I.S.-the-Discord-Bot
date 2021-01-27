@@ -21,8 +21,8 @@ Command.bot.on('message', msg => {
 })
 
 new Command({
-	name: 'mute',
-	category: 'features',
+	name: 'voicemute',
+	category: 'moderation',
 	description: 'Mutes a user',
 	examples: ['mute <user id>/<mention>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
@@ -61,8 +61,8 @@ new Command({
 })
 
 new Command({
-	name: 'unmute',
-	category: 'features',
+	name: 'voiceunmute',
+	category: 'moderation',
 	description: 'Unmutes a user',
 	examples: ['unmute <user id>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
@@ -101,8 +101,8 @@ new Command({
 })
 
 new Command({
-	name: 'muteall',
-	category: 'features',
+	name: 'mutein',
+	category: 'moderation',
 	description: 'Mutes all users in a voice channel',
 	examples: ['mute <channelid>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
@@ -139,8 +139,8 @@ new Command({
 })
 
 new Command({
-	name: 'unmuteall',
-	category: 'features',
+	name: 'unmutein',
+	category: 'moderation',
 	description: 'Unmutes all users in a voice channel',
 	examples: ['mute <channelid>'],
 	requiredCallerPermissions: ['MUTE_MEMBERS'],

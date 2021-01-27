@@ -8,7 +8,7 @@ import { Helper } from './Helper';
 
 
 export const CommandMap = new Map<string, Command>();
-export type CommandCategory = "general" | "settings" | "features" | "music" | "misc" | "hiden";
+export type CommandCategory = "general" | "settings" | "features" | "music" | "misc" | "hiden" | "moderation";
 interface IConstructor {
 	name: string;
 	displayName?: string;

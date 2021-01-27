@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions } from 'discord.js';
 import moment from 'moment';
 import CONFIG from './ConfigManager';
+import { bot } from './Main';
 
 class HelperClass {
 
@@ -252,6 +253,10 @@ class HelperClass {
 			const result = list[Number(answer_msg.content) - 1];
 			return result;
 		}
+	}
+	async resolveUser(resolvable: string): Promise<User> {
+		resolvable = resolvable.replace(/<|@|!|>/g, '');
+		return await bot.users.fetch(resolvable);
 	}
 }
 
