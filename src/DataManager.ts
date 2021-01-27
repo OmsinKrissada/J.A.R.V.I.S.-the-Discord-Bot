@@ -29,7 +29,7 @@ class DataManager {
 		});
 		console.log('MongoDB connected to ' + mongopath);
 
-		console.log('Guilds found: ' + await Guilds.countDocuments());
+		console.log('MongoDB Guilds found: ' + await Guilds.countDocuments());
 	}
 
 	// Load Data

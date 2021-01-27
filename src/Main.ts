@@ -47,6 +47,13 @@ bot.once('ready', async () => {
 	logfile.write('# ' + new Date().toISOString() + '\n');
 
 	await DataManager.connect();
+
+	bot.guilds.cache.forEach(async (guild) => {
+		if (await DataManager.get(guild.id) === null) {
+			console.log('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
+			await DataManager.create(guild.id, guild.name, CONFIG.defaultPrefix);
+		}
+	})
 });
 
 

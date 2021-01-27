@@ -35,16 +35,14 @@ class Song {
 	readonly duration: moment.Duration;
 	readonly requester: GuildMember;
 	readonly textChannel: TextChannel;
-	readonly voiceChannel: VoiceChannel;
 
-	constructor(obj: { title: string, url: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel }) {
+	constructor(obj: { title: string, url: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel }) {
 		this.title = obj.title;
 		this.url = obj.url;
 		this.thumbnail = obj.thumbnail;
 		this.duration = obj.duration;
 		this.requester = obj.requester;
 		this.textChannel = obj.textChannel;
-		this.voiceChannel = obj.voiceChannel;
 	}
 
 	getDuration() {
@@ -93,6 +91,8 @@ class MusicPlayer {
 
 	constructor(guild: Guild) {
 		this.guild = guild;
+		// this.voiceChannel = guild.me.voice.channel;
+		if (guild.me.voice.channel) this.disconnect();
 	}
 
 	/**
@@ -111,11 +111,10 @@ class MusicPlayer {
 
 	}
 
-	async findSongYoutube(query: string, { member, voiceChan, textChan }: { member: GuildMember, voiceChan: VoiceChannel, textChan: TextChannel }): Promise<Song | Playlist | undefined> {
-		let songObj: { requester: GuildMember, textChannel: TextChannel, voiceChannel: VoiceChannel, title: string, url: string, duration: moment.Duration, thumbnail: string } = {
+	async findSongYoutube(query: string, { member, textChan }: { member: GuildMember, textChan: TextChannel }): Promise<Song | Playlist | undefined> {
+		let songObj: { requester: GuildMember, textChannel: TextChannel, title: string, url: string, duration: moment.Duration, thumbnail: string } = {
 			requester: member,
 			textChannel: textChan,
-			voiceChannel: voiceChan,
 			title: '', url: '', duration: moment.duration(0), thumbnail: ''
 		};
 
@@ -169,7 +168,6 @@ class MusicPlayer {
 						url: `https://youtube.com/watch?v=${vid.id}`,
 						requester: member,
 						textChannel: textChan,
-						voiceChannel: voiceChan,
 					}))
 					nextPage = playlistdata.nextPageToken;
 				}
@@ -211,17 +209,8 @@ class MusicPlayer {
 	/**
 	  * @returns Returns true if success, otherwise returns false.
 	  */
-	async appendQueue(member: GuildMember, musicChannel: VoiceChannel, referTextChannel: TextChannel, query: string) {
-		if (this.connection) {
-			if (this.voiceChannel.id != musicChannel.id)
-				referTextChannel.send(new MessageEmbed({
-					title: 'Warning',
-					description: "I'm in a different voice channel. You won't be able to enjoy your music unless you join the one I'm currently in.",
-					color: Helper.YELLOW
-				}));
-		} else {
-			await this.connect(referTextChannel, musicChannel);
-		}
+	async appendQueue(member: GuildMember, guild: Guild, referTextChannel: TextChannel, query: string) {
+
 		if (query == '') return true;
 
 
@@ -230,7 +219,7 @@ class MusicPlayer {
 			referTextChannel.send('Spotify support coming soon.')
 			// result=bla bla bla
 		} else {
-			result = await this.findSongYoutube(query, { member: member, voiceChan: musicChannel, textChan: referTextChannel });
+			result = await this.findSongYoutube(query, { member: member, textChan: referTextChannel });
 		}
 
 		if (result instanceof Song) {
@@ -280,12 +269,12 @@ class MusicPlayer {
 
 		this.connection = await voiceChannel.join();
 		if (!this.connection) return false;
-		this.voiceChannel = voiceChannel;
 		this.respondChannel = textChannel;
+		this.voiceChannel = voiceChannel;
 
 		this.connection.on('disconnect', () => { // on user force disconnect
 			this.pause();
-			this.connection = undefined;
+			this.connection = null;
 			this.disconnect();
 		})
 
@@ -299,6 +288,7 @@ class MusicPlayer {
 	disconnect() {
 		this.currentSong = undefined;
 		this.isLooping = false;
+		this.voiceChannel = null;
 		if (this.connection) {
 			this.connection.disconnect();
 			this.connection = undefined;
@@ -336,14 +326,14 @@ class MusicPlayer {
 			clearTimeout(this.leaveTimeout);
 
 			if (!this.connection) {
-				if (!await this.connect(song.textChannel, song.voiceChannel)) {
+				if (!await this.connect(song.textChannel, this.voiceChannel)) {
 					this.respondChannel.send('Not able to connect, please contact Omsin for debugging.');
 					return;
 				}
 			}
 
 			// play song
-			const dispatcher = this.connection!.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" });
+			const dispatcher = this.connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" });
 			this.configDispatcher(dispatcher);
 			this.currentSong = song;
 			// console.log('set new song -> ' + (this.currentSong ? 'exist' : 'undefined'))
@@ -383,6 +373,7 @@ class MusicPlayer {
 	resume() {
 		if (this.connection && this.connection.dispatcher) {
 			this.connection.dispatcher.resume();
+			clearTimeout(this.leaveTimeout);
 		}
 	}
 
@@ -544,15 +535,35 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', 'CONNECT', 'SPEAK'],
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) { // Some part of code is from discord.js
-		if (!message.member!.voice.channel) {
-			message.channel.send(new MessageEmbed()
-				.setTitle('Error')
-				.setDescription('**You must be in a voice channel** to use this command.')
-				.setColor(Helper.RED)
-			);
+		if (!message.guild.me.voice.channel && !message.member.voice.channel) {
+			message.channel.send(new MessageEmbed({
+				title: 'Error',
+				description: 'I am not in a voice channel, use join command to connect me to one.',
+				color: Helper.RED
+			}));
 			return;
 		}
-		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.member!.voice.channel, <TextChannel>message.channel, Helper.longarg(0, args));
+		const player = MusicPlayerMap.get(message.guild.id);
+		if (player.voiceChannel) { // only bot is in a vc
+			const member = message.member;
+			if (!member.voice.channel) {
+				message.channel.send(new MessageEmbed({
+					title: 'Warning',
+					description: "**You're NOT in a voice channel.** You won't be able to enjoy your music unless you join the one I'm currently in.",
+					color: Helper.YELLOW
+				}));
+			} else if (player.voiceChannel.id != member.voice.channel.id)
+				message.channel.send(new MessageEmbed({
+					title: 'Warning',
+					description: "**I'm in a different voice channel.** You won't be able to enjoy your music unless you join the one I'm currently in.",
+					color: Helper.YELLOW
+				}));
+
+		}
+		else { // equivalent to if (message.member.voice.channel) -- only user is in a vc
+			await MusicPlayerMap.get(message.guild.id).connect(<TextChannel>message.channel, message.member!.voice.channel);
+		}
+		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.guild, <TextChannel>message.channel, Helper.longarg(0, args));
 	}
 })
 
@@ -688,7 +699,7 @@ new Command({
 			.addField('Link', current_song.url)
 			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration().asSeconds())}` + (player.getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
-			.addField('Voice Channel', current_song.voiceChannel, true)
+			.addField('Voice Channel', player.voiceChannel.name, true)
 			.addField('Requester', `${current_song.requester}`, true)
 		);
 	}
