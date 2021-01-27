@@ -1,5 +1,7 @@
 import { Command } from '../CommandManager';
 import moment from 'moment';
+import { Helper } from '../Helper';
+import { TextChannel } from 'discord.js';
 
 
 export default new Command({
@@ -10,7 +12,7 @@ export default new Command({
 	requiredCallerPermissions: [],
 	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: false,
-	exec(message, prefix, args, sourceID) {
-		message.reply(new Date(args.join(' ')).toString());
+	async exec(message, prefix, args, sourceID) {
+		Helper.resolveUser(args[0], { caller: message.author, memberList: message.guild.members.cache.array(), askingChannel: <TextChannel>message.channel }).then(usr => message.channel.send(usr.displayAvatarURL()))
 	}
 }) 

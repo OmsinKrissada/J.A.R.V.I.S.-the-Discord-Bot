@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions } from 'discord.js';
+import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions, Guild, GuildMember, Channel } from 'discord.js';
 import moment from 'moment';
 import CONFIG from './ConfigManager';
 import { bot } from './Main';
@@ -129,7 +129,7 @@ class HelperClass {
 			message.react('▶');
 			if (pages.length > 2) message.react('⏭')
 		}
-		message.react('🛑');
+		if (pages.length > 3) message.react('📝');
 
 		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 })
 		collector.on('collect', (reaction, user) => {
@@ -159,8 +159,22 @@ class HelperClass {
 					current_page = pages.length - 1;
 				}
 			}
-			else if (reaction.emoji.name == '🛑') {
-				if (message.deletable) message.delete();
+			else if (reaction.emoji.name == '📝') {
+				message.reactions.resolve('📝')!.users.remove(user);
+				message.channel.send(new MessageEmbed({ author: { name: 'Type page number in chat >>>', iconURL: user.displayAvatarURL() } })).then(ask4pagemsg => {
+					message.channel.awaitMessages((responsemsg: Message) => responsemsg.author.id == user.id, { max: 1, time: 60000 }).then(msg => {
+						const text = msg.first().content;
+						if (!isNaN(+text) && +text >= 1 && +text <= pages.length) {
+							message.edit(pages[+text - 1])
+						} else {
+							message.channel.send('Unknown page').then(unknownmsg => unknownmsg.delete({ timeout: 5000 }));
+						}
+						(<TextChannel>message.channel).bulkDelete([ask4pagemsg, msg.first()])
+						msg.first().delete();
+					}).finally(() => {
+						if (!ask4pagemsg.deleted) ask4pagemsg.delete();
+					});
+				});
 			}
 			else {
 				message.reactions.resolve(reaction.emoji.name)!.users.remove(user);
@@ -210,8 +224,8 @@ class HelperClass {
 	}
 
 
-	async confirm_type(prototype: MessageEmbed | MessageEmbedOptions, list: any[], message: Message, text_to_display: (_: any) => string = (item) => item): Promise<typeof list[0] | null> {
-		const embed = new MessageEmbed(prototype);
+	async confirm_type(title: string, list: any[], caller: User, channel: TextChannel, displayingFunction: (_: any) => string = (item) => item): Promise<typeof list[0] | null> {
+		const embed = new MessageEmbed({ author: { name: title, iconURL: caller.displayAvatarURL() } });
 		if (list.length <= 1) {
 			return list[0];
 		}
@@ -221,29 +235,29 @@ class HelperClass {
 		let items: string[] = [];
 		let i = 1;
 		list.forEach((item) => {
-			if (text_to_display) {
-				items.push(`\`${i}\` - ${text_to_display(item)}`);
+			if (displayingFunction) {
+				items.push(`\`${i}\` - ${displayingFunction(item)}`);
 			} else {
 				items.push(`\`${i}\` - ${item}`);
 			}
 			i++;
 		})
-		const confirm_msg = await Helper.sendEmbedPage(<TextChannel>message.channel, embed, '​', items)
-		const collected = await message.channel.awaitMessages(response => response.author.id == message.author.id, { max: 1 });
+		const confirm_msg = await Helper.sendEmbedPage(<TextChannel>channel, embed, '​', items)
+		const collected = await channel.awaitMessages(response => response.author.id == caller.id, { max: 1 });
 
 		const answer_msg = collected.first()!;
 
-		if (message.channel instanceof TextChannel) message.channel.bulkDelete([confirm_msg, answer_msg]);
+		if (channel instanceof TextChannel) channel.bulkDelete([confirm_msg, answer_msg]);
 
 		if (answer_msg.content.toLowerCase() == 'cancel') {
-			message.channel.send(new MessageEmbed({
+			channel.send(new MessageEmbed({
 				title: `Canceled`,
 				color: Helper.RED
 			}));
 			return null;
 		}
 		else if (!(Number(answer_msg.content) >= 1 && Number(answer_msg.content) <= list.length)) {
-			message.channel.send(new MessageEmbed({
+			channel.send(new MessageEmbed({
 				description: `Invalid index (${Helper.inlineCodeBlock(answer_msg.content)}), aborted.`,
 				color: Helper.RED
 			}));
@@ -254,11 +268,33 @@ class HelperClass {
 			return result;
 		}
 	}
-	async resolveUser(resolvable: string): Promise<User> {
+
+	/**
+	 * 
+	 * @param resolvable 
+	 * @param options If provided, this will also search for matching user in the list.
+	 */
+	async resolveUser(resolvable: string, options?: GuildAliasOption): Promise<User> {
 		resolvable = resolvable.replace(/<|@|!|>/g, '');
-		return await bot.users.fetch(resolvable);
+		if (!isNaN(+resolvable)) {
+			let user = await bot.users.fetch(resolvable);
+			if (user) return user;
+		}
+
+		if (options) {
+			const users = options.memberList.filter(member => member.displayName.toLowerCase().includes(resolvable.toLowerCase()) || member.user.username.toLowerCase().includes(resolvable.toLowerCase()));
+			if (users.length > 0) {
+				const member = await Helper.confirm_type('Please choose the member you refer to.\n(type in chat)', users, options.caller, options.askingChannel)
+				return member.user;
+			}
+		}
 	}
 }
 
+interface GuildAliasOption {
+	caller: User;
+	askingChannel: TextChannel;
+	memberList: GuildMember[];
+}
 
 export const Helper = new HelperClass();

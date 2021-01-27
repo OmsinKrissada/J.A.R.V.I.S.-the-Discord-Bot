@@ -95,7 +95,7 @@ function log(message: Message): void {
 
 if (loggingChannel)
 	process.on('unhandledRejection', (reason, promise) => {
-		if (!reason) return;
+		// if (!reason) return;
 		console.log(reason);
 		loggingChannel.send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
 	})

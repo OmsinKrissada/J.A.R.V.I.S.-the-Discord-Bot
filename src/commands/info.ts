@@ -1,5 +1,5 @@
 import { Command } from '../CommandManager';
-import { DiscordAPIError, GuildMember, Message, MessageEmbed, User } from 'discord.js';
+import { DiscordAPIError, GuildMember, Message, MessageEmbed, TextChannel, User } from 'discord.js';
 import { Helper } from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DataManager';
@@ -84,7 +84,7 @@ export default new Command({
 					} catch (err) { }
 
 					if (users.length > 0) {
-						Helper.confirm_type({ title: 'Please choose the member you refer to. (type in chat)' }, users, message).then((usr: GuildMember) => {
+						Helper.confirm_type('Please choose the member you refer to. (type in chat)', users, message.author, <TextChannel>message.channel).then((usr: GuildMember) => {
 							if (usr) printUserInfo(usr.user);
 						})
 					} else {

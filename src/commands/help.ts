@@ -71,7 +71,7 @@ export default new Command({
 					case "settings": displayCategory = "🛠  Settings"; break;
 					case "features": displayCategory = "💡  Features"; break;
 					case "music": displayCategory = "🎵  Music"; break;
-					case "misc": displayCategory = "👑  Moderation"; break;
+					case "moderation": displayCategory = "👑  Moderation"; break;
 					case "misc": displayCategory = "🙄  Misc"; break;
 				}
 
