@@ -23,8 +23,14 @@ export default new Command({
 		if (args[0].toLowerCase() == 'user') {
 
 			const printUserInfo = (user: User) => {
-				let embeduserinfo = new MessageEmbed();
+				let embeduserinfo = new MessageEmbed({
+					title: 'User Information Card',
+					color: Helper.BLUE,
+					thumbnail: { url: user.displayAvatarURL() },
+					fields: [{ name: 'Username', value: `${user.username}`, inline: true }, { name: 'Discriminator', value: user.discriminator, inline: true }]
+				});
 				let statusstr = '';
+
 				const userstatus = user.presence.status;
 				switch (userstatus) {
 					case 'offline': statusstr = '⚫ Offline'; break;
@@ -33,12 +39,6 @@ export default new Command({
 					case 'online': statusstr = '🟢 Online'; break;
 				}
 
-				embeduserinfo
-					.setTitle('User Information Card')
-					.setColor(Helper.BLUE)
-					.setThumbnail(user.displayAvatarURL())
-					.addField('Username', `${user.username}`, true)
-					.addField('Discriminator', user.discriminator, true)
 				if (message.guild && message.guild.member(user)) {
 					embeduserinfo
 						.addField('Display Name', user, true)
@@ -64,36 +64,9 @@ export default new Command({
 
 			let user: User;
 			if (longarg(1)) {
-				if (message.mentions.members && message.mentions.members.first()) {
-					user = message.mentions.members.first()!.user;
+				const user = await Helper.resolveUser(longarg(1), { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() });
+				if (user) {
 					printUserInfo(user);
-					return;
-				}
-				else if (!isNaN((<any>args[1]))) { // if user id
-					try {
-						let fetcheduser = await Command.bot.users.fetch(args[1]);
-						printUserInfo(fetcheduser);
-					} catch (err) { }
-				}
-				else if (message.guild) {
-
-					let users: Array<GuildMember> = [];
-					try {
-						let userscollection = message.guild.members.cache.filter(member => member.displayName.toLowerCase().includes(longarg(1).toLowerCase()) || member.user.username.toLowerCase().includes(longarg(1).toLowerCase()));
-						users = userscollection.array();
-					} catch (err) { }
-
-					if (users.length > 0) {
-						Helper.confirm_type('Please choose the member you refer to. (type in chat)', users, message.author, <TextChannel>message.channel).then((usr: GuildMember) => {
-							if (usr) printUserInfo(usr.user);
-						})
-					} else {
-						message.channel.send(new MessageEmbed({
-							title: 'Member Not Found',
-							description: `Cannot find the specified member: "${longarg(1)}"`,
-							color: Helper.RED
-						}));
-					}
 				}
 				else {
 					message.channel.send(new MessageEmbed({
