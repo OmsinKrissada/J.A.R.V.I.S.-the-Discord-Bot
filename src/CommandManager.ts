@@ -75,14 +75,16 @@ export async function run(command_name: string, args: string[], { message: sourc
 
 		let nocallerperm: PermissionString[] = [];
 		let noselfperm: PermissionString[] = [];
-		command.requiredCallerPermissions.forEach(perm => {
-			if (!sourcemsg.member!.permissionsIn(sourcemsg.channel).has(perm))
-				nocallerperm.push(perm);
-		})
-		command.requiredSelfPermissions.forEach(perm => {
-			if (!sourcemsg.guild!.me!.permissionsIn(sourcemsg.channel).has(perm))
-				noselfperm.push(perm);
-		})
+		if (sourcemsg.guild) {
+			command.requiredCallerPermissions.forEach(perm => {
+				if (!sourcemsg.member!.permissionsIn(sourcemsg.channel).has(perm))
+					nocallerperm.push(perm);
+			})
+			command.requiredSelfPermissions.forEach(perm => {
+				if (!sourcemsg.guild!.me!.permissionsIn(sourcemsg.channel).has(perm))
+					noselfperm.push(perm);
+			})
+		}
 
 		if (command.serverOnly && sourcemsg.guild === null) { // check DM
 			sourcemsg.channel.send(new MessageEmbed({
