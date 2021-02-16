@@ -71,7 +71,7 @@ class HelperClass {
 			progress += '─';
 		}
 		// console.log(progress)
-		return '`|' + progress + '|`';
+		return '`├' + progress + '┤`';
 	}
 
 	prettyTime(seconds: number) {
