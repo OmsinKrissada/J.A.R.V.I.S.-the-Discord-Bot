@@ -64,14 +64,14 @@ class HelperClass {
 		let show = Math.round(percent / 100 * length);
 		let progress = '';
 		for (let i = 0; i < show - 1; i++) {
-			progress += '─';
+			progress += '━';
 		}
 		progress += '⚪'
 		for (let i = 0; i < length - show; i++) {
 			progress += '─';
 		}
 		// console.log(progress)
-		return '`├' + progress + '┤`';
+		return (progress[0] == '⚪' ? '`|' : '`┝') + progress + (progress[progress.length - 1] == '⚪' ? '|`' : '┤`');
 	}
 
 	prettyTime(seconds: number) {
