@@ -24,10 +24,12 @@ class DataManager {
 			useNewUrlParser: true,
 			useUnifiedTopology: true
 		}).catch(err => {
-			console.error('ERROR: MongoDB failed to connect to ' + mongopath + ': ' + err.message);
+			console.error('ERROR: MongoDB failed to connect to ' + CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
+				: `mongodb://${this.hostname}:${this.port}/${this.db}` + ': ' + err.message);
 			process.exit(1);
 		});
-		console.log('MongoDB connected to ' + mongopath);
+		console.log('MongoDB connected to ' + (CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
+			: `mongodb://${this.hostname}:${this.port}/${this.db}`));
 
 		console.log('MongoDB Guilds found: ' + await Guilds.countDocuments());
 	}
@@ -40,8 +42,9 @@ class DataManager {
 
 	async set(sourceID: string, item: string, value: any): Promise<void> {
 		const loaded_guild = await Guilds.findOne({ ID: sourceID }).exec();
-		loaded_guild!.set(item, value);
-		loaded_guild!.save();
+		if (!loaded_guild) throw "Guild not found";
+		loaded_guild.set(item, value);
+		loaded_guild.save();
 	}
 
 	async create(sourceID: string, name: string, prefix: string) {

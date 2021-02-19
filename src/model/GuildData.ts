@@ -21,8 +21,10 @@ export interface IGuildData extends Document {
     announceSong: boolean;
     announceQueueEnd: boolean;
     queueInOrder: boolean;
+    enforceUserLimit: boolean;
   }
-  hooks: VoiceHook[]
+  hooks: VoiceHook[];
+  polls: string[];
 }
 
 const guildData = new mongoose.Schema({
@@ -35,12 +37,14 @@ const guildData = new mongoose.Schema({
     announceSong: { type: Boolean, default: true },
     announceQueueEnd: { type: Boolean, default: false },
     queueInOrder: { type: Boolean, default: true },
+    enforceUserLimit: { type: Boolean, default: false },
   },
   hooks: [{
     text: { type: String },
     voice: { type: String },
     type: { type: String }
-  }]
+  }],
+  polls: [{ type: String }],
 })
 
 export const Guilds = mongoose.model<IGuildData>("guilds", guildData)

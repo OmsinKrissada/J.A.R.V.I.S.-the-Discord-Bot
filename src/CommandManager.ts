@@ -35,6 +35,9 @@ export class Command {
 		this.requiredSelfPermissions = requiredSelfPermissions;
 		this.exec = exec;
 
+		if (CommandMap.has(name)) {
+			throw "Conflicted command names";
+		}
 		CommandMap.set(name, this); // Do not forget about this ...
 	}
 
@@ -56,8 +59,13 @@ export class Command {
 fs.readdir(path.join(__dirname, 'commands'), (err, files) => {
 	if (err) console.error(err);
 	files.forEach(file => {
-		import(path.join(__dirname, 'commands', file)).then(() => console.log('Loaded ' + file))
-		// console.log('Requested to register ' + file);
+		import(path.join(__dirname, 'commands', file))
+			.then(() => console.log('Loaded ' + file))
+			.catch(err => {
+				console.error(`\x1b[31mERROR: ${err}\x1b[0m`);
+				console.error('\x1b[36mExiting process ...\x1b[0m');
+				process.exit();
+			})
 	});
 	console.log('');
 });
