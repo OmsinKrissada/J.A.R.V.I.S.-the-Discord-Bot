@@ -159,8 +159,8 @@ class HelperClass {
 					current_page = pages.length - 1;
 				}
 			}
-			else if (reaction.emoji.name == '📝') {
-				message.reactions.resolve('📝')!.users.remove(user);
+			else if (reaction.emoji.name == '📄') {
+				message.reactions.resolve('📄')!.users.remove(user);
 				message.channel.send(new MessageEmbed({ author: { name: 'Type page number in chat >>>', iconURL: user.displayAvatarURL() } })).then(ask4pagemsg => {
 					message.channel.awaitMessages((responsemsg: Message) => responsemsg.author.id == user.id, { max: 1, time: 60000 }).then(msg => {
 						const text = msg.first().content;
