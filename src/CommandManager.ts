@@ -63,8 +63,6 @@ fs.readdir(path.join(__dirname, 'modules'), (err, files) => {
 			.then(() => console.log('Loaded ' + file))
 			.catch(err => {
 				console.error(`\x1b[31mERROR: ${err}\x1b[0m`);
-				console.error('\x1b[36mExiting process ...\x1b[0m');
-				process.exit();
 			})
 	});
 	console.log('');
