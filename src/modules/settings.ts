@@ -33,7 +33,7 @@ new Command({
 					color: Helper.BLUE
 				}
 			}
-			else if (['true', 'on', 'yes', 'enable'].includes(value.toLowerCase())) {
+			else if (['true', 'on', 'yes', 'enable', '1'].includes(value.toLowerCase())) {
 				const oldval = settings[field];
 				DataManager.set(sourceID, `settings.${field}`, true);
 				embedOptions = {
@@ -42,7 +42,7 @@ new Command({
 					color: Helper.GREEN
 				}
 			}
-			else if (['false', 'off', 'no', 'disable'].includes(value.toLowerCase())) {
+			else if (['false', 'off', 'no', 'disable', '0'].includes(value.toLowerCase())) {
 				const oldval = settings[field];
 				DataManager.set(sourceID, `settings.${field}`, false);
 				embedOptions = {
