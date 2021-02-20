@@ -38,7 +38,7 @@ new Command({
 				DataManager.set(sourceID, `settings.${field}`, true);
 				embedOptions = {
 					title: 'Setting Applied',
-					description: `You've changed the value of \`${field}\` to from \`${oldval}\` to \`true\`.`,
+					description: `You've changed the value of \`${field}\` from \`${oldval}\` to \`true\`.`,
 					color: Helper.GREEN
 				}
 			}
