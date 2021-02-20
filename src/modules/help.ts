@@ -12,7 +12,7 @@ export default new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: false,
 	exec(message, prefix, args) {
-		let command_name = args[0] ? args[0].toLowerCase() : '';
+		let command_name = args[0]?.toLowerCase() ?? '';
 		for (let full_command in alias) { // check with alias
 			if (alias[full_command] instanceof Array && alias[full_command].includes(command_name)) {
 				console.log(command_name)
@@ -56,7 +56,7 @@ export default new Command({
 				}
 			})
 
-			let header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Helper.inlineCodeBlock(prefix)}.`;
+			const header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Helper.inlineCodeBlock(prefix)}.`;
 			let embed = new MessageEmbed()
 				.setTitle(header)
 				.setDescription(`Use ${Helper.inlineCodeBlock(prefix + 'help [command]')} to get usage information.\n\`<...>\` indicates **required** field.\n\`[...]\` indicates **optional** field.`)
@@ -80,7 +80,7 @@ export default new Command({
 					command_list += Helper.inlineCodeBlock(command.name) + ', ';
 				})
 				command_list = command_list.slice(0, -2);
-				embed.addField(displayCategory, command_list ? command_list : '<none>');
+				embed.addField(displayCategory, command_list || '*none*');
 			}
 			embed.addField('‏‏‎ ‎', 'For source code, please visit [this repository](https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot "https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot").');
 

@@ -24,7 +24,7 @@ class HelperClass {
 				if (err) {
 					// console.warn(err);
 				}
-				resolve(stdout ? stdout : stderr);
+				resolve(stdout ?? stderr);
 			});
 		});
 	}
@@ -129,7 +129,7 @@ class HelperClass {
 			message.react('▶');
 			if (pages.length > 2) message.react('⏭')
 		}
-		if (pages.length > 3) message.react('📝');
+		if (pages.length > 3) message.react('📄');
 
 		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 })
 		collector.on('collect', (reaction, user) => {

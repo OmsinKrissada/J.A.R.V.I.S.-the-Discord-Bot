@@ -26,7 +26,7 @@ export class Command {
 
 		// set values
 		this.name = name;
-		this.displayName = displayName ? displayName : name;
+		this.displayName = displayName ?? name;
 		this.description = description;
 		this.examples = examples;
 		this.category = category;

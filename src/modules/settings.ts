@@ -16,11 +16,11 @@ new Command({
 	async exec(message, prefix, args, sourceID) {
 		const settings = (await DataManager.get(sourceID)).settings;
 		const settingsdesc = {
-			warnUnknownCommand: 'Unknown Command',
+			warnUnknownCommand: 'Warns when the bot receives an unknown command.',
 			announceSong: 'Announces when a song is being played.',
-			announceQueueEnd: 'Announces when music queue is end.',
+			announceQueueEnd: 'Announces when music queue is ended.',
 			queueInOrder: 'Use sync method to get videos from playlist. (EXPERIMENTAL)',
-			enforceUserLimit: 'Kicks users when joining a voice channel that exceed the user limit no matter what role he/she has. (Requires MOVE_MEMBER permission)',
+			enforceUserLimit: 'Kicks users when joining a voice channel that exceed the user limit regardless of the permission they have. (Requires MOVE_MEMBER permission)',
 		}
 
 		const field = args[0];

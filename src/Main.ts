@@ -79,7 +79,7 @@ if (fs.existsSync('./files/logs/latest.log')) {
 var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
 function log(message: Message): void {
 	let lines = message.content.split('\n')
-	let meta = '[' + new Date().toISOString() + '|' + (message.guild === null ? '<DM>' : message.guild.id) + '|' + message.author.id + '] ';
+	let meta = '[' + new Date().toISOString() + '|' + (message.guild?.id ?? '<DM>') + '|' + message.author.id + '] ';
 	let indent = meta;
 	for (let line of lines) {
 		let str = indent + line + '\n';
