@@ -20,7 +20,7 @@ new Command({
 			announceSong: 'Announces when a song is being played.',
 			announceQueueEnd: 'Announces when music queue is end.',
 			queueInOrder: 'Use sync method to get videos from playlist. (EXPERIMENTAL)',
-			enforceUserLimit: 'Kicks users when joining a voice channel that exceed the user limit no matter what role he/she has.',
+			enforceUserLimit: 'Kicks users when joining a voice channel that exceed the user limit no matter what role he/she has. (Requires MOVE_MEMBER permission)',
 		}
 
 		const field = args[0];

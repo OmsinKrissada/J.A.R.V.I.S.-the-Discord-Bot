@@ -23,6 +23,9 @@ export interface IGuildData extends Document {
     queueInOrder: boolean;
     enforceUserLimit: boolean;
   }
+  music: {
+    volume: number;
+  }
   hooks: VoiceHook[];
   polls: string[];
 }
@@ -38,6 +41,9 @@ const guildData = new mongoose.Schema({
     announceQueueEnd: { type: Boolean, default: false },
     queueInOrder: { type: Boolean, default: true },
     enforceUserLimit: { type: Boolean, default: false },
+  },
+  music: {
+    volume: { type: Number },
   },
   hooks: [{
     text: { type: String },

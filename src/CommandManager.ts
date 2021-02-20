@@ -56,10 +56,10 @@ export class Command {
 }
 
 // loads commands
-fs.readdir(path.join(__dirname, 'commands'), (err, files) => {
+fs.readdir(path.join(__dirname, 'modules'), (err, files) => {
 	if (err) console.error(err);
 	files.forEach(file => {
-		import(path.join(__dirname, 'commands', file))
+		import(path.join(__dirname, 'modules', file))
 			.then(() => console.log('Loaded ' + file))
 			.catch(err => {
 				console.error(`\x1b[31mERROR: ${err}\x1b[0m`);

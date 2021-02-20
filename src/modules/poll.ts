@@ -1,0 +1,31 @@
+import { bot } from '../Main';
+import { Command } from '../CommandManager';
+import DataManager from '../DataManager';
+
+class Poll {
+	readonly title: string;
+	readonly description: string;
+	readonly choiceAmount: number;
+
+	constructor({ title, description, choiceAmount }: { title: string, description: string, choiceAmount: number }) {
+		this.title = title;
+		this.description = description;
+		this.choiceAmount = choiceAmount;
+	}
+
+
+}
+
+new Command({
+	name: 'poll',
+	category: 'features',
+	description: 'POLLLLL!',
+	examples: ['poll'],
+	requiredCallerPermissions: ['MANAGE_GUILD'],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
+	serverOnly: true,
+	async exec(message, prefix, args, sourceID) {
+		const polls = (await DataManager.get(message.guild.id)).polls;
+		console.log(polls)
+	}
+});
