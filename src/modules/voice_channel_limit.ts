@@ -1,7 +1,9 @@
+import DataManager from '../DataManager';
 import { bot } from '../Main';
 
-bot.on('voiceStateUpdate', (oldvs, newvs) => {
-	if (newvs.channel && newvs.channel.userLimit > 0 && newvs.channel.members.size > newvs.channel.userLimit) {
+bot.on('voiceStateUpdate', async (oldvs, newvs) => {
+	const condition = newvs.channel && (await DataManager.get(newvs.guild.id)).settings.enforceUserLimit && newvs.channel.userLimit > 0 && newvs.channel.members.size > newvs.channel.userLimit;
+	if (condition) {
 		console.log(newvs.channel.userLimit)
 		if (oldvs.channel) newvs.member.voice.setChannel(oldvs.channel);
 		else newvs.member.voice.kick();
