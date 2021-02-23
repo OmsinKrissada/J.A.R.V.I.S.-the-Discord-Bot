@@ -32,6 +32,7 @@ interface ConfigOption {
 		green: number;
 		blue: number;
 		yellow: number;
+		aqua: number;
 	};
 	loggingChannel: string;
 	maxCPUPercent: number;

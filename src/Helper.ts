@@ -12,6 +12,7 @@ class HelperClass {
 	readonly GREEN = CONFIG.colors.green;
 	readonly BLUE = CONFIG.colors.blue;
 	readonly YELLOW = CONFIG.colors.yellow;
+	readonly AQUA = CONFIG.colors.aqua;
 
 	inlineCodeBlock(content: string) {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;

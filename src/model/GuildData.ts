@@ -25,7 +25,14 @@ export interface IGuildData extends Document {
   }
   music: {
     volume: number;
-  }
+  },
+  rolePanels: {
+    messageId: string;
+    roles: {
+      emoji: string;
+      roleId: string;
+    }[]
+  }[]
   hooks: VoiceHook[];
   polls: string[];
 }
@@ -45,6 +52,13 @@ const guildData = new mongoose.Schema({
   music: {
     volume: { type: Number },
   },
+  rolePanels: [{
+    messageId: { type: String },
+    roles: [{
+      emoji: { type: String },
+      roleId: { type: String },
+    }]
+  }],
   hooks: [{
     text: { type: String },
     voice: { type: String },
