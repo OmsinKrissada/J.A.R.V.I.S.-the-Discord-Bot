@@ -87,8 +87,9 @@ new Command({
 						const panels = (await DataManager.get(sourceID)).rolePanels;
 						panels.set(panel.id, {
 							messageId: panel.id,
-							roles: roles.map(role => { return { emojiId: role.emoji.id, roleId: role.roleId } })
+							roles: roles.map(role => { return { emojiId: role.emoji.identifier, roleId: role.roleId } })
 						});
+						console.log(panels);
 						(await DataManager.set(sourceID, 'rolePanels', panels));
 					}
 
@@ -105,16 +106,24 @@ new Command({
 	}
 });
 
+bot.once('ready', () => {
+	bot.guilds.cache.forEach(async (guild) => {
+		Array.from((await DataManager.get(guild.id)).rolePanels.keys())
+			.map(msgId => guild.channels.cache.filter(textchannels => textchannels.type == 'text').forEach((channel: TextChannel) => channel.messages.fetch(msgId)
+				.catch(_ => { })))
+	});
+});
+
 bot.on('messageReactionAdd', async (reaction, user) => {
 	const message = reaction.message;
 	const guild = message.guild;
 
-	if (!guild) return;
+	if (!guild || user.id == bot.user.id) return;
 	//arcterus
 	const panels = (await DataManager.get(guild.id)).rolePanels;
 	const panel = panels.get(reaction.message.id);
 	if (panel) {
-		const role = panel.roles.filter(role => role.emojiId == reaction.emoji.id)[0];
+		const role = panel.roles.filter(role => role.emojiId == reaction.emoji.identifier)[0];
 		if (role) {
 			guild.member(user.id).roles.add(role.roleId);
 		} else {
@@ -127,12 +136,12 @@ bot.on('messageReactionRemove', async (reaction, user) => {
 	const message = reaction.message;
 	const guild = message.guild;
 
-	if (!guild) return;
+	if (!guild || user.id == bot.user.id) return;
 
 	const panels = (await DataManager.get(guild.id)).rolePanels;
 	const panel = panels.get(reaction.message.id);
 	if (panel) {
-		const role = panel.roles.filter(role => role.emojiId == reaction.emoji.id)[0];
+		const role = panel.roles.filter(role => role.emojiId == reaction.emoji.identifier)[0];
 		if (role) {
 			guild.member(user.id).roles.remove(role.roleId);
 		}

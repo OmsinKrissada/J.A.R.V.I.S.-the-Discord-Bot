@@ -45,6 +45,7 @@ class DataManager {
 		if (!loaded_guild) throw "Guild not found";
 		loaded_guild.set(item, value);
 		loaded_guild.save();
+		console.log('saved')
 	}
 
 	async create(sourceID: string, name: string, prefix: string) {
