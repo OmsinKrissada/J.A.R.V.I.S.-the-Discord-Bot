@@ -76,12 +76,20 @@ new Command({
 					if (targetChannel instanceof TextChannel) {
 						const panel = await targetChannel.send(new MessageEmbed({
 							title: `Category: ${title}`,
-							description: 'React icons below to give yourself a role.\n\n\n' + rolestr,
+							description: 'React reactions below to give yourself a role.\n\n\n' + rolestr,
 							color: Helper.AQUA,
 						}));
 						roles.forEach(role => {
 							panel.react(role.emoji)
 						})
+
+						// apply to database
+						const panels = (await DataManager.get(sourceID)).rolePanels;
+						panels.set(panel.id, {
+							messageId: panel.id,
+							roles: roles.map(role => { return { emojiId: role.emoji.id, roleId: role.roleId } })
+						});
+						(await DataManager.set(sourceID, 'rolePanels', panels));
 					}
 
 					msg.delete();
@@ -89,17 +97,44 @@ new Command({
 
 				embed.setDescription('Done.')
 				editor.edit(embed)
-
-
 				// (await DataManager.get(sourceID)).rolePanels.push
 
-
-
 			}
-
-
 				break;
 		}
 	}
-}
-);
+});
+
+bot.on('messageReactionAdd', async (reaction, user) => {
+	const message = reaction.message;
+	const guild = message.guild;
+
+	if (!guild) return;
+	//arcterus
+	const panels = (await DataManager.get(guild.id)).rolePanels;
+	const panel = panels.get(reaction.message.id);
+	if (panel) {
+		const role = panel.roles.filter(role => role.emojiId == reaction.emoji.id)[0];
+		if (role) {
+			guild.member(user.id).roles.add(role.roleId);
+		} else {
+			reaction.remove();
+		}
+	}
+});
+
+bot.on('messageReactionRemove', async (reaction, user) => {
+	const message = reaction.message;
+	const guild = message.guild;
+
+	if (!guild) return;
+
+	const panels = (await DataManager.get(guild.id)).rolePanels;
+	const panel = panels.get(reaction.message.id);
+	if (panel) {
+		const role = panel.roles.filter(role => role.emojiId == reaction.emoji.id)[0];
+		if (role) {
+			guild.member(user.id).roles.remove(role.roleId);
+		}
+	}
+})

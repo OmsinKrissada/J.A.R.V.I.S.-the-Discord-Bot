@@ -1,4 +1,5 @@
-import mongoose, { Document } from "mongoose";
+import { Emoji } from "discord.js";
+import mongoose, { Document, Schema } from "mongoose";
 
 class VoiceHook {
   type: string;
@@ -26,13 +27,13 @@ export interface IGuildData extends Document {
   music: {
     volume: number;
   },
-  rolePanels: {
+  rolePanels: Map<string, {
     messageId: string;
     roles: {
-      emoji: string;
+      emojiId: string;
       roleId: string;
     }[]
-  }[]
+  }>
   hooks: VoiceHook[];
   polls: string[];
 }
@@ -52,13 +53,17 @@ const guildData = new mongoose.Schema({
   music: {
     volume: { type: Number },
   },
-  rolePanels: [{
-    messageId: { type: String },
-    roles: [{
-      emoji: { type: String },
-      roleId: { type: String },
-    }]
-  }],
+  rolePanels: {
+    type: Map,
+    of: new Schema({
+      messageId: String,
+      roles: [{
+        emojiId: String,
+        roleId: String,
+      }]
+    }),
+    default: new Map()
+  },
   hooks: [{
     text: { type: String },
     voice: { type: String },
