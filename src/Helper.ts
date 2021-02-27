@@ -275,11 +275,14 @@ class HelperClass {
 	 * @param resolvable 
 	 * @param options If provided, this will also search for matching user in the list.
 	 */
-	async resolveUser(resolvable: string, options?: GuildAliasOption): Promise<User> {
+	async resolveUser(resolvable: string, options?: GuildAliasOption): Promise<User | undefined> {
 		resolvable = resolvable.replace(/<|@|!|>/g, '');
 		if (!isNaN(+resolvable)) {
-			let user = await bot.users.fetch(resolvable);
-			if (user) return user;
+			try {
+				return await bot.users.fetch(resolvable);
+			} catch (err) {
+				return undefined;
+			}
 		}
 
 		if (options) {
