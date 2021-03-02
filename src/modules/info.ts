@@ -26,7 +26,7 @@ export default new Command({
 				let embeduserinfo = new MessageEmbed({
 					title: 'User Information Card',
 					color: Helper.BLUE,
-					thumbnail: { url: user.displayAvatarURL() },
+					thumbnail: { url: user.displayAvatarURL({ size: 1024, format: 'png' }) },
 					fields: [{ name: 'Username', value: `${user.username}`, inline: true }, { name: 'Discriminator', value: user.discriminator, inline: true }]
 				});
 				let statusstr = '';
