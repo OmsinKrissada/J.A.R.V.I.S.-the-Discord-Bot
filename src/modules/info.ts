@@ -57,7 +57,7 @@ export default new Command({
 						.addField('Server Joined', moment.utc(message.guild.member(user)!.joinedTimestamp!).format('lll z'), true);
 				}
 				embeduserinfo
-					.addField('Account Created Since', moment.utc(user.createdAt).format('lll z'), true)
+					.addField('Account Created', moment.utc(user.createdAt).format('lll z'), true)
 					.setTimestamp()
 				message.channel.send(embeduserinfo);
 			}

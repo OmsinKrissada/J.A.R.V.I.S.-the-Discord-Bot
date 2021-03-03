@@ -15,3 +15,4 @@ settings/config.yml
 resources/template
 src/commands/poll.ts
 src/model/GuildData.ts
+src/modules/testing.ts

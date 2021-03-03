@@ -801,7 +801,7 @@ new Command({
 		if (currentSong) {
 			let secondsPlayed = Math.floor(currentSong.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
 			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
-				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` (about ${moment.duration(player.getTotalTime(), 'seconds').humanize()})`, true)
+				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` `, true)
 				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
 		}
 		Helper.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))

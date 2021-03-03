@@ -81,8 +81,17 @@ class HelperClass {
 		const hours = Math.floor(duration.hours());
 		const mins = duration.minutes();
 		const secs = duration.seconds();
-		return `\`${hours > 0 ? Helper.min2(hours) + ':' : ''}${Helper.min2(mins)}:${Helper.min2(secs)}\``;
+		return `\`${hours > 0 ? hours + ':' : ''}${mins}:${Helper.min2(secs)}\``;
 	}
+
+	fullDurationString(duration: moment.Duration) {
+		let str = '';
+		if (duration.hours()) str += `${duration.hours()} hour${duration.hours() > 1 ? 's' : ''} `;
+		if (duration.minutes()) str += `${duration.minutes()} minute${duration.minutes() > 1 ? 's' : ''} `;
+		if (duration.seconds()) str += `${duration.seconds()} second${duration.seconds() > 1 ? 's' : ''}`;
+		return str.trimEnd();
+	}
+
 
 	shuffle(array: Array<any>): any[] {
 		let shuffledArray: any[] = [];
@@ -117,7 +126,7 @@ class HelperClass {
 
 		let pagenum = 1;
 		pages.forEach(page => {
-			page.setFooter(page.footer ? page.footer.text + `\nPage ${pagenum++} / ${pages.length}` : `Page ${pagenum++} / ${pages.length}`);
+			page.setFooter(page.footer ? page.footer.text + `\nPage ${pagenum++} / ${pages.length}` : `Page ${pagenum++} / ${pages.length} `);
 		})
 
 
