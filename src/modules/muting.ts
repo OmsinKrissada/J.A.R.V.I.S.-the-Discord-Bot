@@ -1,7 +1,6 @@
 import { Command } from '../CommandManager';
-import { GuildMember, MessageEmbed, Permissions, User } from 'discord.js';
+import { MessageEmbed, TextChannel } from 'discord.js';
 import { Helper } from '../Helper';
-import * as DataManager from '../DataManager';
 
 let mutedUserID: string[] = [];
 
@@ -28,8 +27,8 @@ new Command({
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
-	exec(message, prefix, args, sourceID) {
-		const member = message.mentions.members!.size > 0 ? message.mentions.members!.first() : message.guild!.member(args[0]);
+	async exec(message, args) {
+		const member = message.guild.member(await Helper.resolveUser(args[0], { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() }));
 		if (member) {
 			if (member.voice.channel) {
 				if (member.voice.serverMute) {
@@ -68,8 +67,8 @@ new Command({
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
-	exec(message, prefix, args, sourceID) {
-		const member = message.mentions.members!.size > 0 ? message.mentions.members!.first() : message.guild!.member(args[0]);
+	async exec(message, args) {
+		const member = message.guild.member(await Helper.resolveUser(args[0], { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() }));
 		if (member) {
 			if (member.voice.channel) {
 				if (!member.voice.serverMute) {
@@ -108,7 +107,7 @@ new Command({
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
-	exec(message, prefix, args, sourceID) {
+	exec(message, args) {
 		const channel = message.guild!.channels.resolve(args[0]);
 
 		if (channel && channel.type == 'voice') {
@@ -146,7 +145,7 @@ new Command({
 	requiredCallerPermissions: ['MUTE_MEMBERS'],
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MUTE_MEMBERS'],
 	serverOnly: true,
-	exec(message, prefix, args, sourceID) {
+	exec(message, args) {
 		const channel = message.guild!.channels.resolve(args[0]);
 
 		if (channel && channel.type == 'voice') {

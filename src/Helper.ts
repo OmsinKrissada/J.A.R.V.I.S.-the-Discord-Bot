@@ -297,7 +297,7 @@ class HelperClass {
 		if (options) {
 			const users = options.memberList.filter(member => member.displayName.toLowerCase().includes(resolvable.toLowerCase()) || member.user.username.toLowerCase().includes(resolvable.toLowerCase()));
 			if (users.length > 0) {
-				const member = await Helper.confirm_type('Please choose the member you refer to.\n(type in chat)', users, options.caller, options.askingChannel)
+				const member = await Helper.confirm_type(`Who is "${resolvable}" being refered to? \n(type in chat)`, users, options.caller, options.askingChannel)
 				return member.user;
 			}
 		}

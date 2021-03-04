@@ -230,7 +230,7 @@ class MusicPlayer {
 				.setColor(Helper.GREEN)
 				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration().asSeconds())}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
-				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime().asSeconds())}\``, true)
+				.addField('Time Before Playing', `\`${this.getTotalTime().asSeconds() ? Helper.prettyTime(this.getTotalTime().asSeconds()) : "Now"}\``, true)
 				.setThumbnail(song.thumbnail)
 			);
 			this.queue.push(song);
@@ -244,7 +244,7 @@ class MusicPlayer {
 				.setColor(Helper.GREEN)
 				.addField('Playlist Duration', `\`${Helper.prettyTime(totalDuration)}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\` to \`${this.currentSong ? this.queue.length + playlist.songs.length : playlist.songs.length - 1}\``, true)
-				.addField('Time Before Playing', `\`${Helper.prettyTime(this.getTotalTime().asSeconds())}\``, true)
+				.addField('Time Before Playing', `\`${this.getTotalTime().asSeconds() ? Helper.prettyTime(this.getTotalTime().asSeconds()) : "Now"}\``, true)
 				.setThumbnail(playlist.thumbnail)
 			);
 			this.queue = this.queue.concat(playlist.songs);
