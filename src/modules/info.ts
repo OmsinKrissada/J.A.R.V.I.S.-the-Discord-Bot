@@ -27,7 +27,6 @@ export default new Command({
 					title: 'User Information Card',
 					color: Helper.BLUE,
 					thumbnail: { url: user.displayAvatarURL({ size: 1024, format: 'png' }) },
-					fields: [{ name: 'Username', value: `${user.username}`, inline: true }, { name: 'Discriminator', value: user.discriminator, inline: true }]
 				});
 				let statusstr = '';
 
@@ -39,16 +38,20 @@ export default new Command({
 					case 'online': statusstr = '🟢 Online'; break;
 				}
 
+				// add fields
+				embeduserinfo
+					.addField('Username', user.username, true)
+					.addField('Discriminator', user.discriminator, true)
+					.addField('Display', user, true)
 				if (message.guild && message.guild.member(user)) {
 					embeduserinfo
-						.addField('Display Name', user, true)
 						.addField('Current Status', statusstr, true)
 				}
 				embeduserinfo
 					.addField('Account Type', user.bot ? 'Bot' : 'User', true)
 					.addField('User ID', user.id, true)
 				if (message.guild && message.guild.member(user)) {
-					const rolesOfTheMember = message.guild.member(user)!.roles.cache.filter(r => r.name !== '@everyone').map(role => role).join(', ');
+					const rolesOfTheMember = message.guild.member(user)!.roles.cache.filter(r => r.name !== '@everyone').array().join(', ');
 					if (rolesOfTheMember)
 						embeduserinfo
 							.addField('Roles', rolesOfTheMember)

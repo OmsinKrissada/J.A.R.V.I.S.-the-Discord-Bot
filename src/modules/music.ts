@@ -10,6 +10,7 @@ import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
 
 import os from 'os-utils';
+import { bot } from '../Main';
 
 if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 	if (percent * 100 > CONFIG.maxCPUPercent) {
@@ -565,6 +566,11 @@ new Command({
 		}
 		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.guild, <TextChannel>message.channel, Helper.longarg(0, args));
 	}
+})
+
+bot.on('voiceStateUpdate', (_, newvs) => {
+	if (newvs.member.id == bot.user.id && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id)
+		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
 })
 
 new Command({
