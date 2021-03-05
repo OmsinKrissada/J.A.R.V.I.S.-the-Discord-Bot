@@ -58,28 +58,28 @@ bot.once('ready', async () => {
 
 
 // Checks if file directory exists, if not, creates them.
-if (!fs.existsSync('./files')) {
-	fs.mkdirSync('./files')
+if (!fs.existsSync('./logs')) {
+	fs.mkdirSync('./logs')
 }
 
-if (!fs.existsSync('./files/logs')) {
-	fs.mkdirSync('./files/logs');
-}
+// if (!fs.existsSync('./files/logs')) {
+// 	fs.mkdirSync('./files/logs');
+// }
 
 // renames latest.log to its appropriate name
-if (fs.existsSync('./files/logs/latest.log')) {
-	const reader = new linereader('./files/logs/latest.log');
-	const filename = './files/logs/' + reader.next().toString().substr(2) + '.log';
+if (fs.existsSync('./logs/latest.log')) {
+	const reader = new linereader('./logs/latest.log');
+	const filename = './logs/' + reader.next().toString().substr(2) + '.log';
 	if (reader.next())
-		fs.renameSync('./files/logs/latest.log', filename.replace(/:/g, '-'));
-	else fs.rmSync('./files/logs/latest.log');
+		fs.renameSync('./logs/latest.log', filename.replace(/:/g, '-'));
+	else fs.rmSync('./logs/latest.log');
 }
 
 
-var logfile = fs.createWriteStream(`./files/logs/latest.log`, { encoding: 'utf-8' })
+var logfile = fs.createWriteStream(`./logs/latest.log`, { encoding: 'utf-8' })
 function log(message: Message): void {
 	let lines = message.content.split('\n')
-	let meta = '[' + new Date().toISOString() + '|' + (message.guild?.id ?? '<DM>') + '|' + message.author.id + '] ';
+	let meta = '[' + new Date().toISOString() + '|' + (message.guild ? 'SERVER' : 'DM') + '|' + message.author.id + '] ';
 	let indent = meta;
 	for (let line of lines) {
 		let str = indent + line + '\n';
@@ -92,6 +92,7 @@ function log(message: Message): void {
 	}
 }
 
+// handle exceptions
 
 if (loggingChannel)
 	process.on('unhandledRejection', (reason, promise) => {
@@ -100,6 +101,14 @@ if (loggingChannel)
 		loggingChannel.send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
 	})
 
+process.on('uncaughtException', function (err) {
+	console.log('Caught exception: ' + err);
+	loggingChannel.send('Caught exception: ' + err)
+	process.exit(1);
+});
+
+let idk: string;
+idk.toLowerCase();
 
 // Handles received messages
 bot.on('message', async (message) => {

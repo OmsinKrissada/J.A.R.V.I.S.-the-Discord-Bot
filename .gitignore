@@ -3,6 +3,7 @@
 /node_modules/
 /reports/
 /files/
+/logs/
 /dist/
 *.pipe
 spare.txt
