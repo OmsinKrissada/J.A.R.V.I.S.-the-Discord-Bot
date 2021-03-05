@@ -569,7 +569,7 @@ new Command({
 })
 
 bot.on('voiceStateUpdate', (_, newvs) => {
-	if (newvs.member.id == bot.user.id && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id)
+	if (newvs.member.id == bot.user.id && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel?.id)
 		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
 })
 
