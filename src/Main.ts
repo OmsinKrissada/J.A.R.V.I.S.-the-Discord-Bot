@@ -103,12 +103,9 @@ if (loggingChannel)
 
 process.on('uncaughtException', function (err) {
 	console.log('Caught exception: ' + err);
-	loggingChannel.send('Caught exception: ' + err)
+	if (loggingChannel) loggingChannel.send('Caught exception: ' + err);
 	process.exit(1);
 });
-
-let idk: string;
-idk.toLowerCase();
 
 // Handles received messages
 bot.on('message', async (message) => {
