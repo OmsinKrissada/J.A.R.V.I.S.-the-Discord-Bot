@@ -3,7 +3,7 @@ import { DMChannel, Guild, GuildMember, MessageEmbed, MessageReaction, Snowflake
 import { Helper } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
-import { Shoukaku } from 'shoukaku';
+import { Shoukaku, ShoukakuPlayer, ShoukakuSocket } from 'shoukaku';
 
 import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
@@ -50,13 +50,6 @@ class Song {
 	getDuration() {
 		return this.duration;
 	}
-
-	/**
-	 * @returns Time played through the song
-	 */
-	getPlayedTime() { // Why don't I add this to MusicPlayer??? Ans: When you use !seek, it will need to change the played time so it needs to be song-specific (see this.seek() for detail)
-		return moment.duration(MusicPlayerMap.get(this.requester.guild.id)!.getPlayedTime(), 'milliseconds');
-	}
 }
 
 
@@ -77,34 +70,20 @@ const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 
 // connect to LavaLink server
 
-const LavalinkServer = [{ name: 'Localhost', host: 'localhost', port: 2333, auth: 'thisisthepassworduknow' }];
-const ShoukakuOptions = { moveOnDisconnect: true, resumable: true, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+const LavalinkServer = [{ name: 'Main Node', host: 'localhost', port: 2333, auth: 'thisisthepassworduknow' }];
+const ShoukakuOptions = { moveOnDisconnect: false, resumable: true, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
 const shoukakuclient = new Shoukaku(bot, LavalinkServer, ShoukakuOptions);
 
-shoukakuclient.on('ready', (name) => console.log(`Lavalink ${name}: Ready!`));
+let lavanode: ShoukakuSocket;
+shoukakuclient.on('ready', (name) => {
+	console.log(`Lavalink ${name}: Ready!`);
+	lavanode = shoukakuclient.getNode();
+});
 shoukakuclient.on('error', (name, error) => console.error(`Lavalink ${name}: Error Caught,`, error));
 shoukakuclient.on('close', (name, code, reason) => console.warn(`Lavalink ${name}: Closed, Code ${code}, Reason ${reason || 'No reason'}`));
 shoukakuclient.on('disconnected', (name, reason) => console.warn(`Lavalink ${name}: Disconnected, Reason ${reason || 'No reason'}`));
 
-bot.once('ready', () => {
-	shoukakuclient.on('ready', (name) => {
-		// shoukakuclient.getPlayer('709824110229979278');
-		const node = shoukakuclient.getNode();
-		node.rest.resolve('https://www.youtube.com/watch?v=F90Cw4l-8NY').then(async (data) => {
-			const player = await node.joinVoiceChannel({
-				guildID: '709824110229979278',
-				voiceChannelID: '727046631416922113'
-			});
-			player.on('error', (error) => {
-				console.error(error);
-				player.disconnect();
-			});
-			const thedata = data.tracks.shift();
-			await player.playTrack(thedata);
-		})
-	})
 
-})
 
 
 
@@ -114,7 +93,7 @@ class MusicPlayer {
 
 	voiceChannel: VoiceChannel;
 	respondChannel: TextChannel; // Text Channel
-	connection: VoiceConnection | undefined;
+	// connection: VoiceConnection | undefined;
 	dispatcher: StreamDispatcher;
 	private currentSong: Song | undefined;
 	private previousSong: Song | undefined;
@@ -122,11 +101,22 @@ class MusicPlayer {
 	private queue: Array<Song> = [];
 	private volume: number = CONFIG.defaultVolume;
 	private leaveTimeout: NodeJS.Timeout;
+	private lavaplayer: ShoukakuPlayer = null;
 
 	constructor(guild: Guild) {
 		this.guild = guild;
 		// this.voiceChannel = guild.me.voice.channel;
-		if (guild.me.voice.channel) this.disconnect();
+		// if (guild.me.voice.channel) this.disconnect();		-----> this was to leave channels after restart, but I think LavaLink should be able to handle it for me now
+	}
+
+
+	/**
+	 * 
+	 * @returns Position of the playing track
+	 */
+	getPlayedTime() {
+		if (!this.lavaplayer) return null;
+		return moment.duration(this.lavaplayer.position, 'milliseconds'); // still have problem with position -.- it's not real-time
 	}
 
 	/**
@@ -137,7 +127,7 @@ class MusicPlayer {
 		this.queue.forEach(song => {
 			totaltime += song.duration.asSeconds();
 		});
-		if (this.currentSong) totaltime += this.currentSong.duration.subtract(this.currentSong.getPlayedTime()).asSeconds();
+		if (this.currentSong) totaltime += this.currentSong.duration.subtract(this.getPlayedTime()).asSeconds();
 		return moment.duration(totaltime, 'seconds');
 	}
 
@@ -305,34 +295,70 @@ class MusicPlayer {
 	 */
 	async connect(textChannel: TextChannel, voiceChannel: VoiceChannel) {
 
-		this.connection = await voiceChannel.join();
-		if (!this.connection) return false;
 		this.respondChannel = textChannel;
 		this.voiceChannel = voiceChannel;
 
-		this.connection.on('disconnect', () => { // on user force disconnect
-			this.pause();
-			this.connection = null;
-			this.disconnect();
+		this.lavaplayer = await lavanode.joinVoiceChannel({
+			guildID: this.voiceChannel.guild.id,
+			voiceChannelID: this.voiceChannel.id,
+			deaf: true,
+		});
+		this.lavaplayer.setVolume(this.volume);
+
+		// change voiceChannel value to new channel when forced to move
+		bot.on('voiceStateUpdate', async (_, newvs) => {
+			if (MusicPlayerMap.get(newvs.guild.id) && newvs.member.id == bot.user.id && newvs.channel && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id) {
+				MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
+				// const track = this.lavaplayer.track;
+				// this.lavaplayer = await lavanode.joinVoiceChannel({
+				// 	guildID: newvs.guild.id,
+				// 	voiceChannelID: newvs.channel.id,
+				// 	deaf: true,
+				// });
+				// this.lavaplayer.playTrack(track);
+
+				// this.lavaplayer.voiceConnection.attemptReconnect();
+
+			}
+
+
 		})
 
-		return true;
-		// console.log(music_data)
+		// when the player is closed
+		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
+			console.debug(`"closed" for ${reason.reason}`)
+			this.disconnect();
+			this.lavaplayer = null;
+		})
+
+		// when the player finish playing a song
+		this.lavaplayer.on('end', async (reason) => {
+			console.log('"end" fired for ' + reason.reason)
+			if (reason.reason != "FINISHED") return;
+			if (this.isLooping && this.previousSong) {
+				this.play(this.previousSong);
+			}
+			else if (this.queue.length >= 1) this.playNext(); // Have next song
+			else { // Doesn't have next song
+				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
+					this.currentSong = null;
+					this.respondChannel.send('Queue Ended.');
+				}
+			}
+		})
 	}
 
-	/**
-	 * Returns whether the operation is success.
-	 */
 	disconnect() {
 		this.currentSong = null;
 		this.isLooping = false;
 		this.voiceChannel = null;
-		if (this.connection) {
-			this.connection.disconnect();
-			this.connection = null;
+		if (this.lavaplayer) {
+			this.lavaplayer.disconnect();
+			this.lavaplayer = null;
 			this.queue = [];
-			return true;
-		} else return false;
+		} else {
+			throw "PLAYER_NOT_FOUND";
+		}
 	}
 
 	configDispatcher(dispatcher: StreamDispatcher) {
@@ -360,74 +386,86 @@ class MusicPlayer {
 	}
 
 	async play(song: Song) {
-		const play = async (song: Song) => {
-			clearTimeout(this.leaveTimeout);
+		// const play = async (song: Song) => {								-----> this lines is with the comment below
 
-			if (!this.connection) {
-				if (!await this.connect(song.textChannel, this.voiceChannel)) {
-					this.respondChannel.send('Not able to connect, please contact Omsin for debugging.');
-					return;
-				}
-			}
-
-			// play song
-			const dispatcher = this.connection.play(ytdl(song.url, { filter: "audioonly", quality: "highestaudio", opusEncoded: true }), { type: "opus" });
-			this.configDispatcher(dispatcher);
-			this.currentSong = song;
-			// console.log('set new song -> ' + (this.currentSong ? 'exist' : 'undefined'))
-
-
-			if ((await DataManager.get(this.guild.id)).settings.announceSong) {
-				song.textChannel.send(new MessageEmbed()
-					.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
-					.setColor(Helper.BLUE)
-				)
+		if (!this.lavaplayer) {
+			try {
+				console.log('trying to connect from play method')
+				this.connect(song.textChannel, this.voiceChannel);
+			} catch (err) {
+				this.respondChannel.send('Cannot connect to voice channel. An unknown error occured.');
 			}
 		}
-		if (this.connection && this.connection.dispatcher) {
-			this.connection!.dispatcher.on('unpipe', _ => play(song))
-			this.connection!.dispatcher.destroy();
-		} else play(song);
+
+		// play song
+		this.lavaplayer.on('error', (error) => {
+			console.error(`Lavaplayer error: ${error}`);
+			this.lavaplayer.disconnect();
+		});
+		const data = await lavanode.rest.resolve(song.url)
+		await this.lavaplayer.playTrack(data.tracks.shift(), { noReplace: false });
+		this.currentSong = song;
+
+
+		if ((await DataManager.get(this.guild.id)).settings.announceSong) {
+			song.textChannel.send(new MessageEmbed()
+				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
+				.setColor(Helper.BLUE)
+			)
+		}
+		// }																-----> closing for above
+
+
+		// if (this.connection?.dispatcher) {
+		// 	this.connection!.dispatcher.on('unpipe', _ => play(song))		-----> I don't understand this... I wish I could talk to my past self
+		// 	this.connection!.dispatcher.destroy();
+		// } else play(song);
 	}
 
 	async playNext() {
-		if (this.connection && this.connection.dispatcher && this.connection.dispatcher.paused) { // first resume
-			this.resume();
-		}
+
+		// if (this.connection?.dispatcher?.paused) { // first resume
+		// 	this.resume();													-----> WHY??
+		// }
 
 		let song = this.queue.shift(); // extract next song
 		if (!song) return;
 		this.play(song);
-
 	}
 
 	pause() {
-		if (this.connection?.dispatcher) {
-			this.connection.dispatcher.pause();
-			clearTimeout(this.leaveTimeout);
-		}
+		// if (this.connection?.dispatcher) {								-----> *pending for deletion*
+		// 	this.connection.dispatcher.pause();
+		// 	clearTimeout(this.leaveTimeout);
+		// }
+		if (!this.lavaplayer) return;
+		this.lavaplayer.setPaused(true);
 	}
 
 	resume() {
-		if (this.connection?.dispatcher) {
-			this.connection.dispatcher.resume();
-			clearTimeout(this.leaveTimeout);
-		}
+		// if (this.connection?.dispatcher) {								-----> *pending for deletion*
+		// 	this.connection.dispatcher.resume();
+		// 	clearTimeout(this.leaveTimeout);
+		// }
+		if (!this.lavaplayer) return;
+		this.lavaplayer.setPaused(false);
 	}
 
 	setVolume(volume: number) {
-		if (this?.connection?.dispatcher) this.connection.dispatcher.setVolume(volume / 100)
+		if (!this.lavaplayer) return;
+		this.lavaplayer.setVolume(volume)
 		this.volume = volume;
 	}
 
 	skip() {
 		if (this.queue.length > 0) {
 			this.playNext();
-		} else if (this.connection && this.connection.dispatcher) {
-			this.connection.dispatcher.destroy();
+		} else if (this.lavaplayer) {
+			this.lavaplayer.stopTrack();
+			this.currentSong = null;
 			this.respondChannel.send('Skipped! ⏩')
 		} else {
-			this.respondChannel.send('No song to skip to');
+			throw "NO_PLAYING_SONG"
 		}
 	}
 
@@ -455,45 +493,26 @@ class MusicPlayer {
 		queue.splice(newPosition - 1, 0, transferingSong);
 	}
 
-	seek(startsec: number, responseChannel: TextChannel) {
+	async seek(second: number, responseChannel: TextChannel) {
 
 		// console.log(startsec)
-		if (!this.currentSong) {
-			this.respondChannel.send("I'm not playing any song.");
-			return;
+		if (!this.currentSong || !this.lavaplayer) { // both side of "or" should have same value tho, I put both in just to make sure
+			throw "NO_PLAYING_SONG";
 		}
-		if (!this.connection) {
-			this.respondChannel.send('An unknown error occured, please contact Omsin for debug.');
-			return;
-		}
-		const thissongiamplaying = new Song(this.currentSong);
-		this.connection.dispatcher.on('unpipe', _ => seek(startsec))
-		this.connection.dispatcher.destroy();
-		const seek = async (startsec: number) => {
-			clearTimeout(this.leaveTimeout);
-			this.currentSong = thissongiamplaying;
-			const dispatcher = this.connection!.play(ytdl(this.currentSong.url, { filter: "audioonly", quality: "highestaudio", seek: startsec, opusEncoded: true }), { type: "opus" });
-			this.configDispatcher(dispatcher);
-			this.currentSong = thissongiamplaying;
-			this.currentSong.getPlayedTime = () => {
-				return moment.duration(this.connection!.dispatcher.streamTime + startsec * 1000, 'milliseconds');
-			}
-			if (!this.currentSong) return;
-			const secondsPlayed = Math.floor(this.currentSong.getPlayedTime().asSeconds());
-			responseChannel.send(new MessageEmbed()
-				.setTitle('Seeked!')
-				.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
-				.setColor(Helper.GREEN)
-			)
-		}
+
+		await this.lavaplayer.seekTo(second * 1000);
+		// clearTimeout(this.leaveTimeout);				
+
+		const secondsPlayed = Math.floor(this.getPlayedTime().asSeconds());
+		responseChannel.send(new MessageEmbed()
+			.setTitle('Seeked!')
+			.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
+			.setColor(Helper.GREEN)
+		)
 	}
 
 	async search(field: string) {
 		return await yts({ query: field, pageStart: 1, pageEnd: 3 });
-	}
-
-	getPlayedTime() {
-		return this.connection ? this.dispatcher.streamTime : -1;
 	}
 
 	getCurrentSong() {
@@ -526,12 +545,6 @@ Command.bot.on('message', msg => {
 	if (msg.channel instanceof DMChannel) return;
 	if (!MusicPlayerMap.has(msg.guild!.id))
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));
-})
-
-// change voiceChannel value to new channel when forced to move
-bot.on('voiceStateUpdate', (_, newvs) => {
-	if (MusicPlayerMap.get(newvs.guild.id) && newvs.member.id == bot.user.id && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel?.id)
-		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
 })
 
 
@@ -650,9 +663,10 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
-		if (player.disconnect()) {
+		try {
+			player.disconnect();
 			message.channel.send('👋 Successfully Disconnected!');
-		} else {
+		} catch {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('I am **NOT** in a voice channel.')
@@ -673,7 +687,7 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
-		if (!player.connection) {
+		if (!player.voiceChannel) {
 			message.channel.send(new MessageEmbed({
 				title: "I'm not in a voice channel.",
 				color: Helper.RED
@@ -734,7 +748,7 @@ new Command({
 			return;
 		}
 
-		const secondsPlayed = Math.floor(current_song.getPlayedTime().asSeconds());
+		const secondsPlayed = Math.floor(player.getPlayedTime().asSeconds());
 		message.channel.send(new MessageEmbed()
 			.setTitle('🎧 Now Playing')
 			// .setDescription(content)
@@ -761,11 +775,12 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
-		if (player.connection) {
+		try {
 			player.skip();
+		} catch (err) {
+			message.channel.send("Unable to skip, I'm not playing any song.");
 		}
-		else
-			message.channel.send("I'm not in a voice channel")
+
 	}
 })
 
@@ -844,7 +859,7 @@ new Command({
 
 		let currentSong = player.getCurrentSong();
 		if (currentSong) {
-			let secondsPlayed = Math.floor(currentSong.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
+			let secondsPlayed = Math.floor(player.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
 			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
 				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` `, true)
 				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
@@ -964,30 +979,31 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!
-		if (!player.connection) {
+		try {
+			player.seek(+args[0], <TextChannel>message.channel);
+		} catch (err) {
 			message.channel.send(new MessageEmbed({
 				title: 'No Playing Song',
 				description: 'I am not playing any song at the moment.',
 				color: Helper.RED
 			}))
-			return;
 		}
-		if (!player.connection) {
-			message.channel.send(new MessageEmbed({
-				title: 'Invalid Option',
-				description: `Use ${Helper.inlineCodeBlock(prefix + 'help seek')} for info.`,
-				color: Helper.RED
-			}))
-			return;
-		}
-		switch (args[0]) {
-			case 'forward':
-			case 'backward':
-			case 'to':
-			default:
 
-		}
-		player.seek(<any>args[0], <TextChannel>message.channel);
+		// if (!player.connection) {
+		// 	message.channel.send(new MessageEmbed({
+		// 		title: 'Invalid Option',
+		// 		description: `Use ${Helper.inlineCodeBlock(prefix + 'help seek')} for info.`,		-----> for the future
+		// 		color: Helper.RED
+		// 	}))
+		// 	return;
+		// }
+		// switch (args[0]) {
+		// 	case 'forward':
+		// 	case 'backward':
+		// 	case 'to':
+		// 	default:
+
+		// }
 
 	}
 })

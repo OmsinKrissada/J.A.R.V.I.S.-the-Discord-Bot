@@ -103,6 +103,7 @@ if (loggingChannel)
 
 process.on('uncaughtException', function (err) {
 	console.log('Caught exception: ' + err);
+	console.log(err.stack)
 	if (loggingChannel) loggingChannel.send('Caught exception: ' + err);
 	process.exit(1);
 });
