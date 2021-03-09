@@ -305,25 +305,6 @@ class MusicPlayer {
 		});
 		this.lavaplayer.setVolume(this.volume);
 
-		// change voiceChannel value to new channel when forced to move
-		bot.on('voiceStateUpdate', async (_, newvs) => {
-			if (MusicPlayerMap.get(newvs.guild.id) && newvs.member.id == bot.user.id && newvs.channel && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id) {
-				MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
-				// const track = this.lavaplayer.track;
-				// this.lavaplayer = await lavanode.joinVoiceChannel({
-				// 	guildID: newvs.guild.id,
-				// 	voiceChannelID: newvs.channel.id,
-				// 	deaf: true,
-				// });
-				// this.lavaplayer.playTrack(track);
-
-				// this.lavaplayer.voiceConnection.attemptReconnect();
-
-			}
-
-
-		})
-
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
 			console.debug(`"closed" for ${reason.reason}`)
@@ -335,15 +316,15 @@ class MusicPlayer {
 		this.lavaplayer.on('end', async (reason) => {
 			console.log('"end" fired for ' + reason.reason)
 			if (reason.reason != "FINISHED") return;
-			if (this.isLooping && this.previousSong) {
+			if (this.isLooping && this.previousSong) { // have looping enabled
 				this.play(this.previousSong);
 			}
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
 				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
-					this.currentSong = null;
 					this.respondChannel.send('Queue Ended.');
 				}
+				this.currentSong = null;
 			}
 		})
 	}
@@ -506,7 +487,8 @@ class MusicPlayer {
 		const secondsPlayed = Math.floor(this.getPlayedTime().asSeconds());
 		responseChannel.send(new MessageEmbed()
 			.setTitle('Seeked!')
-			.setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
+			// cannot get real-time position back from Lavalink server -.- making the next line inaccurate
+			// .setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
 			.setColor(Helper.GREEN)
 		)
 	}
@@ -546,6 +528,23 @@ Command.bot.on('message', msg => {
 	if (!MusicPlayerMap.has(msg.guild!.id))
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));
 })
+
+// // change voiceChannel value to new channel when forced to move
+// bot.on('voiceStateUpdate', async (_, newvs) => {
+// 	if (MusicPlayerMap.get(newvs.guild.id) && newvs.member.id == bot.user.id && newvs.channel && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id) {
+// 		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
+// 		// const track = this.lavaplayer.track;
+// 		// this.lavaplayer = await lavanode.joinVoiceChannel({
+// 		// 	guildID: newvs.guild.id,
+// 		// 	voiceChannelID: newvs.channel.id,
+// 		// 	deaf: true,
+// 		// });
+// 		// this.lavaplayer.playTrack(track);
+
+// 		// this.lavaplayer.voiceConnection.attemptReconnect();
+
+// 	}
+// })
 
 
 
