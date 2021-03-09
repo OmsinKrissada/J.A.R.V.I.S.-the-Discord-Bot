@@ -3,6 +3,7 @@ import { DMChannel, Guild, GuildMember, MessageEmbed, MessageReaction, Snowflake
 import { Helper } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
+import { Shoukaku } from 'shoukaku';
 
 import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
@@ -74,6 +75,38 @@ class Playlist {
 
 const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 
+// connect to LavaLink server
+
+const LavalinkServer = [{ name: 'Localhost', host: 'localhost', port: 2333, auth: 'thisisthepassworduknow' }];
+const ShoukakuOptions = { moveOnDisconnect: true, resumable: true, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+const shoukakuclient = new Shoukaku(bot, LavalinkServer, ShoukakuOptions);
+
+shoukakuclient.on('ready', (name) => console.log(`Lavalink ${name}: Ready!`));
+shoukakuclient.on('error', (name, error) => console.error(`Lavalink ${name}: Error Caught,`, error));
+shoukakuclient.on('close', (name, code, reason) => console.warn(`Lavalink ${name}: Closed, Code ${code}, Reason ${reason || 'No reason'}`));
+shoukakuclient.on('disconnected', (name, reason) => console.warn(`Lavalink ${name}: Disconnected, Reason ${reason || 'No reason'}`));
+
+bot.once('ready', () => {
+	shoukakuclient.on('ready', (name) => {
+		// shoukakuclient.getPlayer('709824110229979278');
+		const node = shoukakuclient.getNode();
+		node.rest.resolve('https://www.youtube.com/watch?v=F90Cw4l-8NY').then(async (data) => {
+			const player = await node.joinVoiceChannel({
+				guildID: '709824110229979278',
+				voiceChannelID: '727046631416922113'
+			});
+			player.on('error', (error) => {
+				console.error(error);
+				player.disconnect();
+			});
+			const thedata = data.tracks.shift();
+			await player.playTrack(thedata);
+		})
+	})
+
+})
+
+
 
 class MusicPlayer {
 
@@ -108,9 +141,6 @@ class MusicPlayer {
 		return moment.duration(totaltime, 'seconds');
 	}
 
-	private getYtdlVideoInfo(query: string) {
-
-	}
 
 	async findSongYoutube(query: string, { member, textChan }: { member: GuildMember, textChan: TextChannel }): Promise<Song | Playlist | undefined> {
 		let songObj: { requester: GuildMember, textChannel: TextChannel, title: string, url: string, duration: moment.Duration, thumbnail: string } = {
@@ -119,22 +149,26 @@ class MusicPlayer {
 			title: '', url: '', duration: moment.duration(0), thumbnail: ''
 		};
 
+		// if query is a playlist
 		if (query.includes("list=")) {
 			const listID = query.split(/&|\?/g).filter(arg => arg.startsWith('list='))[0].slice(5);
 
-			let nextPage = undefined;
+			let nextPageToken: string;
 			const songs: Song[] = [];
-			const waitmsg = textChan.send('Getting videos, please wait . . .');
+			const waitmsgpromise = textChan.send('Getting videos, please wait . . .');
 			do {
 				const songsstr: string[] = [];
-				let paramObj: any = {
+				let paramObj = {
 					key: CONFIG.token.youtube,
 					part: 'contentDetails',
 					playlistId: listID,
 					fields: 'nextPageToken,prevPageToken,items/contentDetails/videoId',
 					maxResults: 50,
+					pageToken: undefined,
 				};
-				if (nextPage) paramObj.pageToken = nextPage;
+				if (nextPageToken) paramObj.pageToken = nextPageToken;
+
+				// request playlist items from YouTube
 				let playlistItemRes: AxiosResponse;
 				try {
 					playlistItemRes = (await axios({
@@ -143,13 +177,17 @@ class MusicPlayer {
 						params: paramObj
 					}));
 				} catch (err) {
-					if ((await waitmsg).deletable) (await waitmsg).delete();
-					return undefined;
+					const waitmsg = await waitmsgpromise;
+					if (waitmsg.deletable) waitmsg.delete();
+					textChan.send('An error occured while trying to get playlist');
+					return null;
 				}
 				const playlistdata = playlistItemRes.data;
 				for (const song of playlistdata.items) {
 					songsstr.push(song.contentDetails.videoId)
 				}
+
+				// get detailed information of videos got from a playlist
 				const videosRes = await axios({
 					method: "GET",
 					url: 'https://www.googleapis.com/youtube/v3/videos/',
@@ -170,20 +208,19 @@ class MusicPlayer {
 						requester: member,
 						textChannel: textChan,
 					}))
-					nextPage = playlistdata.nextPageToken;
+					nextPageToken = playlistdata.nextPageToken;
 				}
-			} while (nextPage);
+			} while (nextPageToken);
 
 			const playlistInfo = (await axios.get(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${listID}&key=${CONFIG.token.youtube}`)).data.items[0].snippet;
 
-			// console.log(songs)
-			if ((await waitmsg).deletable) (await waitmsg).delete();
+			const waitmsg = await waitmsgpromise;
+			if (waitmsg.deletable) waitmsg.delete();
 			return new Playlist(playlistInfo.title, `https://youtube.com/playlist?list=${listID}`, playlistInfo.thumbnails.default.url, songs);
 
-			// if (next) {
-			// }
 		}
 
+		// if query is an individual video
 		if (ytdl.validateURL(query)) {
 			const info = await ytdl.getInfo(query);
 			songObj.title = info.videoDetails.title;
@@ -193,7 +230,7 @@ class MusicPlayer {
 		} else {
 			const searchResult = await yts({ query: query, pageStart: 1, pageEnd: 1 });
 			const video = searchResult.videos[0];
-			if (searchResult == null) return undefined;
+			if (searchResult == null) return null;
 			songObj.title = video.title;
 			songObj.url = video.url;
 			songObj.duration = moment.duration(video.duration.seconds, 'seconds');
@@ -287,12 +324,12 @@ class MusicPlayer {
 	 * Returns whether the operation is success.
 	 */
 	disconnect() {
-		this.currentSong = undefined;
+		this.currentSong = null;
 		this.isLooping = false;
 		this.voiceChannel = null;
 		if (this.connection) {
 			this.connection.disconnect();
-			this.connection = undefined;
+			this.connection = null;
 			this.queue = [];
 			return true;
 		} else return false;
@@ -304,7 +341,7 @@ class MusicPlayer {
 			// console.log('unpiped')
 			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
 			this.previousSong = this.currentSong;
-			this.currentSong = undefined;
+			this.currentSong = null;
 		});
 		// dispatcher.on('unpipe', () => { console.log('unpiped') });
 		dispatcher.on('finish', async () => {
@@ -365,21 +402,21 @@ class MusicPlayer {
 	}
 
 	pause() {
-		if (this.connection && this.connection.dispatcher) {
+		if (this.connection?.dispatcher) {
 			this.connection.dispatcher.pause();
 			clearTimeout(this.leaveTimeout);
 		}
 	}
 
 	resume() {
-		if (this.connection && this.connection.dispatcher) {
+		if (this.connection?.dispatcher) {
 			this.connection.dispatcher.resume();
 			clearTimeout(this.leaveTimeout);
 		}
 	}
 
 	setVolume(volume: number) {
-		if (this && this.connection && this.connection.dispatcher) this.connection.dispatcher.setVolume(volume / 100)
+		if (this?.connection?.dispatcher) this.connection.dispatcher.setVolume(volume / 100)
 		this.volume = volume;
 	}
 
@@ -491,6 +528,13 @@ Command.bot.on('message', msg => {
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));
 })
 
+// change voiceChannel value to new channel when forced to move
+bot.on('voiceStateUpdate', (_, newvs) => {
+	if (MusicPlayerMap.get(newvs.guild.id) && newvs.member.id == bot.user.id && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel?.id)
+		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
+})
+
+
 
 
 new Command({
@@ -566,11 +610,6 @@ new Command({
 		}
 		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.guild, <TextChannel>message.channel, Helper.longarg(0, args));
 	}
-})
-
-bot.on('voiceStateUpdate', (_, newvs) => {
-	if (newvs.member.id == bot.user.id && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel?.id)
-		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
 })
 
 new Command({
@@ -951,4 +990,4 @@ new Command({
 		player.seek(<any>args[0], <TextChannel>message.channel);
 
 	}
-}) 
+})
