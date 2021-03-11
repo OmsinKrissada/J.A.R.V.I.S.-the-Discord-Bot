@@ -127,7 +127,6 @@ class MusicPlayer {
 	// connection: VoiceConnection | undefined;
 	dispatcher: StreamDispatcher;
 	private currentSong: Song | undefined;
-	private previousSong: Song | undefined;
 	private isLooping = false;
 	private queue: Array<Song> = [];
 	private volume: number = CONFIG.defaultVolume;
@@ -358,8 +357,8 @@ class MusicPlayer {
 		this.lavaplayer.on('end', async (reason) => {
 			console.log('"end" fired for ' + reason.reason)
 			if (reason.reason != "FINISHED") return;
-			if (this.isLooping && this.previousSong) { // have looping enabled
-				this.play(this.previousSong);
+			if (this.isLooping) { // have looping enabled
+				this.play(this.currentSong);
 			}
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
@@ -384,29 +383,29 @@ class MusicPlayer {
 		}
 	}
 
-	configDispatcher(dispatcher: StreamDispatcher) {
-		this.dispatcher = dispatcher
-		dispatcher.on('unpipe', () => {
-			// console.log('unpiped')
-			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
-			this.previousSong = this.currentSong;
-			this.currentSong = null;
-		});
-		// dispatcher.on('unpipe', () => { console.log('unpiped') });
-		dispatcher.on('finish', async () => {
-			// console.log('finished')
-			if (this.isLooping && this.previousSong) {
-				this.play(this.previousSong);
-			}
-			else if (this.queue.length >= 1) this.playNext(); // Have next song
-			else { // Doesn't have next song
-				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
-					this.respondChannel.send('Queue Ended.');
-				}
-			}
-		})
-		dispatcher.setVolume(this.volume / 100);
-	}
+	// configDispatcher(dispatcher: StreamDispatcher) {
+	// 	this.dispatcher = dispatcher
+	// 	dispatcher.on('unpipe', () => {
+	// 		// console.log('unpiped')
+	// 		this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 60000);
+	// 		// this.previousSong = this.currentSong;
+	// 		this.currentSong = null;
+	// 	});
+	// 	// dispatcher.on('unpipe', () => { console.log('unpiped') });
+	// 	dispatcher.on('finish', async () => {
+	// 		// console.log('finished')
+	// 		if (this.isLooping && this.previousSong) {
+	// 			this.play(this.previousSong);
+	// 		}
+	// 		else if (this.queue.length >= 1) this.playNext(); // Have next song
+	// 		else { // Doesn't have next song
+	// 			if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
+	// 				this.respondChannel.send('Queue Ended.');
+	// 			}
+	// 		}
+	// 	})
+	// 	dispatcher.setVolume(this.volume / 100);
+	// }
 
 	async play(song: Song) {
 		// const play = async (song: Song) => {								-----> this lines is with the comment below
