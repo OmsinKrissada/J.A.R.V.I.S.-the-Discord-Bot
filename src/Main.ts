@@ -1,35 +1,37 @@
-// Init sequence
-
-// Discord
 import { Client, MessageEmbed, Message, TextChannel, DMChannel } from 'discord.js';
-
-// Creates an instance of a Discord client
-export const bot = new Client();
 
 import fs from 'fs'
 import express from 'express';
 import { exec } from 'child_process';
 import linereader from 'n-readlines';
 
-
 import { Helper } from "./Helper";
-import DataManager from './DataManager'
-// import * as Music from './Music';
 import * as CommandManager from './CommandManager';
+import DataManager from './DataManager'
+import { logger } from './Logger';
 import registered_commands from '../settings/alias.json'
-
-
-// Starts discord client
 import CONFIG from './ConfigManager';
+
+logger.info('Initiatiing ...');
+
+// Creates an instance of a Discord client
+export const bot = new Client();
+
+DataManager.connect().then(() => {
+	CommandManager.loadModules();
+})
 
 var client_id: string;
 var loggingChannel: TextChannel;
 
-bot.login(CONFIG.token.discord)
-console.log('Logging in to Discord ...');
+bot.login(CONFIG.token.discord).catch(err => {
+	logger.error('Failed to log-in to Discord.')
+	logger.error(err)
+})
+logger.info('Logging in to Discord ...')
 bot.once('ready', async () => {
 
-	console.log(`Logged in to Discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]\n`);
+	logger.info(`Logged-in to Discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]`);
 	// bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
 	client_id = `<@!${bot.user!.id}>`;
 
@@ -46,11 +48,9 @@ bot.once('ready', async () => {
 
 	logfile.write('# ' + new Date().toISOString() + '\n');
 
-	await DataManager.connect();
-
 	bot.guilds.cache.forEach(async (guild) => {
 		if (await DataManager.get(guild.id) === null) {
-			console.log('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
+			logger.info('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
 			await DataManager.create(guild.id, guild.name, CONFIG.defaultPrefix);
 		}
 	})
@@ -84,7 +84,6 @@ function log(message: Message): void {
 	for (let line of lines) {
 		let str = indent + line + '\n';
 		logfile.write(str);
-		// console.log(str);
 		indent = '';
 		for (let i = 1; i <= meta.length; i++) {
 			indent += ' ';
@@ -94,19 +93,19 @@ function log(message: Message): void {
 
 // handle exceptions
 
-if (loggingChannel)
-	process.on('unhandledRejection', (reason, promise) => {
-		// if (!reason) return;
-		console.log(reason);
-		loggingChannel.send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
-	})
+// if (loggingChannel)
+// 	process.on('unhandledRejection', (reason, promise) => {
+// 		// if (!reason) return;
+// 		console.error(reason);
+// 		loggingChannel.send('Error produced:\n```json\n' + JSON.stringify(reason, null, '   ') + '```').catch(() => console.error('ERROR: Cannot send unhandled promise rejection to logging channel'));
+// 	})
 
-process.on('uncaughtException', function (err) {
-	console.log('Caught exception: ' + err);
-	console.log(err.stack)
-	if (loggingChannel) loggingChannel.send('Caught exception: ' + err);
-	process.exit(1);
-});
+// process.on('uncaughtException', function (err) {
+// 	console.log('Caught exception: ' + err);
+// 	console.log(err.stack)
+// 	if (loggingChannel) loggingChannel.send('Caught exception: ' + err);
+// 	process.exit(1);
+// });
 
 // Handles received messages
 bot.on('message', async (message) => {
@@ -118,7 +117,7 @@ bot.on('message', async (message) => {
 	const sourceName = isDMMessage ? message.author.username : message.guild!.name;
 
 	if (await DataManager.get(sourceID) === null) {
-		console.log('Guild data not found, creating default data for this guild. ' + `[${sourceID}]`);
+		logger.info('Guild data not found, creating default data for this guild. ' + `[${sourceID}]`);
 		await DataManager.create(sourceID, sourceName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
 	}
 	// if (bot.guilds.resolve(guildID)) {
@@ -224,4 +223,4 @@ app.post('/api/github', (req, res) => {
 	}
 })
 
-app.listen(port, () => console.log(`Listening for AJAX calls on port ${port}\n`))
+app.listen(port, () => logger.info(`Listening for AJAX calls on port ${port}`))

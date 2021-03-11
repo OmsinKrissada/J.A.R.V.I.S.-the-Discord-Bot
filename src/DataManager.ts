@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 
 
-import { Guilds } from './model/GuildData';
+import { Guilds, IGuildData } from './model/GuildData';
 import CONFIG from './ConfigManager';
+import { logger } from './Logger';
+import chalk from 'chalk';
 CONFIG.colors.red = 1;
 
 
@@ -19,24 +21,32 @@ class DataManager {
 		const mongopath = CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
 			: `mongodb://${this.hostname}:${this.port}/${this.db}`
 
-		console.log('MongoDB connecting to database ...');
-		await mongoose.connect(mongopath, {
-			useNewUrlParser: true,
-			useUnifiedTopology: true
-		}).catch(err => {
-			console.error('ERROR: MongoDB failed to connect to ' + CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
-				: `mongodb://${this.hostname}:${this.port}/${this.db}` + ': ' + err.message);
-			process.exit(1);
-		});
-		console.log('MongoDB connected to ' + (CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
-			: `mongodb://${this.hostname}:${this.port}/${this.db}`));
+		logger.info(chalk`{whiteBright MongoDB:} Connecting to database ...`);
+		try {
+			await mongoose.connect(mongopath, {
+				useNewUrlParser: true,
+				useUnifiedTopology: true
+			})
+			logger.info(chalk`{whiteBright MongoDB:} Connected to ${CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
+				: `mongodb://${this.hostname}:${this.port}/${this.db}`}`);
 
-		console.log('MongoDB Guilds found: ' + await Guilds.countDocuments());
+			logger.info(chalk`{whiteBright MongoDB:} Guilds found: ` + await Guilds.countDocuments());
+		} catch (err) {
+			logger.error(chalk`{whiteBright MongoDB:} Failed to connect to ${CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
+				: `mongodb://${this.hostname}:${this.port}/${this.db}` + ': ' + err.message}`);
+			logger.error('Exiting ...')
+			process.exit(1);
+		}
 	}
 
 	// Load Data
 	async get(sourceID: string) {
-		let loaded = await Guilds.findOne({ ID: sourceID }).exec()
+		let loaded: IGuildData;
+		try {
+			loaded = await Guilds.findOne({ ID: sourceID }).exec()
+		} catch (err) {
+			logger.error('Cannot get data:\n' + err)
+		}
 		return loaded!;
 	}
 
@@ -45,7 +55,7 @@ class DataManager {
 		if (!loaded_guild) throw "Guild not found";
 		loaded_guild.set(item, value);
 		loaded_guild.save();
-		console.log('saved')
+		logger.debug('saved new data')
 	}
 
 	async create(sourceID: string, name: string, prefix: string) {

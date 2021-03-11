@@ -1,7 +1,8 @@
 import { Command } from '../CommandManager';
 import DataManager from '../DataManager';
+import { bot } from '../Main';
 
-Command.bot.on('voiceStateUpdate', async (_oldState, newState) => {
+bot.on('voiceStateUpdate', async (_oldState, newState) => {
 
 	class VoiceHook {
 		type: string;

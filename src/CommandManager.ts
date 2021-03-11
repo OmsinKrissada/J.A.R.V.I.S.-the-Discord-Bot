@@ -5,6 +5,7 @@ import DataManager from './DataManager';
 import { bot } from './Main';
 
 import { Helper } from './Helper';
+import { logger } from './Logger';
 
 
 export const CommandMap = new Map<string, Command>();
@@ -56,17 +57,21 @@ export class Command {
 }
 
 // loads commands
-fs.readdir(path.join(__dirname, 'modules'), (err, files) => {
-	if (err) console.error(err);
-	files.forEach(file => {
-		import(path.join(__dirname, 'modules', file))
-			.then(() => console.log('Loaded ' + file))
-			.catch(err => {
-				console.error(`\x1b[31mERROR: ${err}\x1b[0m`);
-			})
+export function loadModules() {
+	fs.readdir(path.join(__dirname, 'modules'), async (err, files) => {
+		if (err) logger.error(err.stack);
+		for (const file of files) {
+			try {
+				await import(path.join(__dirname, 'modules', file))
+				logger.info('Loaded ' + file)
+			} catch (err) {
+				logger.error(`Failed to load "${file}":\n${err.stack}`);
+			}
+		}
+
+		logger.info('All modules were loaded.');
 	});
-	console.log('');
-});
+}
 
 
 export function sanitize(input: string) {
@@ -75,7 +80,6 @@ export function sanitize(input: string) {
 
 export async function run(command_name: string, args: string[], { message: sourcemsg, prefix, sourceID }: { message: Message, prefix: string, sourceID: string }) {
 	prefix = (await DataManager.get(sourceID)).prefix;
-	// console.log('checking for ' + command_name)
 	if (CommandMap.has(command_name)) { // check exist
 		const command = CommandMap.get(command_name)!;
 
@@ -102,7 +106,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 			if (nocallerperm.length > 0) {
 				sourcemsg.channel.send(new MessageEmbed({
 					author: { name: 'You don\'t have enough permission', iconURL: sourcemsg.author.displayAvatarURL()! },
-					description: `You are lacking permission${nocallerperm.length > 1 ? 's' : ''}: ` + nocallerperm.map(perm => `\`${(perm)}\``).join(', '),
+					description: `Lacking permission${nocallerperm.length > 1 ? 's' : ''}: ` + nocallerperm.map(perm => `\`${(perm)}\``).join(', '),
 					color: Helper.RED
 				}))
 				return;
@@ -111,7 +115,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 				if (noselfperm.includes('SEND_MESSAGES')) console.log('No SEND_MESSAGE permission in channel ' + sourcemsg.channel.id)
 				else sourcemsg.channel.send(new MessageEmbed({
 					author: { name: 'I don\'t have enough permission', iconURL: Command.bot.user!.displayAvatarURL()! },
-					description: `I am lacking permission${noselfperm.length > 1 ? 's' : ''}: ` + noselfperm.map(perm => `\`${(perm)}\``).join(', '),
+					description: `Lacking permission${noselfperm.length > 1 ? 's' : ''}: ` + noselfperm.map(perm => `\`${(perm)}\``).join(', '),
 					color: Helper.RED
 				}));
 				return;

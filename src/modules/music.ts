@@ -12,6 +12,8 @@ import CONFIG from '../ConfigManager';
 
 import os from 'os-utils';
 import { bot } from '../Main';
+import { logger } from '../Logger';
+import chalk from 'chalk';
 
 if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 	if (percent * 100 > CONFIG.maxCPUPercent) {
@@ -70,18 +72,47 @@ const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 
 // connect to LavaLink server
 
-const LavalinkServer = [{ name: 'Main Node', host: 'localhost', port: 2333, auth: 'thisisthepassworduknow' }];
-const ShoukakuOptions = { moveOnDisconnect: false, resumable: true, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
-const shoukakuclient = new Shoukaku(bot, LavalinkServer, ShoukakuOptions);
+const LavalinkServer = [{ name: 'Main Node', host: CONFIG.lavalink.hostname, port: CONFIG.lavalink.port, auth: CONFIG.lavalink.password }];
+const ShoukakuOptions = { moveOnDisconnect: true, resumable: false, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+let shoukakuclient: Shoukaku;
+
+let isFirstAttempt = true;
 
 let lavanode: ShoukakuSocket;
-shoukakuclient.on('ready', (name) => {
-	console.log(`Lavalink ${name}: Ready!`);
-	lavanode = shoukakuclient.getNode();
-});
-shoukakuclient.on('error', (name, error) => console.error(`Lavalink ${name}: Error Caught,`, error));
-shoukakuclient.on('close', (name, code, reason) => console.warn(`Lavalink ${name}: Closed, Code ${code}, Reason ${reason || 'No reason'}`));
-shoukakuclient.on('disconnected', (name, reason) => console.warn(`Lavalink ${name}: Disconnected, Reason ${reason || 'No reason'}`));
+function connectToLavaServer() {
+	return new Promise<void>((resolve, reject) => {
+		logger.info(chalk`{whiteBright Lavalink:} Connecting to Lavalink server ...`)
+		shoukakuclient = new Shoukaku(bot, LavalinkServer, ShoukakuOptions);
+		// if (!isFirstAttempt) shoukakuclient.addNode(LavalinkServer[0]);
+		// isFirstAttempt = false;
+
+		shoukakuclient.on('error', (name, error) => {
+			logger.error(`Lavalink - ${name}: ${error.stack}`);
+		});
+		shoukakuclient.on('close', (name, code, reason) => {
+			logger.warn(`Lavalink - ${name}: Closed with code ${code}, Reason: "${reason || 'No reason'}"`);
+		});
+		shoukakuclient.on('disconnected', (name, reason) => {
+			logger.error(`Lavalink - ${name}: Disconnected, Reason: "${reason || 'No reason'}"`);
+			shoukakuclient.removeNode('Main Node');
+			lavanode = null;
+		});
+		shoukakuclient.on('ready', (name) => {
+			logger.info(chalk`{whiteBright Lavalink:} Connected to Lavalink server at ${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`);
+			lavanode = shoukakuclient.getNode();
+			logger.debug('gonna resolve')
+			resolve();
+		});
+		logger.debug('done configing');
+
+
+
+		// console.log('gonna wait')
+
+		// console.log('wait over');
+	});
+}
+connectToLavaServer();
 
 
 
@@ -298,17 +329,28 @@ class MusicPlayer {
 		this.respondChannel = textChannel;
 		this.voiceChannel = voiceChannel;
 
+		if (!lavanode) {
+			console.log('gonna connect to lava server');
+			shoukakuclient.addNode(LavalinkServer[0]);
+			await connectToLavaServer();
+			console.log('resolved yay')
+		}
+
 		this.lavaplayer = await lavanode.joinVoiceChannel({
 			guildID: this.voiceChannel.guild.id,
 			voiceChannelID: this.voiceChannel.id,
 			deaf: true,
+		});
+		this.lavaplayer.on('error', (error) => {
+			console.error(`Lavaplayer error: ${error}`);
+			this.lavaplayer.disconnect();
 		});
 		this.lavaplayer.setVolume(this.volume);
 
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
 			console.debug(`"closed" for ${reason.reason}`)
-			this.disconnect();
+			if (!this.guild.member(bot.user).voice.channel) this.disconnect();
 			this.lavaplayer = null;
 		})
 
@@ -321,10 +363,10 @@ class MusicPlayer {
 			}
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
+				this.currentSong = null;
 				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
 					this.respondChannel.send('Queue Ended.');
 				}
-				this.currentSong = null;
 			}
 		})
 	}
@@ -379,10 +421,6 @@ class MusicPlayer {
 		}
 
 		// play song
-		this.lavaplayer.on('error', (error) => {
-			console.error(`Lavaplayer error: ${error}`);
-			this.lavaplayer.disconnect();
-		});
 		const data = await lavanode.rest.resolve(song.url)
 		await this.lavaplayer.playTrack(data.tracks.shift(), { noReplace: false });
 		this.currentSong = song;
@@ -523,7 +561,7 @@ class MusicPlayer {
 }
 
 
-Command.bot.on('message', msg => {
+bot.on('message', msg => {
 	if (msg.channel instanceof DMChannel) return;
 	if (!MusicPlayerMap.has(msg.guild!.id))
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));

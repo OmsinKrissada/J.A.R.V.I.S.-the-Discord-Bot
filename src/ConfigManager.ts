@@ -19,6 +19,11 @@ interface ConfigOption {
 		username: string;
 		password: string;
 	};
+	lavalink: {
+		hostname: string;
+		password: string;
+		port: number;
+	};
 	token: {
 		discord: string,
 		wolfram: string,
@@ -47,6 +52,11 @@ const validator = new YamlValidator({
 			authorizationEnabled: 'boolean',
 			username: 'string',
 			password: 'string',
+		},
+		lavalink: {
+			hostname: 'string',
+			password: 'string',
+			port: 'number',
 		},
 		token: {
 			discord: 'string',

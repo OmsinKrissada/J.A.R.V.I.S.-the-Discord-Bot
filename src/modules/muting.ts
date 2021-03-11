@@ -1,10 +1,11 @@
 import { Command } from '../CommandManager';
 import { MessageEmbed, TextChannel } from 'discord.js';
 import { Helper } from '../Helper';
+import { bot } from '../Main';
 
 let mutedUserID: string[] = [];
 
-Command.bot.on('voiceStateUpdate', (_old, vs) => {
+bot.on('voiceStateUpdate', (_old, vs) => {
 	// console.log(vs.member!.id)
 	if (mutedUserID.includes(vs.member!.id) && !vs.mute) {
 		// console.log(vs.member!.id)
@@ -13,7 +14,7 @@ Command.bot.on('voiceStateUpdate', (_old, vs) => {
 	}
 })
 
-Command.bot.on('message', msg => {
+bot.on('message', msg => {
 	if (mutedUserID.includes(msg.author.id)) {
 		if (msg.deletable) msg.delete();
 	}

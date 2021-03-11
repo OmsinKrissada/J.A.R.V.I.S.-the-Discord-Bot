@@ -177,7 +177,7 @@ class HelperClass {
 						if (!isNaN(+text) && +text >= 1 && +text <= pages.length) {
 							message.edit(pages[+text - 1])
 						} else {
-							message.channel.send('Unknown page').then(unknownmsg => unknownmsg.delete({ timeout: 5000 }));
+							msg.first().reply('Unknown page').then(unknownmsg => unknownmsg.delete({ timeout: 5000 }));
 						}
 						(<TextChannel>message.channel).bulkDelete([ask4pagemsg, msg.first()])
 						msg.first().delete();
