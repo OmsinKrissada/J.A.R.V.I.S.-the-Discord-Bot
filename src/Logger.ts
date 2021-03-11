@@ -25,7 +25,7 @@ class LoggerClass {
 				new winston.transports.Console({ level: 'debug' }),
 			],
 			exceptionHandlers: [
-				new winston.transports.File({ filename: '/logs/exceptions.log' }),
+				new winston.transports.File({ filename: './logs/exceptions.log' }),
 				new winston.transports.Console(),
 			],
 			format: format,
