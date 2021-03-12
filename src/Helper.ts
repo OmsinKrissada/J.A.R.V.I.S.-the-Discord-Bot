@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions, Guild, GuildMember, Channel } from 'discord.js';
 import moment from 'moment';
 import CONFIG from './ConfigManager';
+import { logger } from './Logger';
 import { bot } from './Main';
 
 class HelperClass {
@@ -62,7 +63,10 @@ class HelperClass {
 	 * @param length Full length of the progress bar. (default to 30)
 	 */
 	progressBar(percent: number, length = 30): string {
-		if (percent < 0 || percent > 100) throw { name: 'RangeError', message: 'percent field must fall between 0 to 100' };
+		if (percent < 0 || percent > 100) {
+			logger.warn(`Received invalid percent for progress bar (${percent}), the behavior may be unpredictable.`)
+			// throw { name: 'RangeError', message: 'percent field must fall between 0 to 100' };
+		}
 		let show = Math.round(percent / 100 * length);
 		let progress = '';
 		for (let i = 0; i < show - 1; i++) {

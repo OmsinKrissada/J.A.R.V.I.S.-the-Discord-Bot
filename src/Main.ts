@@ -56,7 +56,7 @@ bot.once('ready', async () => {
 
 function log(message: Message): void {
 	const lines = message.content.split('\n')
-	const meta = `CommandReceived: ${message.author.id}(${(message.guild ? 'SERVER' : 'DM')}): `
+	const meta = `Received a command from <@${message.author.id}>(${message.guild ? 'SERVER' : 'DM'}) `
 	let indent = meta;
 	let str = indent + lines.shift();
 	for (const line of lines) {

@@ -20,11 +20,12 @@ if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 		MusicPlayerMap.forEach(player => {
 			if (player.getCurrentSong()) {
 				player.pause();
+				logger.debug('Paused songs due to high CPU usage.')
 				player.respondChannel.send('Your song has been paused due to high CPU activity. Please try again in a moment.\nClick rection below or use resume command to try again.').then(msg => {
 					msg.react('😀');
 					msg.awaitReactions((reaction: MessageReaction, user: User) => user.id != bot.user.id && reaction.emoji.name == '😀', { max: 1 }).then(() => {
 						player.resume();
-						console.log('Resumed.')
+						logger.debug('Resumed from CPU high usage pause.')
 					})
 				})
 			}
@@ -100,10 +101,8 @@ function connectToLavaServer() {
 		shoukakuclient.on('ready', (name) => {
 			logger.info(chalk`{whiteBright Lavalink:} Connected to Lavalink server at ${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`);
 			lavanode = shoukakuclient.getNode();
-			logger.debug('gonna resolve')
 			resolve();
 		});
-		logger.debug('done configing');
 
 
 
@@ -329,10 +328,10 @@ class MusicPlayer {
 		this.voiceChannel = voiceChannel;
 
 		if (!lavanode) {
-			console.log('gonna connect to lava server');
+			logger.debug('Adding node')
 			shoukakuclient.addNode(LavalinkServer[0]);
 			await connectToLavaServer();
-			console.log('resolved yay')
+			logger.debug(`Reconnected to Lavalink server (initiated from player${this.guild.id})`)
 		}
 
 		this.lavaplayer = await lavanode.joinVoiceChannel({
@@ -341,21 +340,23 @@ class MusicPlayer {
 			deaf: true,
 		});
 		this.lavaplayer.on('error', (error) => {
-			console.error(`Lavaplayer error: ${error}`);
+			logger.error(`Music Player[${this.guild.id}]: Lavalink player error: ${error}`);
 			this.lavaplayer.disconnect();
 		});
 		this.lavaplayer.setVolume(this.volume);
 
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
-			console.debug(`"closed" for ${reason.reason}`)
+			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "closed", Reason: "${reason.reason}"`)
 			if (!this.guild.member(bot.user).voice.channel) this.disconnect();
 			this.lavaplayer = null;
 		})
 
 		// when the player finish playing a song
 		this.lavaplayer.on('end', async (reason) => {
-			console.log('"end" fired for ' + reason.reason)
+			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "end", Reason: "${reason.reason}"`);
+			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 300000);
+			logger.debug(`Music Player[${this.guild.id}]: Registered Timeout (5 mins)`)
 			if (reason.reason != "FINISHED") return;
 			if (this.isLooping) { // have looping enabled
 				this.play(this.currentSong);
@@ -363,7 +364,6 @@ class MusicPlayer {
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
 				this.currentSong = null;
-				this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 300000);
 				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
 					this.respondChannel.send('Queue Ended.');
 				}
@@ -413,15 +413,17 @@ class MusicPlayer {
 
 		if (!this.lavaplayer) {
 			try {
-				console.log('trying to connect from play method')
+				logger.debug(`Music Player[${this.guild.id}]: Trying to connect player from play method`)
 				this.connect(song.textChannel, this.voiceChannel);
 			} catch (err) {
+				logger.debug(`Music Player[${this.guild.id}]: Cannot connect to voice channel. An unknown error occured.`)
 				this.respondChannel.send('Cannot connect to voice channel. An unknown error occured.');
 			}
 		}
 
 		// play song
 		clearTimeout(this.leaveTimeout);
+		logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`)
 		const data = await lavanode.rest.resolve(song.url)
 		await this.lavaplayer.playTrack(data.tracks.shift(), { noReplace: false });
 		this.currentSong = song;
@@ -466,6 +468,7 @@ class MusicPlayer {
 	setVolume(volume: number) {
 		if (!this.lavaplayer) return;
 		this.lavaplayer.setVolume(volume)
+		logger.debug(`Volume set to ${volume} in "${this.guild.id}"`)
 		this.volume = volume;
 	}
 
