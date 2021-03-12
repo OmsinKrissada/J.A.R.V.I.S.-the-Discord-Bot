@@ -1,6 +1,7 @@
 import { MessageEmbed, Permissions } from 'discord.js';
 import { Command } from '../CommandManager';
 import { Helper } from '../Helper';
+import { bot } from '../Main';
 
 export default new Command({
 	name: 'nick',
@@ -11,7 +12,7 @@ export default new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', 'CHANGE_NICKNAME'],
 	serverOnly: true,
 	exec(message, _prefix, args, _sourceID) {
-		if (!message.guild!.member(Command.bot.user!)!.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
+		if (!message.guild!.member(bot.user!)!.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Sorry!')
 				.setColor(Helper.RED)
@@ -19,7 +20,7 @@ export default new Command({
 			);
 		}
 		if (args[0] != undefined) {
-			message.guild!.member(Command.bot.user!)!.setNickname(longarg(0, args))
+			message.guild!.member(bot.user!)!.setNickname(longarg(0, args))
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Changed')
 				.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
@@ -27,10 +28,10 @@ export default new Command({
 			)
 		}
 		else {
-			message.guild!.member(Command.bot.user!)!.setNickname('')
+			message.guild!.member(bot.user!)!.setNickname('')
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Reset')
-				.setDescription(`Nickname has reset to **${Command.bot.user!.username}**`)
+				.setDescription(`Nickname has reset to **${bot.user!.username}**`)
 				.setColor(Helper.GREEN)
 			)
 		}

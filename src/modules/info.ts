@@ -4,6 +4,7 @@ import { Helper } from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DataManager';
 import moment from 'moment';
+import { bot } from '../Main';
 export default new Command({
 	name: 'info',
 	category: 'features',
@@ -87,7 +88,7 @@ export default new Command({
 			let guild = message.guild!;
 			if (args[1]) {
 				if (!isNaN((<any>args[1]))) {
-					const fetchedGuild = await Command.bot.guilds.fetch(args[1]).catch((err: DiscordAPIError) => {
+					const fetchedGuild = await bot.guilds.fetch(args[1]).catch((err: DiscordAPIError) => {
 						if (err.code == 50001)
 							message.channel.send(new MessageEmbed({
 								title: 'No Access',
