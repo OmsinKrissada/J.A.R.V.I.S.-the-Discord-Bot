@@ -46,8 +46,6 @@ bot.once('ready', async () => {
 
 	Helper.refreshIp();
 
-	logfile.write('# ' + new Date().toISOString() + '\n');
-
 	bot.guilds.cache.forEach(async (guild) => {
 		if (await DataManager.get(guild.id) === null) {
 			logger.info('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
@@ -56,39 +54,19 @@ bot.once('ready', async () => {
 	})
 });
 
-
-// Checks if file directory exists, if not, creates them.
-if (!fs.existsSync('./logs')) {
-	fs.mkdirSync('./logs')
-}
-
-// if (!fs.existsSync('./files/logs')) {
-// 	fs.mkdirSync('./files/logs');
-// }
-
-// renames latest.log to its appropriate name
-if (fs.existsSync('./logs/latest.log')) {
-	const reader = new linereader('./logs/latest.log');
-	const filename = './logs/' + reader.next().toString().substr(2) + '.log';
-	if (reader.next())
-		fs.renameSync('./logs/latest.log', filename.replace(/:/g, '-'));
-	else fs.rmSync('./logs/latest.log');
-}
-
-
-var logfile = fs.createWriteStream(`./logs/latest.log`, { encoding: 'utf-8' })
 function log(message: Message): void {
-	let lines = message.content.split('\n')
-	let meta = '[' + new Date().toISOString() + '|' + (message.guild ? 'SERVER' : 'DM') + '|' + message.author.id + '] ';
+	const lines = message.content.split('\n')
+	const meta = `CommandReceived: ${message.author.id}(${(message.guild ? 'SERVER' : 'DM')}): `
 	let indent = meta;
-	for (let line of lines) {
-		let str = indent + line + '\n';
-		logfile.write(str);
+	let str = indent + lines.shift();
+	for (const line of lines) {
 		indent = '';
 		for (let i = 1; i <= meta.length; i++) {
 			indent += ' ';
 		}
+		str += '\n' + indent + line;
 	}
+	logger.debug(str);
 }
 
 // handle exceptions
@@ -223,4 +201,4 @@ app.post('/api/github', (req, res) => {
 	}
 })
 
-app.listen(port, () => logger.info(`Listening for AJAX calls on port ${port}`))
+// app.listen(port, () => logger.info(`Listening for AJAX calls on port ${port}`))

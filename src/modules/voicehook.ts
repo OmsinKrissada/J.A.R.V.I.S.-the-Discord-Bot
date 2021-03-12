@@ -19,7 +19,11 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 	hooks.forEach((hook: VoiceHook) => {
 		const text = newState.guild.channels.resolve(hook.textChannel);
 		if (!text) {
-			logger.warn(`TextChannel ${hook.textChannel} doesn't exist in ${newState.guild.id}`);
+			logger.warn(`VoiceHook: TextChannel "${hook.textChannel}" doesn't exist in "${newState.guild.id}"`);
+			return;
+		}
+		if (!newState.guild.channels.resolve(hook.voiceChannel)) {
+			logger.warn(`VoiceHook: VoiceChannel "${hook.voiceChannel}" doesn't exist in "${newState.guild.id}"`);
 			return;
 		}
 		if (hook.type == 'hard') {

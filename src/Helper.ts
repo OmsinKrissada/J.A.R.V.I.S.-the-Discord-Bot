@@ -87,10 +87,14 @@ class HelperClass {
 
 	fullDurationString(duration: moment.Duration) {
 		let str = '';
-		if (duration.asDays()) str += `${duration.asDays()} day${duration.asDays() > 1 ? 's' : ''} `;
-		if (duration.hours()) str += `${duration.hours()} hour${duration.hours() > 1 ? 's' : ''} `;
-		if (duration.minutes()) str += `${duration.minutes()} minute${duration.minutes() > 1 ? 's' : ''} `;
-		if (duration.seconds()) str += `${duration.seconds()} second${duration.seconds() > 1 ? 's' : ''}`;
+		const days = Math.floor(duration.asDays());
+		const hours = duration.hours();
+		const mins = duration.minutes();
+		const secs = duration.seconds();
+		if (days) str += `${days} day${days > 1 ? 's' : ''} `;
+		if (hours) str += `${hours} hour${hours > 1 ? 's' : ''} `;
+		if (mins) str += `${mins} minute${mins > 1 ? 's' : ''} `;
+		if (secs) str += `${secs} second${secs > 1 ? 's' : ''}`;
 		return str.trimEnd();
 	}
 
