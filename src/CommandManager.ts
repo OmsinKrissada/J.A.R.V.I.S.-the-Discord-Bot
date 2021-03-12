@@ -42,8 +42,6 @@ export class Command {
 		CommandMap.set(name, this); // Do not forget about this ...
 	}
 
-	static readonly bot = bot;
-
 	readonly name: string;
 	readonly displayName: string;
 	readonly description: string;
@@ -114,7 +112,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 			} else if (noselfperm.length > 0) {
 				if (noselfperm.includes('SEND_MESSAGES')) console.log('No SEND_MESSAGE permission in channel ' + sourcemsg.channel.id)
 				else sourcemsg.channel.send(new MessageEmbed({
-					author: { name: 'I don\'t have enough permission', iconURL: Command.bot.user!.displayAvatarURL()! },
+					author: { name: 'I don\'t have enough permission', iconURL: bot.user!.displayAvatarURL()! },
 					description: `Lacking permission${noselfperm.length > 1 ? 's' : ''}: ` + noselfperm.map(perm => `\`${(perm)}\``).join(', '),
 					color: Helper.RED
 				}));

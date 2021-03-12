@@ -3,7 +3,6 @@ import { Client, MessageEmbed, Message, TextChannel, DMChannel } from 'discord.j
 import fs from 'fs'
 import express from 'express';
 import { exec } from 'child_process';
-import linereader from 'n-readlines';
 
 import { Helper } from "./Helper";
 import * as CommandManager from './CommandManager';
@@ -13,6 +12,7 @@ import registered_commands from '../settings/alias.json'
 import CONFIG from './ConfigManager';
 
 logger.info('Initiatiing ...');
+logger.info(`Running on Node ${process.version}`);
 
 // Creates an instance of a Discord client
 export const bot = new Client();

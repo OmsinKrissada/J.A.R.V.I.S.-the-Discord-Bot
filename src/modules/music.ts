@@ -22,7 +22,7 @@ if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 				player.pause();
 				player.respondChannel.send('Your song has been paused due to high CPU activity. Please try again in a moment.\nClick rection below or use resume command to try again.').then(msg => {
 					msg.react('😀');
-					msg.awaitReactions((reaction: MessageReaction, user: User) => user.id != Command.bot.user.id && reaction.emoji.name == '😀', { max: 1 }).then(() => {
+					msg.awaitReactions((reaction: MessageReaction, user: User) => user.id != bot.user.id && reaction.emoji.name == '😀', { max: 1 }).then(() => {
 						player.resume();
 						console.log('Resumed.')
 					})
@@ -363,6 +363,7 @@ class MusicPlayer {
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
 				this.currentSong = null;
+				this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 300000);
 				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
 					this.respondChannel.send('Queue Ended.');
 				}
@@ -420,6 +421,7 @@ class MusicPlayer {
 		}
 
 		// play song
+		clearTimeout(this.leaveTimeout);
 		const data = await lavanode.rest.resolve(song.url)
 		await this.lavaplayer.playTrack(data.tracks.shift(), { noReplace: false });
 		this.currentSong = song;
@@ -452,19 +454,11 @@ class MusicPlayer {
 	}
 
 	pause() {
-		// if (this.connection?.dispatcher) {								-----> *pending for deletion*
-		// 	this.connection.dispatcher.pause();
-		// 	clearTimeout(this.leaveTimeout);
-		// }
 		if (!this.lavaplayer) return;
 		this.lavaplayer.setPaused(true);
 	}
 
 	resume() {
-		// if (this.connection?.dispatcher) {								-----> *pending for deletion*
-		// 	this.connection.dispatcher.resume();
-		// 	clearTimeout(this.leaveTimeout);
-		// }
 		if (!this.lavaplayer) return;
 		this.lavaplayer.setPaused(false);
 	}

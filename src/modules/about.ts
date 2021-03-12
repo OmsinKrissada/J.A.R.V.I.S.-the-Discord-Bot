@@ -3,6 +3,7 @@ import { Command } from '../CommandManager';
 import CONFIG from '../ConfigManager';
 import { Helper } from '../Helper';
 import packageinfo from '../../package.json';
+import { bot } from '../Main';
 export default new Command({
 	name: 'about',
 	category: 'general',
@@ -15,16 +16,17 @@ export default new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('About Me')
 			.setColor(Helper.BLUE)
-			.setThumbnail(Command.bot.user!.displayAvatarURL())
+			.setThumbnail(bot.user!.displayAvatarURL())
 			.addField('Name', '**J.A.R.V.I.S.**', true)
 			.addField('Current Version', Helper.inlineCodeBlock(packageinfo.version), true)
+			.addField('Node version', Helper.inlineCodeBlock(process.version), true)
 			.addField('License', '[**MIT License**](https://en.wikipedia.org/wiki/MIT_License)', true)
 			.addField('Author', '[**OmsinKrissada**](https://github.com/OmsinKrissada)', true)
 			.addField('Source Code', '[**GitHub**](https://github.com/OmsinKrissada/J.A.R.V.I.S.-the-Discord-Bot)', true)
 			.addField('Default Prefix', Helper.inlineCodeBlock(CONFIG.defaultPrefix), true)
-			.addField('Guild Count', Command.bot.guilds.cache.size, true)
-			.addField('Shard Count', Command.bot.ws.shards.size, true)
-			.addField('HTTP API Version', Command.bot.options.http!.version, true)
+			.addField('Guild Count', bot.guilds.cache.size, true)
+			.addField('Shard Count', bot.ws.shards.size, true)
+			.addField('HTTP API Version', bot.options.http!.version, true)
 		)
 	}
-}) 
+})
