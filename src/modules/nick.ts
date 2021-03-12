@@ -11,7 +11,7 @@ export default new Command({
 	requiredCallerPermissions: [],
 	requiredSelfPermissions: ['SEND_MESSAGES', 'CHANGE_NICKNAME'],
 	serverOnly: true,
-	exec(message, _prefix, args, _sourceID) {
+	async exec(message, _prefix, args, _sourceID) {
 		if (!message.guild!.member(bot.user!)!.hasPermission(Permissions.FLAGS.CHANGE_NICKNAME)) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Sorry!')
@@ -21,7 +21,7 @@ export default new Command({
 		}
 		if (args[0] != undefined) {
 			try {
-				message.guild!.member(bot.user!)!.setNickname(longarg(0, args))
+				await message.guild!.member(bot.user!)!.setNickname(longarg(0, args))
 				message.channel.send(new MessageEmbed()
 					.setTitle('Nickname Changed')
 					.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
