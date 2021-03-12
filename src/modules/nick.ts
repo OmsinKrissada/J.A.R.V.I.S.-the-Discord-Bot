@@ -20,12 +20,20 @@ export default new Command({
 			);
 		}
 		if (args[0] != undefined) {
-			message.guild!.member(bot.user!)!.setNickname(longarg(0, args))
-			message.channel.send(new MessageEmbed()
-				.setTitle('Nickname Changed')
-				.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
-				.setColor(Helper.GREEN)
-			)
+			try {
+				message.guild!.member(bot.user!)!.setNickname(longarg(0, args))
+				message.channel.send(new MessageEmbed()
+					.setTitle('Nickname Changed')
+					.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
+					.setColor(Helper.GREEN)
+				)
+			} catch (err) {
+				message.channel.send(new MessageEmbed()
+					.setTitle('Nickname Unchanged')
+					.setDescription(`I have trouble changing my nickname, try with a different name.`)
+					.setColor(Helper.RED)
+				)
+			}
 		}
 		else {
 			message.guild!.member(bot.user!)!.setNickname('')
