@@ -11,7 +11,7 @@ import { logger } from './Logger';
 import registered_commands from '../settings/alias.json'
 import CONFIG from './ConfigManager';
 
-logger.info('Initiatiing ...');
+logger.info('Initiating ...');
 logger.info(`Running on Node ${process.version}`);
 
 // Creates an instance of a Discord client
@@ -19,16 +19,16 @@ export const bot = new Client();
 
 DataManager.connect().then(() => {
 	CommandManager.loadModules();
+	bot.login(CONFIG.token.discord).catch(err => {
+		logger.error('Failed to log-in to Discord.')
+		logger.error(err)
+	})
+	logger.info('Logging in to Discord ...')
 })
 
 var client_id: string;
 var loggingChannel: TextChannel;
 
-bot.login(CONFIG.token.discord).catch(err => {
-	logger.error('Failed to log-in to Discord.')
-	logger.error(err)
-})
-logger.info('Logging in to Discord ...')
 bot.once('ready', async () => {
 
 	logger.info(`Logged-in to Discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]`);

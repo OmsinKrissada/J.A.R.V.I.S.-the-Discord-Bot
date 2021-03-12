@@ -27,13 +27,13 @@ class DataManager {
 				useNewUrlParser: true,
 				useUnifiedTopology: true
 			})
-			logger.info(chalk`{whiteBright MongoDB:} Connected to ${CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
-				: `mongodb://${this.hostname}:${this.port}/${this.db}`}`);
+			logger.info(chalk`{whiteBright MongoDB:} Connected to "${CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
+				: `mongodb://${this.hostname}:${this.port}/${this.db}`}"`);
 
 			logger.info(chalk`{whiteBright MongoDB:} Guilds found: ` + await Guilds.countDocuments());
 		} catch (err) {
-			logger.error(chalk`{whiteBright MongoDB:} Failed to connect to ${CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
-				: `mongodb://${this.hostname}:${this.port}/${this.db}` + ': ' + err.message}`);
+			logger.error(chalk`{whiteBright MongoDB:} Failed to connect to "${CONFIG.mongodb.authorizationEnabled ? `mongodb://${this.username}:${this.password.replace(/./g, '*')}@${this.hostname}:${this.port}/${this.db}?authSource=admin`
+				: `mongodb://${this.hostname}:${this.port}/${this.db}`}": ${err.message}`);
 			logger.error('Exiting ...')
 			process.exit(1);
 		}

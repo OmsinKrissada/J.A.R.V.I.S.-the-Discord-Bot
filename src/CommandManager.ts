@@ -60,8 +60,8 @@ export function loadModules() {
 		if (err) logger.error(err.stack);
 		for (const file of files) {
 			try {
+				logger.info('Loading ' + file)
 				await import(path.join(__dirname, 'modules', file))
-				logger.info('Loaded ' + file)
 			} catch (err) {
 				logger.error(`Failed to load "${file}":\n${err.stack}`);
 			}
