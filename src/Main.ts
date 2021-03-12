@@ -44,8 +44,6 @@ bot.once('ready', async () => {
 		}).setTimestamp());
 	}
 
-	Helper.refreshIp();
-
 	bot.guilds.cache.forEach(async (guild) => {
 		if (await DataManager.get(guild.id) === null) {
 			logger.info('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);

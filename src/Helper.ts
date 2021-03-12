@@ -19,18 +19,6 @@ class HelperClass {
 		return `\`\`${content.replace(/`/g, '‎`‎')}\`\``;
 	}
 
-	refreshIp(): Promise<string> {
-		// Get IP 
-		return new Promise((resolve, _reject) => {
-			exec('dig +short -4 myip.opendns.com @resolver1.opendns.com', (err, stdout, stderr) => {
-				if (err) {
-					// console.warn(err);
-				}
-				resolve(stdout ?? stderr);
-			});
-		});
-	}
-
 	min2(num: number) {
 		return ('0' + num).slice(-2);
 	}
