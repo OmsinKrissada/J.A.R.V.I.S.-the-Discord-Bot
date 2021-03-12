@@ -62,6 +62,7 @@ class HelperClass {
 	 * @param length Full length of the progress bar. (default to 30)
 	 */
 	progressBar(percent: number, length = 30): string {
+		if (percent < 0 || percent > 100) throw { name: 'RangeError', message: 'percent field must fall between 0 to 100' };
 		let show = Math.round(percent / 100 * length);
 		let progress = '';
 		for (let i = 0; i < show - 1; i++) {
@@ -86,6 +87,7 @@ class HelperClass {
 
 	fullDurationString(duration: moment.Duration) {
 		let str = '';
+		if (duration.asDays()) str += `${duration.asDays()} day${duration.asDays() > 1 ? 's' : ''} `;
 		if (duration.hours()) str += `${duration.hours()} hour${duration.hours() > 1 ? 's' : ''} `;
 		if (duration.minutes()) str += `${duration.minutes()} minute${duration.minutes() > 1 ? 's' : ''} `;
 		if (duration.seconds()) str += `${duration.seconds()} second${duration.seconds() > 1 ? 's' : ''}`;
