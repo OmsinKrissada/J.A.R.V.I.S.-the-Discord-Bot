@@ -355,8 +355,11 @@ class MusicPlayer {
 		// when the player finish playing a song
 		this.lavaplayer.on('end', async (reason) => {
 			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "end", Reason: "${reason.reason}"`);
-			this.leaveTimeout = setTimeout(() => { this.disconnect(); }, 300000);
-			logger.debug(`Music Player[${this.guild.id}]: Registered Timeout (5 mins)`)
+			if (reason.reason != "REPLACED") {
+				if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
+				this.leaveTimeout = setTimeout(() => this.disconnect(), 300000);
+				logger.debug(`Music Player[${this.guild.id}]: Registered Timeout (5 mins)`)
+			}
 			if (reason.reason != "FINISHED") return;
 			if (this.isLooping) { // have looping enabled
 				this.play(this.currentSong);
@@ -371,6 +374,9 @@ class MusicPlayer {
 		})
 	}
 
+	/**
+	 * @returns Whether the bot has a player before running this method
+	 */
 	disconnect() {
 		this.currentSong = null;
 		this.isLooping = false;
@@ -379,8 +385,9 @@ class MusicPlayer {
 			this.lavaplayer.disconnect();
 			this.lavaplayer = null;
 			this.queue = [];
+			return true;
 		} else {
-			throw "PLAYER_NOT_FOUND";
+			return false;
 		}
 	}
 
@@ -423,6 +430,7 @@ class MusicPlayer {
 
 		// play song
 		clearTimeout(this.leaveTimeout);
+		this.leaveTimeout = null;
 		logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`)
 		const data = await lavanode.rest.resolve(song.url)
 		await this.lavaplayer.playTrack(data.tracks.shift(), { noReplace: false });
@@ -696,10 +704,10 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(message.guild!.id)!;
-		try {
-			player.disconnect();
+
+		if (player.disconnect()) {
 			message.channel.send('👋 Successfully Disconnected!');
-		} catch {
+		} else {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('I am **NOT** in a voice channel.')
