@@ -1,5 +1,5 @@
-import { Command } from '../CommandManager';
 import DataManager from '../DataManager';
+import { logger } from '../Logger';
 import { bot } from '../Main';
 
 bot.on('voiceStateUpdate', async (_oldState, newState) => {
@@ -17,20 +17,25 @@ bot.on('voiceStateUpdate', async (_oldState, newState) => {
 		hooks = [];
 	}
 	hooks.forEach((hook: VoiceHook) => {
+		const text = newState.guild.channels.resolve(hook.textChannel);
+		if (!text) {
+			logger.warn(`TextChannel ${hook.textChannel} doesn't exist in ${newState.guild.id}`);
+			return;
+		}
 		if (hook.type == 'hard') {
 			if (newState.channel && newState.channel.id == hook.voiceChannel) {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { VIEW_CHANNEL: true });
+				text.createOverwrite(newState.member!, { VIEW_CHANNEL: true });
 			}
 			else {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { VIEW_CHANNEL: null });
+				text.createOverwrite(newState.member!, { VIEW_CHANNEL: null });
 			}
 		}
 		else if (hook.type == 'soft') {
 			if (newState.channel && newState.channel.id == hook.voiceChannel) {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { SEND_MESSAGES: true });
+				text.createOverwrite(newState.member!, { SEND_MESSAGES: true });
 			}
 			else {
-				newState.guild.channels.resolve(hook.textChannel)!.createOverwrite(newState.member!, { SEND_MESSAGES: null });
+				text.createOverwrite(newState.member!, { SEND_MESSAGES: null });
 			}
 		}
 	})

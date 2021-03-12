@@ -1,4 +1,5 @@
 import { Command } from '../CommandManager'; // It was fun
+import { bot } from '../Main';
 new Command({
 	name: 'ping',
 	description: 'Simple ping command',
@@ -9,6 +10,6 @@ new Command({
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.channel.send('Pinging ...')
-		m.edit(`Server latency: \`${m.createdTimestamp - message.createdTimestamp}ms\`, API latency: \`${Math.round(Command.bot.ws.ping)}ms\``);
+		m.edit(`Server latency: \`${m.createdTimestamp - message.createdTimestamp}ms\`, API latency: \`${Math.round(bot.ws.ping)}ms\``);
 	}
 })
