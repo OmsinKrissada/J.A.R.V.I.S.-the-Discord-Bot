@@ -66,7 +66,6 @@ export default new Command({
 				message.channel.send(embeduserinfo);
 			}
 
-			let user: User;
 			if (longarg(1)) {
 				const user = await Helper.resolveUser(longarg(1), message.guild ? { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() } : undefined);
 				if (user) {

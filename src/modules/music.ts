@@ -9,6 +9,7 @@ import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
+import * as CommandManager from '../CommandManager';
 
 import os from 'os-utils';
 import { bot } from '../Main';
@@ -536,7 +537,7 @@ class MusicPlayer {
 	}
 
 	async search(field: string) {
-		return await yts({ query: field, pageStart: 1, pageEnd: 3 });
+		return (await yts({ query: field, pageStart: 1, pageEnd: 3 })).videos;
 	}
 
 	getCurrentSong() {
@@ -1007,8 +1008,24 @@ new Command({
 	}
 })
 
-
-
+new Command({
+	name: 'search',
+	category: 'music',
+	description: 'Searches for a song on YouTube.',
+	examples: ['search <field>'],
+	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
+	serverOnly: true,
+	async exec(message, prefix, args, sourceID) {
+		const player = MusicPlayerMap.get(sourceID);
+		const results = await player.search(args.join(' '));
+		const song: yts.VideoSearchResult = await Helper.confirm_type('Pick a song you want\n(type number in chat)',
+			results,
+			message.author, <TextChannel>message.channel,
+			result => `\`${result.duration.timestamp}\` __[${result.title}](${result.url})__\n`);
+		CommandManager.run('play', [song.url], { message: message, prefix: prefix, sourceID: sourceID });
+	}
+})
 
 new Command({
 	name: 'seek',

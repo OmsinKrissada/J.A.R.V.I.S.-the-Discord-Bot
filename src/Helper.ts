@@ -112,10 +112,13 @@ class HelperClass {
 			let page = new MessageEmbed(prototype);
 			let val = '';
 
-			let nextval = value[0];
-			for (let i = 0; val.length + nextval.length <= 1000 && value.length > 0; i++) {
-				nextval = value.shift()!;
-				val += nextval + (inline ? '' : '\n');
+			if (value[0].length > 1024) { // Catch when value tooooo long
+				logger.error(`Cannot split value in page feature: length exceeds 1024 (${value[0].length})`);
+				break;
+			}
+
+			for (let i = 0; value.length > 0 && val.length + value[0].length <= 1024; i++) {
+				val += value.shift() + (inline ? '' : '\n');
 			}
 
 			if (val.length > 0) page.addFields({ name: name, value: val });
@@ -132,12 +135,12 @@ class HelperClass {
 		const message = await textChannel.send(pages[0]);
 
 		if (pages.length > 1) {
-			if (pages.length > 2) message.react('⏮')
-			message.react('◀');
-			message.react('▶');
-			if (pages.length > 2) message.react('⏭')
+			if (pages.length > 2) message.react('⏮').catch(() => { });
+			message.react('◀').catch(() => { });
+			message.react('▶').catch(() => { });
+			if (pages.length > 2) message.react('⏭').catch(() => { });
 		}
-		if (pages.length > 3) message.react('📄');
+
 
 		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 })
 		collector.on('collect', (reaction, user) => {
@@ -288,7 +291,7 @@ class HelperClass {
 			try {
 				return await bot.users.fetch(resolvable);
 			} catch (err) {
-				return undefined;
+				return null;
 			}
 		}
 
@@ -296,7 +299,7 @@ class HelperClass {
 			const users = options.memberList.filter(member => member.displayName.toLowerCase().includes(resolvable.toLowerCase()) || member.user.username.toLowerCase().includes(resolvable.toLowerCase()));
 			if (users.length > 0) {
 				const member = await Helper.confirm_type(`Who is "${resolvable}" being refered to? \n(type in chat)`, users, options.caller, options.askingChannel)
-				return member.user;
+				return member?.user ?? null;
 			}
 		}
 	}
