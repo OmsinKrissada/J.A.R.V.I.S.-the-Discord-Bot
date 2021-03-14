@@ -2,7 +2,6 @@ import winston from 'winston';
 import chalk from 'chalk';
 import fs from 'fs'
 import linereader from 'n-readlines';
-import { Message } from 'discord.js';
 
 // Checks if file directory exists, if not, creates them.
 if (!fs.existsSync('./logs')) {
@@ -55,15 +54,8 @@ class LoggerClass {
 				new winston.transports.Console({ level: 'debug', format: console_format, handleExceptions: true }),
 				new winston.transports.File({ level: 'debug', filename: './logs/latest.log', format: file_format, handleExceptions: true }),
 			],
-			// exceptionHandlers: [
-			// 	new winston.transports.Console({ format: console_format }),
-			// 	new winston.transports.File({ filename: './logs/latest.log' }),
-			// ],
+			exitOnError: false,
 		});
-		// winston.exceptions.handle(
-		// 	new winston.transports.File({ filename: './logs/latest.log' }),
-		// 	new winston.transports.Console({ format: console_format })
-		// );
 	}
 
 
