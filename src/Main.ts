@@ -31,7 +31,7 @@ var loggingChannel: TextChannel;
 
 bot.once('ready', async () => {
 
-	logger.info(`Logged-in to Discord as >> '${bot.user!.username}#${bot.user!.discriminator}' [${bot.user!.id}]`);
+	logger.info(`Logged-in to Discord as >> '${bot.user!.tag}' [${bot.user!.id}]`);
 	// bot.user!.setActivity('Ultron | !help', { type: "WATCHING" });
 	client_id = `<@!${bot.user!.id}>`;
 
@@ -86,7 +86,7 @@ function log(message: Message): void {
 // Handles received messages
 bot.on('message', async (message) => {
 	message = Object.create(message)
-	if (message.author == bot.user) return;
+	if (message.author.id == bot.user!.id) return;
 
 	const isDMMessage = message.channel instanceof DMChannel;
 	const sourceID = isDMMessage ? message.channel.id : message.guild!.id;
