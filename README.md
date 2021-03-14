@@ -11,15 +11,15 @@ But since it's already quite become a thing and I don't want it to just sit arou
 ### Core Features:
 - Simple music bot
 - Move users between voice channels.
-- Hooks text and voice channels with user presence in a specific channel or a user.
 - Provides API to WolframAlpha (with both text and image format).
 - Gets information about users or servers.
 
 *Yea, that's pretty much it. Not quite useful at the moment -.-*
 
 # Prerequisites:
-- [node.js](https://nodejs.org/en/download/) (obviously... with *npm* installed)
+- [node.js](https://nodejs.org/en/download/) (obviously... with *npm* installed, I recommend using 15.x)
 - MongoDB access
+- Lavalink server access
 
 # Getting Started
 ### Installation
@@ -45,11 +45,14 @@ You need to get a *token* from discord to get it online.
 
 In order to do that, please visit [Discord API Website](https://discordapp.com/developers).
 
+For music feature you'll also need YouTube's token.
+
 Create `config.yml` in `settings` directory using this template:
    ```yaml
    token:
       discord: "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxx.xxxxxx-xxxxxxxxxxxxxxxxxxxx"
       wolfram: "xxxxxx-xxxxxxxxx"
+      youtube: "xxxxxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxx"
    mongodb:
       hostname: localhost
       port: 27017
@@ -57,14 +60,21 @@ Create `config.yml` in `settings` directory using this template:
       authorizationEnabled: false
       username: jarvisbot
       password: "12345"
+   lavalink:
+      hostname: localhost
+      password: password
+      port: 2333
    defaultPrefix: "!"
    defaultDMPrefix: ""
-   defaultVolume: 20
+   defaultVolume: 50
    colors:
       red: 0xff0000
       green: 0x04CF8D
       blue: 0x28BAD4
       yellow: 0xebc934
+      aqua: 0x34ebbd
+   loggingChannel: "<channel id here (optional)>"
+   maxCPUPercent: 90
 
    ```
 
