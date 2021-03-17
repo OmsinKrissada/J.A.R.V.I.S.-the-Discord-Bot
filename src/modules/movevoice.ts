@@ -9,7 +9,7 @@ export default new Command({
 	description: 'Moves',
 	examples: ['movevoice'],
 	requiredCallerPermissions: ['MOVE_MEMBERS'],
-	requiredSelfPermissions: ['SEND_MESSAGES', 'MOVE_MEMBERS'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MOVE_MEMBERS',"CONNECT", "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		const guild = message.guild!

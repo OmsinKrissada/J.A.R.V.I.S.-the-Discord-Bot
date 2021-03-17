@@ -9,7 +9,7 @@ new Command({
 	description: 'Kicks a user from the server',
 	examples: ['kick'],
 	requiredCallerPermissions: ['KICK_MEMBERS'],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "KICK_MEMBERS", "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		Helper.resolveUser(args[0], { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() }).then(usr => {
@@ -46,7 +46,7 @@ new Command({
 	description: '',
 	examples: ['ban', 'ban [days] [reason]'],
 	requiredCallerPermissions: ['BAN_MEMBERS'],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "BAN_MEMBERS", "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		Helper.resolveUser(args[0], { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() }).then(usr => {

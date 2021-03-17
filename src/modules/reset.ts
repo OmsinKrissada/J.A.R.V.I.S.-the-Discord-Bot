@@ -10,7 +10,7 @@ export default new Command({
 	description: 'Resets this guild\'s data to default state',
 	examples: ['reset'],
 	requiredCallerPermissions: ['MANAGE_CHANNELS'],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL", "READ_MESSAGE_HISTORY", "ADD_REACTIONS"],
 	serverOnly: true,
 	exec(message) {
 		message.channel.send(new MessageEmbed()

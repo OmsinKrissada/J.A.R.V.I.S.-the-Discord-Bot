@@ -11,7 +11,7 @@ new Command({
 	description: 'Modifies bot\'s settings',
 	examples: ['settings <settings> <value>', 'settings <settings>'],
 	requiredCallerPermissions: ['MANAGE_GUILD'],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) {
 		const settings = (await DataManager.get(sourceID)).settings;
