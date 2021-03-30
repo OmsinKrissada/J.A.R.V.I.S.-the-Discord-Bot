@@ -9,7 +9,7 @@ export default new Command({
 	description: 'Shows this message',
 	examples: ['help'],
 	requiredCallerPermissions: [],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: false,
 	exec(message, prefix, args) {
 		let command_name = args[0]?.toLowerCase() ?? '';

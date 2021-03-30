@@ -6,7 +6,7 @@ new Command({
 	category: "general",
 	examples: ['ping'],
 	requiredCallerPermissions: [],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "VIEW_CHANNEL"],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		const m = await message.channel.send('Pinging ...')
