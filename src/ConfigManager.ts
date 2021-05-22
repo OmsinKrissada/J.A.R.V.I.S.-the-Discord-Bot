@@ -84,4 +84,4 @@ if (validator.report()) {
 	process.exit();
 }
 
-export default <ConfigOption>(yaml.safeLoad(fs.readFileSync('./settings/config.yml', 'utf8')));
+export default <ConfigOption>(yaml.safeLoad(fs.readFileSync('./config.yml', 'utf8')));
