@@ -27,41 +27,39 @@ export default new Command({
 				let embeduserinfo = new MessageEmbed({
 					title: 'User Information Card',
 					color: Helper.BLUE,
-					thumbnail: { url: user.displayAvatarURL({ size: 1024, format: 'png' }) },
+					thumbnail: { url: user.displayAvatarURL({ size: 1024, format: 'png', dynamic: true }) },
 				});
 				let statusstr = '';
 
 				const userstatus = user.presence.status;
 				switch (userstatus) {
-					case 'offline': statusstr = '⚫ Offline'; break;
-					case 'dnd': statusstr = '🔴 DnD'; break;
-					case 'idle': statusstr = '🟡 Idle'; break;
-					case 'online': statusstr = '🟢 Online'; break;
+					case 'offline': statusstr = '<:offline:845520758230876172> Offline'; break;
+					case 'dnd': statusstr = '<:dnd:845520750399324201> DnD'; break;
+					case 'idle': statusstr = '<:idle:845520741315510284> Idle'; break;
+					case 'online': statusstr = '<:online:845520732745498634> Online'; break;
 				}
 
 				// add fields
 				embeduserinfo
-					.addField('Username', user.username, true)
-					.addField('Discriminator', user.discriminator, true)
-					.addField('Display', user, true)
+					.addField('Tag', user.tag, true)
 				if (message.guild && message.guild.member(user)) {
 					embeduserinfo
-						.addField('Current Status', statusstr, true)
+						.addField('Status', statusstr, true)
 				}
 				embeduserinfo
-					.addField('Account Type', user.bot ? 'Bot' : 'User', true)
-					.addField('User ID', user.id, true)
+					.addField('Race', user.bot ? '🤖 Bot' : '👤 User', true)
+					.addField('ID', `\`${user.id}\``, true)
 				if (message.guild && message.guild.member(user)) {
 					const rolesOfTheMember = message.guild.member(user)!.roles.cache.filter(r => r.name !== '@everyone').array().join(', ');
 					if (rolesOfTheMember)
 						embeduserinfo
-							.addField('Roles', rolesOfTheMember)
+							.addField('<:role:845532456072249355> Roles', rolesOfTheMember)
 					embeduserinfo
 						.setColor(message.guild.member(user)!.displayHexColor)
-						.addField('Server Joined', moment.utc(message.guild.member(user)!.joinedTimestamp!).format('lll z'), true);
+						.addField('<:join_arrow:845520716715917314> Server Joined', `${moment.utc(message.member.joinedTimestamp).format('lll z')} (${moment(message.member.joinedTimestamp).fromNow()})`);
 				}
 				embeduserinfo
-					.addField('Account Created', moment.utc(user.createdAt).format('lll z'), true)
+					.addField('🎂 Account Created', `${moment.utc(user.createdAt).format('lll z')} (${moment(user.createdAt).fromNow()})`)
 					.setTimestamp()
 				message.channel.send(embeduserinfo);
 			}

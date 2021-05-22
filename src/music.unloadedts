@@ -4,6 +4,7 @@ import { Helper } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
 import { Shoukaku, ShoukakuPlayer, ShoukakuSocket } from 'shoukaku';
+import erela from 'erela.js'
 
 import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
@@ -131,7 +132,7 @@ class MusicPlayer {
 	private queue: Array<Song> = [];
 	private volume: number = CONFIG.defaultVolume;
 	private leaveTimeout: NodeJS.Timeout;
-	private lavaplayer: ShoukakuPlayer = null;
+	public lavaplayer: ShoukakuPlayer = null;
 
 	constructor(guild: Guild) {
 		this.guild = guild;
@@ -572,22 +573,24 @@ bot.on('message', msg => {
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));
 })
 
-// // change voiceChannel value to new channel when forced to move
-// bot.on('voiceStateUpdate', async (_, newvs) => {
-// 	if (MusicPlayerMap.get(newvs.guild.id) && newvs.member.id == bot.user.id && newvs.channel && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id) {
-// 		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
-// 		// const track = this.lavaplayer.track;
-// 		// this.lavaplayer = await lavanode.joinVoiceChannel({
-// 		// 	guildID: newvs.guild.id,
-// 		// 	voiceChannelID: newvs.channel.id,
-// 		// 	deaf: true,
-// 		// });
-// 		// this.lavaplayer.playTrack(track);
+// change voiceChannel value to new channel when forced to move
+bot.on('voiceStateUpdate', async (_, newvs) => {
+	const player = MusicPlayerMap.get(newvs.guild.id);
+	if (player && newvs.member.id == bot.user.id && newvs.channel && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id) {
+		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
+		
+		// const track = this.lavaplayer.track;
+		// this.lavaplayer = await lavanode.joinVoiceChannel({
+		// 	guildID: newvs.guild.id,
+		// 	voiceChannelID: newvs.channel.id,
+		// 	deaf: true,
+		// });
+		// this.lavaplayer.playTrack(track);
 
-// 		// this.lavaplayer.voiceConnection.attemptReconnect();
+		// this.lavaplayer.voiceConnection.attemptReconnect();
 
-// 	}
-// })
+	}
+})
 
 
 

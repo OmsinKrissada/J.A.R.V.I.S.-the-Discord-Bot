@@ -88,8 +88,9 @@ export async function run(command_name: string, args: string[], { message: sourc
 				if (!sourcemsg.member!.permissionsIn(sourcemsg.channel).has(perm))
 					nocallerperm.push(perm);
 			})
+			command.requiredSelfPermissions.push('VIEW_CHANNEL');
 			command.requiredSelfPermissions.forEach(perm => {
-				if (!sourcemsg.guild!.me!.permissionsIn(sourcemsg.channel).has(perm))
+				if (!sourcemsg.guild.me!.permissionsIn(sourcemsg.channel).has(perm))
 					noselfperm.push(perm);
 			})
 		}
@@ -110,7 +111,13 @@ export async function run(command_name: string, args: string[], { message: sourc
 				return;
 
 			} else if (noselfperm.length > 0) {
-				if (noselfperm.includes('SEND_MESSAGES')) console.log('No SEND_MESSAGE permission in channel ' + sourcemsg.channel.id)
+				if (noselfperm.includes('SEND_MESSAGES')) {
+					logger.warn('No SEND_MESSAGE permission in channel ' + sourcemsg.channel.id);
+					return;
+				}
+				if (noselfperm.includes('VIEW_CHANNEL')) {
+					logger.warn
+				}
 				else sourcemsg.channel.send(new MessageEmbed({
 					author: { name: 'I don\'t have enough permission', iconURL: bot.user!.displayAvatarURL()! },
 					description: `Lacking permission${noselfperm.length > 1 ? 's' : ''}: ` + noselfperm.map(perm => `\`${(perm)}\``).join(', '),
