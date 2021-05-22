@@ -4,7 +4,7 @@ import { Helper } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
 import { Shoukaku, ShoukakuPlayer, ShoukakuSocket } from 'shoukaku';
-import erela from 'erela.js'
+// import erela from 'erela.js'
 
 import DataManager from '../DataManager';
 import ytdl from 'discord-ytdl-core';
@@ -76,7 +76,7 @@ const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 // connect to LavaLink server
 
 const LavalinkServer = [{ name: 'Main Node', host: CONFIG.lavalink.hostname, port: CONFIG.lavalink.port, auth: CONFIG.lavalink.password }];
-const ShoukakuOptions = { moveOnDisconnect: true, resumable: false, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+const ShoukakuOptions = { moveOnDisconnect: true, resumable: true, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
 let shoukakuclient: Shoukaku;
 
 let isFirstAttempt = true;
@@ -350,9 +350,14 @@ class MusicPlayer {
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
 			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "closed", Reason: "${reason.reason}"`)
-			if (!this.guild.member(bot.user).voice.channel) this.disconnect();
-			this.lavaplayer = null;
+			if (!this.guild.member(bot.user).voice.channel) {
+				this.disconnect();
+				this.lavaplayer = null;
+			} else {
+				// this.lavaplayer.playTrack(this.lavaplayer.track)
+			}
 		})
+		this.lavaplayer.on('playerUpdate', console.log)
 
 		// when the player finish playing a song
 		this.lavaplayer.on('end', async (reason) => {
@@ -578,7 +583,7 @@ bot.on('voiceStateUpdate', async (_, newvs) => {
 	const player = MusicPlayerMap.get(newvs.guild.id);
 	if (player && newvs.member.id == bot.user.id && newvs.channel && MusicPlayerMap.get(newvs.guild.id).voiceChannel?.id != newvs.channel.id) {
 		MusicPlayerMap.get(newvs.guild.id).voiceChannel = newvs.channel;
-		
+
 		// const track = this.lavaplayer.track;
 		// this.lavaplayer = await lavanode.joinVoiceChannel({
 		// 	guildID: newvs.guild.id,
