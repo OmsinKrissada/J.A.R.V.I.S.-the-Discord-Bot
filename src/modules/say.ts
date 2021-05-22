@@ -7,7 +7,7 @@ new Command({
 	description: 'Repeats user\'s text',
 	examples: ['say <text>'],
 	requiredCallerPermissions: [],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "MANAGE_MESSAGES", "VIEW_CHANNEL"],
 	serverOnly: false,
 	exec(message, prefix, args, sourceID) {
 		message.channel.send(args.join(' '));

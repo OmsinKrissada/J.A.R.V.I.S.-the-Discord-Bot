@@ -10,7 +10,7 @@ new Command({
 	description: 'Shows how long the bot has been online',
 	examples: ['uptime'],
 	requiredCallerPermissions: [],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "VIEW_CHANNEL"],
 	serverOnly: false,
 	exec(message, prefix, args, sourceID) {
 		message.channel.send(`I have been online for **${Helper.fullDurationString(moment.duration(bot.uptime))}**`)

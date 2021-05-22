@@ -14,7 +14,7 @@ export default new Command({
 		"info server"
 	],
 	requiredCallerPermissions: [],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: false,
 	async exec(message, prefix, args, sourceID) {
 		if (!args[0]) {

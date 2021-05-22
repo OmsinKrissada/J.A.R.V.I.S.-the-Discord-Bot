@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, Permissions, PermissionString } from 'discord.js';
+import { Message, MessageEmbed, Permissions, PermissionString } from "discord.js";
 import fs from 'fs';
 import path from 'path';
 import DataManager from './DataManager';
@@ -88,11 +88,13 @@ export async function run(command_name: string, args: string[], { message: sourc
 				if (!sourcemsg.member!.permissionsIn(sourcemsg.channel).has(perm))
 					nocallerperm.push(perm);
 			})
-			command.requiredSelfPermissions.push('VIEW_CHANNEL');
+			// command.requiredSelfPermissions.push('VIEW_CHANNEL');
 			command.requiredSelfPermissions.forEach(perm => {
 				if (!sourcemsg.guild.me!.permissionsIn(sourcemsg.channel).has(perm))
 					noselfperm.push(perm);
 			})
+			nocallerperm = sourcemsg.member!.permissionsIn(sourcemsg.channel).missing(command.requiredCallerPermissions)
+			noselfperm = sourcemsg.guild!.me!.permissionsIn(sourcemsg.channel).missing(command.requiredSelfPermissions)
 		}
 
 		if (command.serverOnly && sourcemsg.guild === null) { // check DM

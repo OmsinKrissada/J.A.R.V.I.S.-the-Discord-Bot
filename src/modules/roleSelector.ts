@@ -11,7 +11,7 @@ new Command({
 	description: 'Manages role selectors',
 	examples: [],
 	requiredCallerPermissions: ['MANAGE_ROLES', 'MANAGE_GUILD'],
-	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_ROLES'],
+	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_ROLES', "EMBED_LINKS", "VIEW_CHANNEL", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) {
 		const action = args[0];
