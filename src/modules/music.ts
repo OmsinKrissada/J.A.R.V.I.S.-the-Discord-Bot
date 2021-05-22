@@ -76,7 +76,7 @@ const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 // connect to LavaLink server
 
 const LavalinkServer = [{ name: 'Main Node', host: CONFIG.lavalink.hostname, port: CONFIG.lavalink.port, auth: CONFIG.lavalink.password }];
-const ShoukakuOptions = { moveOnDisconnect: true, resumable: true, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+const ShoukakuOptions = { moveOnDisconnect: true, resumable: false, resumableTimeout: 5000, reconnectTries: 2, restTimeout: 10000 };
 let shoukakuclient: Shoukaku;
 
 let isFirstAttempt = true;
@@ -133,6 +133,8 @@ class MusicPlayer {
 	private volume: number = CONFIG.defaultVolume;
 	private leaveTimeout: NodeJS.Timeout;
 	public lavaplayer: ShoukakuPlayer = null;
+	private trackId: string;
+	private playedTime: number;
 
 	constructor(guild: Guild) {
 		this.guild = guild;
@@ -354,10 +356,16 @@ class MusicPlayer {
 				this.disconnect();
 				this.lavaplayer = null;
 			} else {
-				// this.lavaplayer.playTrack(this.lavaplayer.track)
+				this.lavaplayer.stopTrack();
+				this.lavaplayer.playTrack(this.trackId, { startTime: this.playedTime, noReplace: false });
+				setTimeout(() => {
+					clearTimeout(this.leaveTimeout);
+					this.leaveTimeout = null;
+					logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`)
+				}, 5000);
 			}
 		})
-		this.lavaplayer.on('playerUpdate', console.log)
+		this.lavaplayer.on('playerUpdate', (update: any) => this.playedTime = update.position)
 
 		// when the player finish playing a song
 		this.lavaplayer.on('end', async (reason) => {
@@ -440,7 +448,8 @@ class MusicPlayer {
 		this.leaveTimeout = null;
 		logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`)
 		const data = await lavanode.rest.resolve(song.url)
-		await this.lavaplayer.playTrack(data.tracks.shift(), { noReplace: false });
+		this.trackId = data.tracks[0].track;
+		await this.lavaplayer.playTrack(this.trackId, { noReplace: false });
 		this.currentSong = song;
 
 

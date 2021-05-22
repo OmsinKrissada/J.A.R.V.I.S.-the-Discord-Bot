@@ -78,7 +78,7 @@ const validator = new YamlValidator({
 	onWarning: undefined,
 	writeJson: false
 });
-validator.validate(['./settings/config.yml']);
+validator.validate(['./config.yml']);
 if (validator.report()) {
 	console.error('ERROR: Bad Configuration Format');
 	process.exit();
