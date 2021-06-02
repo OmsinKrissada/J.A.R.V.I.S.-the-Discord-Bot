@@ -66,13 +66,13 @@ new Command({
 			const embed_fields: any[] = [];
 			for (const setting in settings) {
 				if (setting in settingsdesc && setting != 'toString') {
-					embed_fields.push({ name: settingsdesc[setting], value: (settings[setting] ? '🟩' : '🟥') + ' `' + setting + '`\n' + Helper.ZERO_WIDTH, inline: false });
+					embed_fields.push({ name: settingsdesc[setting], value: (settings[setting] ? '<:checkmark:849685283459825714> ' : '<:empty:849697672884650065>') + ' `' + setting + '`\n' + Helper.ZERO_WIDTH, inline: false });
 					console.log(setting)
 				}
 			}
 
 			const embed = new MessageEmbed({
-				author: { name: 'My Settings', iconURL: bot.user.displayAvatarURL() },
+				author: { name: 'My Settings', iconURL: 'https://cdn.discordapp.com/emojis/849696436483391519.png?v=1' },
 				description: `Use \`${prefix}settings <setting> <true/false>\` to change their values.\n**Example**: \`${prefix}settings warnUnknownCommand false\``,
 				color: Helper.BLUE,
 				fields: embed_fields,

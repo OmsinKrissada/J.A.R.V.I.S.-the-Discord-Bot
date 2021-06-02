@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js';
+import { MessageEmbed, MessageReaction, ReactionEmoji, ReactionManager } from 'discord.js';
 import { Command } from '../CommandManager';
 import { Helper } from '../Helper';
 import DataManager from '../DataManager';
@@ -17,12 +17,12 @@ export default new Command({
 			.setTitle('Confirmation Needed')
 			.setDescription('This action will reset the current guild\'s data to default value, do you want to continue? (yes/no)')
 			.setColor(Helper.YELLOW)).then(msg => {
-				msg.react('✅');
-				msg.react('❌');
-				msg.awaitReactions((reaction, user) => (reaction.emoji.name == '✅' || reaction.emoji.name == '❌') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
+				msg.react('849685283459825714');
+				msg.react('849685295779545108');
+				msg.awaitReactions((reaction: MessageReaction, user) => (reaction.emoji.id == '849685283459825714' || reaction.emoji.id == '849685295779545108') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
 					.then(collected => {
 						console.log(collected.first()!.emoji.name)
-						if (collected.first()!.emoji.name == '✅') {
+						if (collected.first()!.emoji.id == '849685283459825714') {
 							if (message.guild) {
 								DataManager.purge(message.guild.id)
 							} else {
@@ -49,4 +49,4 @@ export default new Command({
 					});
 			});
 	}
-}) 
+})

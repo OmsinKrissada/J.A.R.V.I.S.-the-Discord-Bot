@@ -139,6 +139,7 @@ class HelperClass {
 			message.react('◀').catch(() => { });
 			message.react('▶').catch(() => { });
 			if (pages.length > 2) message.react('⏭').catch(() => { });
+			if (pages.length > 4) message.react('📝').catch(() => { })
 		}
 
 
@@ -170,8 +171,8 @@ class HelperClass {
 					current_page = pages.length - 1;
 				}
 			}
-			else if (reaction.emoji.name == '📄') {
-				message.reactions.resolve('📄')!.users.remove(user);
+			else if (reaction.emoji.name == '📝') {
+				message.reactions.resolve('📝')!.users.remove(user);
 				message.channel.send(new MessageEmbed({ author: { name: 'Type page number in chat >>>', iconURL: user.displayAvatarURL() } })).then(ask4pagemsg => {
 					message.channel.awaitMessages((responsemsg: Message) => responsemsg.author.id == user.id, { max: 1, time: 60000 }).then(msg => {
 						const text = msg.first().content;
@@ -258,7 +259,11 @@ class HelperClass {
 
 		const answer_msg = collected.first()!;
 
-		if (channel instanceof TextChannel) channel.bulkDelete([confirm_msg, answer_msg]);
+		if (channel instanceof TextChannel) {
+			if (confirm_msg.deletable && answer_msg.deletable) channel.bulkDelete([confirm_msg, answer_msg]);
+			else if (confirm_msg.deletable) confirm_msg.delete();
+			else if (answer_msg.deletable) answer_msg.delete();
+		}
 
 		if (answer_msg.content.toLowerCase() == 'cancel') {
 			channel.send(new MessageEmbed({

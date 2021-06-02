@@ -178,7 +178,7 @@ class MusicPlayer {
 
 			let nextPageToken: string;
 			const songs: Song[] = [];
-			const waitmsgpromise = textChan.send('Getting videos, please wait . . .');
+			const waitmsgpromise = textChan.send('<a:loading:845534883396583435> Getting videos');
 			do {
 				const songsstr: string[] = [];
 				let paramObj = {
