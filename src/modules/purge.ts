@@ -12,12 +12,12 @@ export default new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
+		let amount = Number.parseInt(args[0]);
 		function deletemsg(exceed_three: boolean) {
 			(<TextChannel>message.channel).bulkDelete(amount + (exceed_three ? 2 : 1)).then(() =>
-				message.channel.send(`✅ Deleted ${amount} message${amount > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
+				message.channel.send(`<:checkmark:849685283459825714> Deleted ${amount} message${amount > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
 			)
 		}
-		let amount = Number.parseInt(args[0]);
 		if (!isNaN((<any>args[0]))) {
 			if (amount < 1 || amount > 100) {
 				message.channel.send(new MessageEmbed()
@@ -30,15 +30,15 @@ export default new Command({
 			else {
 				let exceed_three = amount > 3;
 				if (exceed_three) {
-					Helper.confirm_click('Confirmation Needed', `This action is going to delete the last **${amount}** messages.`, ['✅', '❌'], <TextChannel>message.channel, message.author, 10000).then(promise => {
+					Helper.confirm_click('Confirmation Needed', `This action is going to delete the last **${amount}** messages.`, ['849685283459825714', '849685295779545108'], <TextChannel>message.channel, message.author, 10000).then(promise => {
 						let response = promise.emoji;
 						let confirm_msg = promise.message;
-						if (response == '✅') {
+						if (response == 'checkmark') {
 							deletemsg(exceed_three)
 						}
-						if (response == '❌') {
+						if (response == 'xmark') {
 							confirm_msg.edit(new MessageEmbed()
-								.setDescription('❌ Canceled!')
+								.setDescription('<:xmark:849685295779545108> Canceled!')
 								.setColor(Helper.RED)).then((msg: Message) => msg.delete({ timeout: 5000 }));
 							confirm_msg.reactions.removeAll();
 						}
@@ -54,4 +54,4 @@ export default new Command({
 			)
 		}
 	}
-}) 
+})

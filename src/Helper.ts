@@ -219,7 +219,7 @@ class HelperClass {
 			reactions.forEach(reaction => {
 				confirm_msg.react(reaction);
 			})
-			await confirm_msg.awaitReactions((reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) && user == allowedUser, { max: 1, time: timeout, errors: ['time'] })
+			await confirm_msg.awaitReactions((reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) || reactions.includes(reaction.emoji.id) && user == allowedUser, { max: 1, time: timeout, errors: ['time'] })
 				.then(collected => {
 					// console.log(collected.first().emoji.name)
 					// console.log(reactions)
