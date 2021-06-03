@@ -46,7 +46,7 @@ interface ConfigOption {
 const validator = new YamlValidator({
 	log: false,
 	structure: {
-		mydql: {
+		mysql: {
 			hostname: 'string',
 			port: 'number',
 			authorizationEnabled: 'boolean',
