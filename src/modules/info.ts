@@ -56,7 +56,7 @@ export default new Command({
 							.addField('<:role:845532456072249355> Roles', rolesOfTheMember)
 					embeduserinfo
 						.setColor(message.guild.member(user)!.displayHexColor)
-						.addField('<:join_arrow:845520716715917314> Server Joined', `${moment.utc(message.member.joinedAt).format('lll z')} (${moment(message.member.joinedAt).fromNow()})`);
+						.addField('<:join_arrow:845520716715917314> Server Joined', `${moment.utc(message.guild.member(user).joinedAt).format('lll z')} (${moment(message.guild.member(user).joinedAt).fromNow()})`);
 				}
 				embeduserinfo
 					.addField('🎂 Account Created', `${moment.utc(user.createdAt).format('lll z')} (${moment(user.createdAt).fromNow()})`)
