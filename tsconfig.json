@@ -1,5 +1,8 @@
 {
+  
   "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "outDir": "./dist/", // path to output directory
     "sourceMap": false, // allow sourcemap support
     "strictNullChecks": false, // enable strict null checks as a best practice

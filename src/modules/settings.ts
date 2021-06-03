@@ -1,6 +1,6 @@
 import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
 import { Command } from '../CommandManager';
-import DataManager from '../DataManager';
+import { settings } from '../DBManager';
 import { Helper } from '../Helper';
 import { bot } from '../Main';
 
@@ -14,7 +14,7 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) {
-		const settings = (await DataManager.get(sourceID)).settings;
+		const settings_name = await settings.get(sourceID, ['announceQueueEnd', 'announceSong', 'enforceUserLimit', 'queueInOrder', 'warnUnknownCommand']);
 		const settingsdesc = {
 			warnUnknownCommand: 'Warns when the bot receives an unknown command.',
 			announceSong: 'Announces when a song is being played.',
@@ -24,30 +24,30 @@ new Command({
 		}
 
 		const field = args[0];
-		const value = args[1];
+		const value = args[1]?.toLowerCase();
 		if (field in settingsdesc) {
 			let embedOptions: MessageEmbedOptions;
 			if (!value) {
 				embedOptions = {
-					description: `Current value: \`${settings[field]}\``,
+					description: `Current value: \`${settings_name[field]}\``,
 					color: Helper.BLUE
 				}
 			}
-			else if (['true', 'on', 'yes', 'enable', '1'].includes(value.toLowerCase())) {
-				const oldval = settings[field];
-				DataManager.set(sourceID, `settings.${field}`, true);
+			else if (['true', 'on', 'yes', 'enable', '1'].includes(value)) {
+				const oldval = settings_name[field];
+				await settings.set(sourceID, { [field]: true });
 				embedOptions = {
 					title: 'Setting Applied',
-					description: `You've changed the value of \`${field}\` from \`${oldval}\` to \`true\`.`,
+					description: `${oldval ? '<:checkmark:849685283459825714>' : '<:empty:849697672884650065>'} <:join_arrow:845520716715917314> <:checkmark:849685283459825714> \`${field}\``,
 					color: Helper.GREEN
 				}
 			}
-			else if (['false', 'off', 'no', 'disable', '0'].includes(value.toLowerCase())) {
-				const oldval = settings[field];
-				DataManager.set(sourceID, `settings.${field}`, false);
+			else if (['false', 'off', 'no', 'disable', '0'].includes(value)) {
+				const oldval = settings_name[field];
+				await settings.set(sourceID, { [field]: false });
 				embedOptions = {
 					title: 'Setting Applied',
-					description: `You've changed the value of \`${field}\` from \`${oldval}\` to \`false\`.`,
+					description: `${oldval ? '<:checkmark:849685283459825714>' : '<:empty:849697672884650065>'} <:join_arrow:845520716715917314> <:empty:849697672884650065> \`${field}\``,
 					color: Helper.GREEN
 				}
 			}
@@ -64,9 +64,9 @@ new Command({
 
 		else {
 			const embed_fields: any[] = [];
-			for (const setting in settings) {
+			for (const setting in settings_name) {
 				if (setting in settingsdesc && setting != 'toString') {
-					embed_fields.push({ name: settingsdesc[setting], value: (settings[setting] ? '<:checkmark:849685283459825714> ' : '<:empty:849697672884650065>') + ' `' + setting + '`\n' + Helper.ZERO_WIDTH, inline: false });
+					embed_fields.push({ name: settingsdesc[setting], value: (settings_name[setting] ? '<:checkmark:849685283459825714> ' : '<:empty:849697672884650065>') + ' `' + setting + '`\n' + Helper.ZERO_WIDTH, inline: false });
 					console.log(setting)
 				}
 			}

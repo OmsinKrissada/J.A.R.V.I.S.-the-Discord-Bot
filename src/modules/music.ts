@@ -6,7 +6,7 @@ import moment from 'moment';
 import { Shoukaku, ShoukakuPlayer, ShoukakuSocket } from 'shoukaku';
 // import erela from 'erela.js'
 
-import DataManager from '../DataManager';
+import { settings } from '../DBManager';
 import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
@@ -382,7 +382,7 @@ class MusicPlayer {
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
 				this.currentSong = null;
-				if ((await DataManager.get(this.guild.id)).settings.announceQueueEnd) {
+				if ((await settings.get(this.guild.id, ['announceQueueEnd'])).announceQueueEnd) {
 					this.respondChannel.send('Queue Ended.');
 				}
 			}
@@ -453,7 +453,7 @@ class MusicPlayer {
 		this.currentSong = song;
 
 
-		if ((await DataManager.get(this.guild.id)).settings.announceSong) {
+		if ((await settings.get(this.guild.id, ['announceSong'])).announceSong) {
 			song.textChannel.send(new MessageEmbed()
 				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
 				.setColor(Helper.BLUE)

@@ -2,7 +2,7 @@ import { Command } from '../CommandManager';
 import { DiscordAPIError, GuildMember, Message, MessageEmbed, TextChannel, User } from 'discord.js';
 import { Helper } from '../Helper';
 import * as CommandManager from '../CommandManager';
-import * as DataManager from '../DataManager';
+import * as DataManager from '../DBManager';
 import moment from 'moment';
 import { bot } from '../Main';
 export default new Command({

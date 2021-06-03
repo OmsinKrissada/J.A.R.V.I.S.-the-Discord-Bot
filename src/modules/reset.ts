@@ -1,7 +1,7 @@
 import { MessageEmbed, MessageReaction, ReactionEmoji, ReactionManager } from 'discord.js';
 import { Command } from '../CommandManager';
 import { Helper } from '../Helper';
-import DataManager from '../DataManager';
+import { settings } from '../DBManager';
 
 
 export default new Command({
@@ -24,9 +24,9 @@ export default new Command({
 						console.log(collected.first()!.emoji.name)
 						if (collected.first()!.emoji.id == '849685283459825714') {
 							if (message.guild) {
-								DataManager.purge(message.guild.id)
+								settings.purge(message.guild.id)
 							} else {
-								DataManager.purge(message.channel.id)
+								settings.purge(message.channel.id)
 							}
 
 							message.channel.send(new MessageEmbed()

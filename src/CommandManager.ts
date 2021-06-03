@@ -1,7 +1,7 @@
 import { Message, MessageEmbed, Permissions, PermissionString } from "discord.js";
 import fs from 'fs';
 import path from 'path';
-import DataManager from './DataManager';
+import { settings } from './DBManager';
 import { bot } from './Main';
 
 import { Helper } from './Helper';
@@ -77,7 +77,7 @@ export function sanitize(input: string) {
 }
 
 export async function run(command_name: string, args: string[], { message: sourcemsg, prefix, sourceID }: { message: Message, prefix: string, sourceID: string }) {
-	prefix = (await DataManager.get(sourceID)).prefix;
+	prefix = (await settings.get(sourceID, ["prefix"])).prefix;
 	if (CommandMap.has(command_name)) { // check exist
 		const command = CommandMap.get(command_name)!;
 
@@ -130,7 +130,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 		} else {
 			command.exec(sourcemsg, prefix, args, sourceID);
 		}
-	} else if (command_name != 'cancel' && (await DataManager.get(sourceID)).settings.warnUnknownCommand)
+	} else if (command_name != 'cancel' && (await settings.get(sourceID, ["warnUnknownCommand"])).warnUnknownCommand)
 		sourcemsg.channel.send(new MessageEmbed({
 			title: 'Unknown Command',
 			description: `Invalid command, type ${Helper.inlineCodeBlock(`${prefix}help`)} for list of commands.`,

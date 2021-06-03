@@ -6,7 +6,7 @@ import { exec } from 'child_process';
 
 import { Helper } from "./Helper";
 import * as CommandManager from './CommandManager';
-import DataManager from './DataManager'
+import { connectDB, settings } from './DBManager'
 import { logger } from './Logger';
 import registered_commands from '../settings/alias.json'
 import CONFIG from './ConfigManager';
@@ -17,7 +17,7 @@ logger.info(`Running on Node ${process.version}`);
 // Creates an instance of a Discord client
 export const bot = new Client();
 
-DataManager.connect().then(() => {
+connectDB().then(() => {
 	CommandManager.loadModules();
 	bot.login(CONFIG.token.discord).catch(err => {
 		logger.error('Failed to log-in to Discord.')
@@ -45,9 +45,9 @@ bot.once('ready', async () => {
 	}
 
 	bot.guilds.cache.forEach(async (guild) => {
-		if (await DataManager.get(guild.id) === null) {
+		if (!(await settings.checkExist(guild.id))) {
 			logger.info('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
-			await DataManager.create(guild.id, guild.name, CONFIG.defaultPrefix);
+			await settings.create(guild.id, guild.name, guild.channels.cache[0] instanceof DMChannel, CONFIG.defaultPrefix);
 		}
 	})
 });
@@ -92,9 +92,9 @@ bot.on('message', async (message) => {
 	const sourceID = isDMMessage ? message.channel.id : message.guild!.id;
 	const sourceName = isDMMessage ? message.author.username : message.guild!.name;
 
-	if (await DataManager.get(sourceID) === null) {
+	if (!(await settings.checkExist(sourceID))) {
 		logger.info('Guild data not found, creating default data for this guild. ' + `[${sourceID}]`);
-		await DataManager.create(sourceID, sourceName, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
+		await settings.create(sourceID, sourceName, isDMMessage, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
 	}
 	// if (bot.guilds.resolve(guildID)) {
 	// 	loaded = new GuildData({
@@ -107,7 +107,7 @@ bot.on('message', async (message) => {
 	// 		prefix: CONFIG.defaultDMPrefix
 	// 	});
 	// }
-	const prefix: string = (await DataManager.get(sourceID)).prefix;
+	const prefix: string = (await settings.get(sourceID, ['prefix'])).prefix;
 
 	if (!((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
 
