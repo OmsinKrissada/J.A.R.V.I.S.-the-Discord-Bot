@@ -85,7 +85,15 @@ class SettingsManager {
 }
 
 class LastseenManager {
+	async getTimestamp(guildID: string, memberID: string) {
+		return (await lastseen_repository.findOne({ select: ['timestamp'], where: { guild_id: guildID, member_id: memberID } }))?.timestamp;
+	}
 
+	async setTimestamp(guildID: string, memberID: string, timestamp: Date) {
+		logger.debug('set timestamp')
+		const id = (await lastseen_repository.findOne({ where: { guild_id: guildID, member_id: memberID } }))?.id;
+		await lastseen_repository.save({ id: id, guild_id: guildID, member_id: memberID, timestamp: timestamp });
+	}
 }
 
 
