@@ -13,12 +13,12 @@ CONFIG.colors.red = 1;
 
 
 
-const hostname = CONFIG.mongodb.hostname;
-const port = CONFIG.mongodb.port;
-const dbname = CONFIG.mongodb.database;
+const hostname = CONFIG.mysql.hostname;
+const port = CONFIG.mysql.port;
+const dbname = CONFIG.mysql.database;
 
-const username = CONFIG.mongodb.username;
-const password = CONFIG.mongodb.password;
+const username = CONFIG.mysql.username;
+const password = CONFIG.mysql.password;
 
 let settings_repository: Repository<GuildSettings> = null;
 let lastseen_repository: Repository<Lastseen> = null;

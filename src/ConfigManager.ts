@@ -11,7 +11,7 @@ import YamlValidator from 'yaml-validator';
 
 
 interface ConfigOption {
-	mongodb: {
+	mysql: {
 		hostname: string;
 		port: number;
 		database: string;
@@ -46,7 +46,7 @@ interface ConfigOption {
 const validator = new YamlValidator({
 	log: false,
 	structure: {
-		mongodb: {
+		mydql: {
 			hostname: 'string',
 			port: 'number',
 			authorizationEnabled: 'boolean',
