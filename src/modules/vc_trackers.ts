@@ -24,9 +24,9 @@ new Command({
 			const joinedTime = voiceJoinTimestamps.get(guild.id)?.get(user.id);
 			if (joinedTime)
 				message.channel.send(`**${user.tag}** has been in the channel for **${Helper.fullDurationString(moment.duration(new Date().getTime() - joinedTime.valueOf()))}**`);
-			else message.channel.send(`Cannot find join timestamp of ${user}.`)
+			else message.channel.send(`Cannot find join timestamp of ${user}. The user has to join a vc at least once when I'm online in this server.`)
 		}
-		else message.channel.send(' Member not found')
+		else message.channel.send('Member not found')
 	}
 });
 

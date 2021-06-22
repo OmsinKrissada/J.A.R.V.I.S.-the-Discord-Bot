@@ -18,3 +18,4 @@ src/commands/poll.ts
 src/model/GuildData.ts
 src/modules/testing.ts
 /.vscode/
+*.db

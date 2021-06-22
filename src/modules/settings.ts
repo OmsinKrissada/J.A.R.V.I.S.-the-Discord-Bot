@@ -21,7 +21,7 @@ new Command({
 			announceQueueEnd: 'Announces when music queue is ended.',
 			queueInOrder: 'Use sync method to get videos from playlist. (EXPERIMENTAL)',
 			enforceUserLimit: 'Kicks users when joining a voice channel that exceed the user limit regardless of the permission they have. (Requires MOVE_MEMBER permission)',
-		}
+		};
 
 		const field = args[0];
 		const value = args[1]?.toLowerCase();
@@ -31,7 +31,7 @@ new Command({
 				embedOptions = {
 					description: `Current value: \`${settings_name[field]}\``,
 					color: Helper.BLUE
-				}
+				};
 			}
 			else if (['true', 'on', 'yes', 'enable', '1'].includes(value)) {
 				const oldval = settings_name[field];
@@ -40,7 +40,7 @@ new Command({
 					title: 'Setting Applied',
 					description: `${oldval ? '<:checkmark:849685283459825714>' : '<:empty:849697672884650065>'} <:join_arrow:845520716715917314> <:checkmark:849685283459825714> \`${field}\``,
 					color: Helper.GREEN
-				}
+				};
 			}
 			else if (['false', 'off', 'no', 'disable', '0'].includes(value)) {
 				const oldval = settings_name[field];
@@ -49,15 +49,15 @@ new Command({
 					title: 'Setting Applied',
 					description: `${oldval ? '<:checkmark:849685283459825714>' : '<:empty:849697672884650065>'} <:join_arrow:845520716715917314> <:empty:849697672884650065> \`${field}\``,
 					color: Helper.GREEN
-				}
+				};
 			}
 			else {
 				embedOptions = {
 					description: `Invalid value`,
 					color: Helper.RED
-				}
+				};
 			}
-			message.channel.send(new MessageEmbed(embedOptions))
+			message.channel.send(new MessageEmbed(embedOptions));
 
 		}
 
@@ -67,7 +67,6 @@ new Command({
 			for (const setting in settings_name) {
 				if (setting in settingsdesc && setting != 'toString') {
 					embed_fields.push({ name: settingsdesc[setting], value: (settings_name[setting] ? '<:checkmark:849685283459825714> ' : '<:empty:849697672884650065>') + ' `' + setting + '`\n' + Helper.ZERO_WIDTH, inline: false });
-					console.log(setting)
 				}
 			}
 
@@ -76,8 +75,8 @@ new Command({
 				description: `Use \`${prefix}settings <setting> <true/false>\` to change their values.\n**Example**: \`${prefix}settings warnUnknownCommand false\``,
 				color: Helper.BLUE,
 				fields: embed_fields,
-			})
-			message.channel.send(embed)
+			});
+			message.channel.send(embed);
 		}
 
 	}

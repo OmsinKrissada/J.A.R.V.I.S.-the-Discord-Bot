@@ -11,6 +11,7 @@ import YamlValidator from 'yaml-validator';
 
 
 interface ConfigOption {
+	database: string;
 	mysql: {
 		hostname: string;
 		port: number;
@@ -18,6 +19,9 @@ interface ConfigOption {
 		authorizationEnabled: boolean;
 		username: string;
 		password: string;
+	};
+	sqlite: {
+		path: string;
 	};
 	lavalink: {
 		hostname: string;
@@ -46,12 +50,16 @@ interface ConfigOption {
 const validator = new YamlValidator({
 	log: false,
 	structure: {
+		database: 'string',
 		mysql: {
 			hostname: 'string',
 			port: 'number',
 			authorizationEnabled: 'boolean',
 			username: 'string',
 			password: 'string',
+		},
+		sqlite: {
+			path: 'string',
 		},
 		lavalink: {
 			hostname: 'string',

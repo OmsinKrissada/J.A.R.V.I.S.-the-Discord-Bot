@@ -24,7 +24,7 @@ class HelperClass {
 	}
 
 	getNumberEmoji(integer: number) {
-		let numberstr: { [key: string]: string } = {
+		let numberstr: { [key: string]: string; } = {
 			'0': ':zero:',
 			'1': ':one:',
 			'2': ':two:',
@@ -41,7 +41,7 @@ class HelperClass {
 		let digits = integer.toString().split('');
 		digits.forEach(digit => {
 			emojistr += numberstr[digit];
-		})
+		});
 		return emojistr;
 	}
 
@@ -52,7 +52,7 @@ class HelperClass {
 	 */
 	progressBar(percent: number, length = 30): string {
 		if (percent < 0 || percent > 100) {
-			logger.warn(`Received invalid percent for progress bar (${percent}), the behavior may be unpredictable.`)
+			logger.warn(`Received invalid percent for progress bar (${percent}), the behavior may be unpredictable.`);
 			// throw { name: 'RangeError', message: 'percent field must fall between 0 to 100' };
 		}
 		let show = Math.round(percent / 100 * length);
@@ -60,7 +60,7 @@ class HelperClass {
 		for (let i = 0; i < show - 1; i++) {
 			progress += '━';
 		}
-		progress += '⚪'
+		progress += '⚪';
 		for (let i = 0; i < length - show; i++) {
 			progress += '─';
 		}
@@ -128,7 +128,7 @@ class HelperClass {
 		let pagenum = 1;
 		pages.forEach(page => {
 			page.setFooter(page.footer ? page.footer.text + `\nPage ${pagenum++} / ${pages.length}` : `Page ${pagenum++} / ${pages.length} `);
-		})
+		});
 
 
 		let current_page = 0;
@@ -139,11 +139,11 @@ class HelperClass {
 			message.react('◀').catch(() => { });
 			message.react('▶').catch(() => { });
 			if (pages.length > 2) message.react('⏭').catch(() => { });
-			if (pages.length > 4) message.react('📝').catch(() => { })
+			if (pages.length > 4) message.react('📝').catch(() => { });
 		}
 
 
-		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 })
+		const collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot, { time: 1000000 });
 		collector.on('collect', (reaction, user) => {
 			if (reaction.emoji.name == '◀') {
 				message.reactions.resolve('◀')!.users.remove(user);
@@ -177,11 +177,11 @@ class HelperClass {
 					message.channel.awaitMessages((responsemsg: Message) => responsemsg.author.id == user.id, { max: 1, time: 60000 }).then(msg => {
 						const text = msg.first().content;
 						if (!isNaN(+text) && +text >= 1 && +text <= pages.length) {
-							message.edit(pages[+text - 1])
+							message.edit(pages[+text - 1]);
 						} else {
 							msg.first().reply('Unknown page').then(unknownmsg => unknownmsg.delete({ timeout: 5000 }));
 						}
-						(<TextChannel>message.channel).bulkDelete([ask4pagemsg, msg.first()])
+						(<TextChannel>message.channel).bulkDelete([ask4pagemsg, msg.first()]);
 						msg.first().delete();
 					}).finally(() => {
 						if (!ask4pagemsg.deleted) ask4pagemsg.delete();
@@ -191,10 +191,10 @@ class HelperClass {
 			else {
 				message.reactions.resolve(reaction.emoji.name)!.users.remove(user);
 			}
-		})
+		});
 		collector.on('end', () => {
 			message.reactions.removeAll().catch(() => { });
-		})
+		});
 		return message;
 	}
 
@@ -206,7 +206,7 @@ class HelperClass {
  */
 	async confirm_click(title: string, description: string, reactions: EmojiResolvable[], textChannel: TextChannel, allowedUser: User, timeout?: number): Promise<{ message: Message; emoji: EmojiResolvable | null; }> {
 
-		let return_value: { message: Message, emoji: EmojiResolvable | null };
+		let return_value: { message: Message, emoji: EmojiResolvable | null; };
 		let embed = new MessageEmbed()
 			.setTitle(title)
 			.setDescription(description)
@@ -218,7 +218,7 @@ class HelperClass {
 		await textChannel.send(embed).then(async (confirm_msg) => {
 			reactions.forEach(reaction => {
 				confirm_msg.react(reaction);
-			})
+			});
 			await confirm_msg.awaitReactions((reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) || reactions.includes(reaction.emoji.id) && user == allowedUser, { max: 1, time: timeout, errors: ['time'] })
 				.then(collected => {
 					// console.log(collected.first().emoji.name)
@@ -230,7 +230,7 @@ class HelperClass {
 						confirm_msg.reactions.removeAll();
 					}
 					return_value = { message: confirm_msg, emoji: null };
-				})
+				});
 		});
 		return return_value!;
 	}
@@ -253,8 +253,8 @@ class HelperClass {
 				items.push(`\`${i}\` - ${item}`);
 			}
 			i++;
-		})
-		const confirm_msg = await Helper.sendEmbedPage(<TextChannel>channel, embed, '​', items)
+		});
+		const confirm_msg = await Helper.sendEmbedPage(<TextChannel>channel, embed, '​', items);
 		const collected = await channel.awaitMessages(response => response.author.id == caller.id, { max: 1 });
 
 		const answer_msg = collected.first()!;
@@ -303,7 +303,7 @@ class HelperClass {
 		if (options) {
 			const users = options.memberList.filter(member => member.displayName.toLowerCase().includes(resolvable.toLowerCase()) || member.user.username.toLowerCase().includes(resolvable.toLowerCase()));
 			if (users.length > 0) {
-				const member = await Helper.confirm_type(`Who is "${resolvable}" being refered to? \n(type in chat)`, users, options.caller, options.askingChannel)
+				const member = await Helper.confirm_type(`Who is "${resolvable}" being refered to? \n(type in chat)`, users, options.caller, options.askingChannel);
 				return member?.user ?? null;
 			}
 		}

@@ -1,30 +1,31 @@
 import { Client, MessageEmbed, Message, TextChannel, DMChannel } from 'discord.js';
 
-import fs from 'fs'
+import fs from 'fs';
 import express from 'express';
 import { exec } from 'child_process';
 
 import { Helper } from "./Helper";
 import * as CommandManager from './CommandManager';
-import { connectDB, settings } from './DBManager'
+import { connectDB, settings } from './DBManager';
 import { logger } from './Logger';
-import registered_commands from '../settings/alias.json'
+import registered_commands from '../settings/alias.json';
 import CONFIG from './ConfigManager';
 
 logger.info('Initiating ...');
 logger.info(`Running on Node ${process.version}`);
 
 // Creates an instance of a Discord client
+// export const bot = new Client({ intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILDS', 'GUILD_EMOJIS', 'GUILD_INTEGRATIONS', 'GUILD_INVITES', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILD_PRESENCES', 'GUILD_VOICE_STATES'] });
 export const bot = new Client();
 
 connectDB().then(() => {
 	CommandManager.loadModules();
 	bot.login(CONFIG.token.discord).catch(err => {
-		logger.error('Failed to log-in to Discord.')
-		logger.error(err)
-	})
-	logger.info('Logging in to Discord ...')
-})
+		logger.error('Failed to log-in to Discord.');
+		logger.error(err);
+	});
+	logger.info('Logging in to Discord ...');
+});
 
 var client_id: string;
 var loggingChannel: TextChannel;
@@ -49,12 +50,12 @@ bot.once('ready', async () => {
 			logger.info('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
 			await settings.create(guild.id, guild.name, guild.channels.cache[0] instanceof DMChannel, CONFIG.defaultPrefix);
 		}
-	})
+	});
 });
 
 function log(message: Message): void {
-	const lines = message.content.split('\n')
-	const meta = `Received a command from <@${message.author.id}>(${message.guild ? 'SERVER' : 'DM'}) `
+	const lines = message.content.split('\n');
+	const meta = `Received a command from <@${message.author.id}>(${message.guild ? 'SERVER' : 'DM'}) `;
 	let indent = meta;
 	let str = indent + lines.shift();
 	for (const line of lines) {
@@ -85,7 +86,7 @@ function log(message: Message): void {
 
 // Handles received messages
 bot.on('message', async (message) => {
-	message = Object.create(message)
+	message = Object.create(message);
 	if (message.author.id == bot.user!.id) return;
 
 	const isDMMessage = message.channel instanceof DMChannel;
@@ -111,13 +112,13 @@ bot.on('message', async (message) => {
 
 	if (!((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
 
-	log(message)
+	log(message);
 
 	let command_args: Array<string>;
 	if (message.content.startsWith(client_id)) {
-		command_args = message.content.slice(client_id.length).trim().split(' ')
+		command_args = message.content.slice(client_id.length).trim().split(' ');
 	} else {
-		command_args = message.content.slice(prefix.length).trim().split(' ')
+		command_args = message.content.slice(prefix.length).trim().split(' ');
 	}
 
 	// try {
@@ -172,10 +173,10 @@ app.post('/api/github', (req, res) => {
 
 			exec('git pull', async (_err, _stdout, stderr) => {
 				if (stderr) {
-					jarvisChannel.send(`\`git pull\` produced errors, restarting process aborted.\n\`\`\`${stderr}\`\`\``)
+					jarvisChannel.send(`\`git pull\` produced errors, restarting process aborted.\n\`\`\`${stderr}\`\`\``);
 				} else {
 					console.log(`Received request from GitHub, restarting. (Pusher: ${sender.login})`);
-					await jarvisChannel.send('`git pull` ran without errors. Restarting client . . .')
+					await jarvisChannel.send('`git pull` ran without errors. Restarting client . . .');
 					exec('npm i', (_err, _stdout, stderr) => {
 						process.exit();
 					});
@@ -191,12 +192,12 @@ app.post('/api/github', (req, res) => {
 				},
 				description: `\`push\` action was received from a wrong repository, ignoring request.`,
 				color: Helper.RED
-			}))
+			}));
 		}
 
 	} else {
-		console.log('Received from GitHub but there\'s no pusher in it, ignoring request.')
+		console.log('Received from GitHub but there\'s no pusher in it, ignoring request.');
 	}
-})
+});;
 
 // app.listen(port, () => logger.info(`Listening for AJAX calls on port ${port}`))
