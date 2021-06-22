@@ -65,7 +65,7 @@ async function connectSQLite() {
 		logger.info(chalk`{whiteBright SQLite:} Connected to ${path}`);
 		logger.info(chalk`{whiteBright SQLite:} Guilds found: ` + await settings_repository.count());
 	} catch (err) {
-		logger.error(chalk`{whiteBright SQLite:} Failed to connect to ${path}`);
+		logger.error(chalk`{whiteBright SQLite:} Failed to connect to ${path}: ${err.message}`);
 		logger.error('Exiting ...');
 		process.exit(1);
 	}
