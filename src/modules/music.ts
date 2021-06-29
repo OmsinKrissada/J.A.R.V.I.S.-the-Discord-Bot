@@ -7,7 +7,6 @@ import { Shoukaku, ShoukakuPlayer, ShoukakuSocket } from 'shoukaku';
 // import erela from 'erela.js'
 
 import { settings } from '../DBManager';
-import ytdl from 'discord-ytdl-core';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
 import * as CommandManager from '../CommandManager';
@@ -22,34 +21,36 @@ if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 		MusicPlayerMap.forEach(player => {
 			if (player.getCurrentSong()) {
 				player.pause();
-				logger.debug('Paused songs due to high CPU usage.')
+				logger.debug('Paused songs due to high CPU usage.');
 				player.respondChannel.send('Your song has been paused due to high CPU activity. Please try again in a moment.\nClick rection below or use resume command to try again.').then(msg => {
 					msg.react('😀');
 					msg.awaitReactions((reaction: MessageReaction, user: User) => user.id != bot.user.id && reaction.emoji.name == '😀', { max: 1 }).then(() => {
 						player.resume();
-						logger.debug('Resumed from CPU high usage pause.')
-					})
-				})
+						logger.debug('Resumed from CPU high usage pause.');
+					});
+				});
 			}
 		});
 	}
-}), 5000)
+}), 5000);
 
 class Song {
 	readonly title: string;
-	readonly url: string;
+	readonly uri: string;
 	readonly thumbnail: string;
 	readonly duration: moment.Duration;
 	readonly requester: GuildMember;
 	readonly textChannel: TextChannel;
+	trackId?: string;
 
-	constructor(obj: { title: string, url: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel }) {
+	constructor(obj: { title: string, uri: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel, trackId?: string; }) {
 		this.title = obj.title;
-		this.url = obj.url;
+		this.uri = obj.uri;
 		this.thumbnail = obj.thumbnail;
 		this.duration = obj.duration;
 		this.requester = obj.requester;
 		this.textChannel = obj.textChannel;
+		this.trackId = obj.trackId;
 	}
 
 	getDuration() {
@@ -84,7 +85,7 @@ let isFirstAttempt = true;
 let lavanode: ShoukakuSocket;
 function connectToLavaServer() {
 	return new Promise<void>((resolve, reject) => {
-		logger.info(chalk`{whiteBright Lavalink:} Connecting to Lavalink server ...`)
+		logger.info(chalk`{whiteBright Lavalink:} Connecting to Lavalink server ...`);
 		shoukakuclient = new Shoukaku(bot, LavalinkServer, ShoukakuOptions);
 		// if (!isFirstAttempt) shoukakuclient.addNode(LavalinkServer[0]);
 		// isFirstAttempt = false;
@@ -133,7 +134,7 @@ class MusicPlayer {
 	private volume: number = CONFIG.defaultVolume;
 	private leaveTimeout: NodeJS.Timeout;
 	public lavaplayer: ShoukakuPlayer = null;
-	private trackId: string;
+	// private trackId: string;
 	private playedTime: number;
 
 	constructor(guild: Guild) {
@@ -165,12 +166,8 @@ class MusicPlayer {
 	}
 
 
-	async findSongYoutube(query: string, { member, textChan }: { member: GuildMember, textChan: TextChannel }): Promise<Song | Playlist | undefined> {
-		let songObj: { requester: GuildMember, textChannel: TextChannel, title: string, url: string, duration: moment.Duration, thumbnail: string } = {
-			requester: member,
-			textChannel: textChan,
-			title: '', url: '', duration: moment.duration(0), thumbnail: ''
-		};
+	async findSongYoutube(query: string, { member, textChan }: { member: GuildMember, textChan: TextChannel; }): Promise<Song | Playlist | undefined> {
+
 
 		// if query is a playlist
 		if (query.includes("list=")) {
@@ -180,7 +177,6 @@ class MusicPlayer {
 			const songs: Song[] = [];
 			const waitmsgpromise = textChan.send('<a:loading:845534883396583435> Getting videos');
 			do {
-				const songsstr: string[] = [];
 				let paramObj = {
 					key: CONFIG.token.youtube,
 					part: 'contentDetails',
@@ -206,9 +202,7 @@ class MusicPlayer {
 					return null;
 				}
 				const playlistdata = playlistItemRes.data;
-				for (const song of playlistdata.items) {
-					songsstr.push(song.contentDetails.videoId)
-				}
+				const songsstr = playlistdata.items.map(s => s.contentDetails.videoId);
 
 				// get detailed information of videos got from a playlist
 				const videosRes = await axios({
@@ -220,17 +214,17 @@ class MusicPlayer {
 						id: songsstr.join(','),
 						fields: 'items/id,items/contentDetails/duration,items/snippet/thumbnails/default,items/snippet/title'
 					}
-				})
+				});
 
 				for (const vid of videosRes.data.items) {
 					songs.push(new Song({
 						title: vid.snippet.title,
 						duration: moment.duration(vid.contentDetails.duration),
 						thumbnail: vid.snippet.thumbnails.default.url,
-						url: `https://youtube.com/watch?v=${vid.id}`,
+						uri: vid.id,
 						requester: member,
 						textChannel: textChan,
-					}))
+					}));
 					nextPageToken = playlistdata.nextPageToken;
 				}
 			} while (nextPageToken);
@@ -243,24 +237,19 @@ class MusicPlayer {
 
 		}
 
-		// if query is an individual video
-		if (ytdl.validateURL(query)) {
-			const info = await ytdl.getInfo(query);
-			songObj.title = info.videoDetails.title;
-			songObj.url = query;
-			songObj.duration = moment.duration(info.videoDetails.lengthSeconds, 'seconds');
-			songObj.thumbnail = info.player_response.videoDetails.thumbnail.thumbnails[0].url;
-		} else {
-			const searchResult = await yts({ query: query, pageStart: 1, pageEnd: 1 });
-			const video = searchResult.videos[0];
-			if (searchResult == null) return null;
-			songObj.title = video.title;
-			songObj.url = video.url;
-			songObj.duration = moment.duration(video.duration.seconds, 'seconds');
-			songObj.thumbnail = video.thumbnail;
+		// if query is a single video
+		const track = (await lavanode.rest.resolve(query, 'youtube')).tracks[0];
+		if (track) {
+			return new Song({
+				requester: member, textChannel: textChan,
+				title: track.info.title,
+				uri: track.info.identifier,
+				duration: moment.duration(track.info.length),
+				thumbnail: `https://i.ytimg.com/vi/${track.info.identifier}/mqdefault.jpg`,
+				trackId: track.track
+			});
 		}
-		let song = new Song(songObj);
-		return song;
+		return null;
 	}
 
 	// findSongSpotify(query: string): Song[] {
@@ -277,8 +266,10 @@ class MusicPlayer {
 
 		let result: Song | Playlist | undefined;
 		if (query.match(/https?:\/\/open.spotify.com\/(\w+)\/\w+/gi)) { // If matches Spotify URL format
-			referTextChannel.send('Spotify support coming soon.')
-			// result=bla bla bla
+			referTextChannel.send('Spotify support coming soon.');
+			// const data = await lavanode.rest.resolve(query);
+			// this.trackId = data.tracks[0].track;
+			// await this.lavaplayer.playTrack(this.trackId, { noReplace: false });
 		} else {
 			result = await this.findSongYoutube(query, { member: member, textChan: referTextChannel });
 		}
@@ -287,7 +278,7 @@ class MusicPlayer {
 			const song = result;
 			referTextChannel.send(new MessageEmbed()
 				.setAuthor('Song Queued', member.user.displayAvatarURL())
-				.setDescription('Queued ' + `**[${song.title}](${song.url})**` + '.\n')
+				.setDescription('Queued ' + `**[${song.title}](https://youtube.com/watch?v=${song.uri})**` + '.\n')
 				.setColor(Helper.GREEN)
 				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration().asSeconds())}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
@@ -317,6 +308,8 @@ class MusicPlayer {
 				color: Helper.RED
 			}));
 			return;
+		} else {
+			console.log(result);
 		}
 
 		if (!this.currentSong && this.queue.length > 0) this.playNext();
@@ -332,10 +325,10 @@ class MusicPlayer {
 		this.voiceChannel = voiceChannel;
 
 		if (!lavanode) {
-			logger.debug('Adding node')
+			logger.debug('Adding node');
 			shoukakuclient.addNode(LavalinkServer[0]);
 			await connectToLavaServer();
-			logger.debug(`Reconnected to Lavalink server (initiated from player${this.guild.id})`)
+			logger.debug(`Reconnected to Lavalink server (initiated from player${this.guild.id})`);
 		}
 
 		this.lavaplayer = await lavanode.joinVoiceChannel({
@@ -351,21 +344,21 @@ class MusicPlayer {
 
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
-			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "closed", Reason: "${reason.reason}"`)
+			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "closed", Reason: "${reason.reason}"`);
 			if (!this.guild.member(bot.user).voice.channel) {
 				this.disconnect();
 				this.lavaplayer = null;
 			} else {
 				this.lavaplayer.stopTrack();
-				this.lavaplayer.playTrack(this.trackId, { startTime: this.playedTime, noReplace: false });
+				this.lavaplayer.playTrack(this.currentSong.trackId, { startTime: this.playedTime, noReplace: false });
 				setTimeout(() => {
 					clearTimeout(this.leaveTimeout);
 					this.leaveTimeout = null;
-					logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`)
+					logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`);
 				}, 5000);
 			}
-		})
-		this.lavaplayer.on('playerUpdate', (update: any) => this.playedTime = update.position)
+		});
+		this.lavaplayer.on('playerUpdate', (update: any) => this.playedTime = update.position);
 
 		// when the player finish playing a song
 		this.lavaplayer.on('end', async (reason) => {
@@ -373,7 +366,7 @@ class MusicPlayer {
 			if (reason.reason != "REPLACED") {
 				if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
 				this.leaveTimeout = setTimeout(() => this.disconnect(), 300000);
-				logger.debug(`Music Player[${this.guild.id}]: Registered Timeout (5 mins)`)
+				logger.debug(`Music Player[${this.guild.id}]: Registered Timeout (5 mins)`);
 			}
 			if (reason.reason != "FINISHED") return;
 			if (this.isLooping) { // have looping enabled
@@ -386,7 +379,7 @@ class MusicPlayer {
 					this.respondChannel.send('Queue Ended.');
 				}
 			}
-		})
+		});
 	}
 
 	/**
@@ -435,10 +428,10 @@ class MusicPlayer {
 
 		if (!this.lavaplayer) {
 			try {
-				logger.debug(`Music Player[${this.guild.id}]: Trying to connect player from play method`)
+				logger.debug(`Music Player[${this.guild.id}]: Trying to connect player from play method`);
 				this.connect(song.textChannel, this.voiceChannel);
 			} catch (err) {
-				logger.debug(`Music Player[${this.guild.id}]: Cannot connect to voice channel. An unknown error occured.`)
+				logger.debug(`Music Player[${this.guild.id}]: Cannot connect to voice channel. An unknown error occured.`);
 				this.respondChannel.send('Cannot connect to voice channel. An unknown error occured.');
 			}
 		}
@@ -446,18 +439,20 @@ class MusicPlayer {
 		// play song
 		clearTimeout(this.leaveTimeout);
 		this.leaveTimeout = null;
-		logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`)
-		const data = await lavanode.rest.resolve(song.url)
-		this.trackId = data.tracks[0].track;
-		await this.lavaplayer.playTrack(this.trackId, { noReplace: false });
+		logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`);
+		if (!song.trackId) {
+			const data = await lavanode.rest.resolve(song.uri);
+			song.trackId = data.tracks[0].track;
+		}
+		await this.lavaplayer.playTrack(song.trackId, { noReplace: false });
 		this.currentSong = song;
 
 
 		if ((await settings.get(this.guild.id, ['announceSong'])).announceSong) {
 			song.textChannel.send(new MessageEmbed()
-				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.url})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
+				.setDescription(`🎧 Now playing ` + ` **[${song.title}](https://youtube.com/watch?v=${song.uri})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
 				.setColor(Helper.BLUE)
-			)
+			);
 		}
 		// }																-----> closing for above
 
@@ -491,8 +486,8 @@ class MusicPlayer {
 
 	setVolume(volume: number) {
 		if (!this.lavaplayer) return;
-		this.lavaplayer.setVolume(volume)
-		logger.debug(`Volume set to ${volume} in "${this.guild.id}"`)
+		this.lavaplayer.setVolume(volume);
+		logger.debug(`Volume set to ${volume} in "${this.guild.id}"`);
 		this.volume = volume;
 	}
 
@@ -502,9 +497,9 @@ class MusicPlayer {
 		} else if (this.lavaplayer) {
 			this.lavaplayer.stopTrack();
 			this.currentSong = null;
-			this.respondChannel.send('Skipped! ⏩')
+			this.respondChannel.send('Skipped! ⏩');
 		} else {
-			throw "NO_PLAYING_SONG"
+			throw "NO_PLAYING_SONG";
 		}
 	}
 
@@ -548,7 +543,7 @@ class MusicPlayer {
 			// cannot get real-time position back from Lavalink server -.- making the next line inaccurate
 			// .setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
 			.setColor(Helper.GREEN)
-		)
+		);
 	}
 
 	async search(field: string) {
@@ -585,7 +580,7 @@ bot.on('message', msg => {
 	if (msg.channel instanceof DMChannel) return;
 	if (!MusicPlayerMap.has(msg.guild!.id))
 		MusicPlayerMap.set(msg.guild!.id, new MusicPlayer(msg.guild!));
-})
+});
 
 // change voiceChannel value to new channel when forced to move
 bot.on('voiceStateUpdate', async (_, newvs) => {
@@ -604,7 +599,7 @@ bot.on('voiceStateUpdate', async (_, newvs) => {
 		// this.lavaplayer.voiceConnection.attemptReconnect();
 
 	}
-})
+});
 
 
 
@@ -625,7 +620,7 @@ new Command({
 				player.connect(<TextChannel>message.channel, <VoiceChannel>channel);
 			}
 			else {
-				message.channel.send('Channel with ID ' + args[0] + ' is not a voice channel.')
+				message.channel.send('Channel with ID ' + args[0] + ' is not a voice channel.');
 			}
 		}
 		else {
@@ -637,10 +632,10 @@ new Command({
 				);
 				return;
 			}
-			player.connect(<TextChannel>message.channel, message.member!.voice.channel)
+			player.connect(<TextChannel>message.channel, message.member!.voice.channel);
 		}
 	}
-})
+});
 
 
 new Command({
@@ -682,7 +677,7 @@ new Command({
 		}
 		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.guild, <TextChannel>message.channel, Helper.longarg(0, args));
 	}
-})
+});
 
 new Command({
 	name: 'pause',
@@ -694,9 +689,9 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.pause();
-		message.channel.send('Paused! ⏸')
+		message.channel.send('Paused! ⏸');
 	}
-})
+});
 
 new Command({
 	name: 'resume',
@@ -708,9 +703,9 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.resume();
-		message.channel.send('Resumed! ▶')
+		message.channel.send('Resumed! ▶');
 	}
-})
+});
 
 new Command({
 	name: 'leave',
@@ -733,7 +728,7 @@ new Command({
 			);
 		}
 	}
-})
+});
 
 
 new Command({
@@ -750,7 +745,7 @@ new Command({
 			message.channel.send(new MessageEmbed({
 				title: "I'm not in a voice channel.",
 				color: Helper.RED
-			}))
+			}));
 			return;
 		}
 		if (args[0]) {
@@ -761,7 +756,7 @@ new Command({
 				player.setLooping(false);
 				message.channel.send('✋ Looping Disabled!');
 			} else {
-				message.channel.send(`❌ Invalid value ${Helper.inlineCodeBlock(args[0])}`)
+				message.channel.send(`❌ Invalid value ${Helper.inlineCodeBlock(args[0])}`);
 			}
 		} else {
 			const isLooping = player.toggleLooping();
@@ -772,7 +767,7 @@ new Command({
 			}
 		}
 	}
-})
+});
 
 new Command({
 	name: 'shuffle',
@@ -784,9 +779,9 @@ new Command({
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		MusicPlayerMap.get(message.guild!.id)!.shuffle();
-		message.channel.send('Shuffled! 🔀')
+		message.channel.send('Shuffled! 🔀');
 	}
-})
+});
 
 new Command({
 	name: 'nowplaying',
@@ -813,15 +808,15 @@ new Command({
 			// .setDescription(content)
 			.setColor(Helper.BLUE)
 			.setThumbnail(current_song.thumbnail)
-			.addField('Song', `${current_song.title}`)
-			.addField('Link', current_song.url)
-			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration().asSeconds())}` + (player.getLooping() ? ' 🔂' : '') + `\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
+			.addField('Song', `[${current_song.title}](https://youtube.com/watch?v=${current_song.uri})`)
+			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration().asSeconds())}` + (player.getLooping() ? ' 🔂' : '') +
+				`\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
-			.addField('Voice Channel', player.voiceChannel.name, true)
+			.addField('Voice Channel', `\`${player.voiceChannel.name}\``, true)
 			.addField('Requester', `${current_song.requester}`, true)
 		);
 	}
-})
+});
 
 
 new Command({
@@ -841,7 +836,7 @@ new Command({
 		}
 
 	}
-})
+});
 
 new Command({
 	name: 'volume',
@@ -893,7 +888,7 @@ new Command({
 			);
 		}
 	}
-})
+});
 
 new Command({
 	name: 'queue',
@@ -904,13 +899,13 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		const player = MusicPlayerMap.get(message.guild!.id)!
+		const player = MusicPlayerMap.get(message.guild!.id)!;
 		let content: string[] = [];
 		let i = 0;
 		player.getQueue().forEach(song => {
 			i++;
-			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration().asSeconds())}\` __[${song.title}](${song.url})__ [${song.requester}]\n`);
-		})
+			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration().asSeconds())}\` __[${song.title}](https://youtube.com/watch?v=${song.uri})__ [${song.requester}]\n`);
+		});
 
 		let embed = new MessageEmbed()
 			.setTitle('Song Queue 🎶')
@@ -919,13 +914,13 @@ new Command({
 		let currentSong = player.getCurrentSong();
 		if (currentSong) {
 			let secondsPlayed = Math.floor(player.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
-			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.url})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
+			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](https://youtube.com/watch?v=${currentSong.uri})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
 				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` `, true)
 				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
 		}
-		Helper.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']))
+		Helper.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']));
 	}
-})
+});
 
 new Command({
 	name: 'remove',
@@ -956,12 +951,12 @@ new Command({
 		}
 		message.channel.send(new MessageEmbed()
 			.setAuthor('🗑️ Song Removed')
-			.setDescription(`Removed [${song.title}](${song.url}) [${song.requester}]`)
+			.setDescription(`Removed [${song.title}](https://youtube.com/watch?v=${song.uri}) [${song.requester}]`)
 			.setColor(Helper.GREEN)
 		);
 
 	}
-})
+});
 
 new Command({
 	name: 'clear',
@@ -979,7 +974,7 @@ new Command({
 			.setColor(Helper.GREEN)
 		);
 	}
-})
+});
 
 new Command({
 	name: 'rmrange',
@@ -1023,7 +1018,7 @@ new Command({
 			);
 		}
 	}
-})
+});
 
 new Command({
 	name: 'search',
@@ -1042,7 +1037,7 @@ new Command({
 			result => `\`${result.duration.timestamp}\` __[${result.title}](${result.url})__\n`);
 		CommandManager.run('play', [song.url], { message: message, prefix: prefix, sourceID: sourceID });
 	}
-})
+});
 
 new Command({
 	name: 'seek',
@@ -1053,7 +1048,7 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES'],
 	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
-		const player = MusicPlayerMap.get(message.guild!.id)!
+		const player = MusicPlayerMap.get(message.guild!.id)!;
 		try {
 			player.seek(+args[0], <TextChannel>message.channel);
 		} catch (err) {
@@ -1061,7 +1056,7 @@ new Command({
 				title: 'No Playing Song',
 				description: 'I am not playing any song at the moment.',
 				color: Helper.RED
-			}))
+			}));
 		}
 
 		// if (!player.connection) {
@@ -1081,4 +1076,4 @@ new Command({
 		// }
 
 	}
-})
+});

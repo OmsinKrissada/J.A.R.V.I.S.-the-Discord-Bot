@@ -1,11 +1,11 @@
 import winston from 'winston';
 import chalk from 'chalk';
-import fs from 'fs'
+import fs from 'fs';
 import linereader from 'n-readlines';
 
 // Checks if file directory exists, if not, creates them.
 if (!fs.existsSync('./logs')) {
-	fs.mkdirSync('./logs')
+	fs.mkdirSync('./logs');
 }
 
 // renames latest.log to its appropriate name
@@ -18,7 +18,7 @@ if (fs.existsSync('./logs/latest.log')) {
 }
 
 
-var logfile = fs.createWriteStream(`./logs/latest.log`, { encoding: 'utf-8' })
+var logfile = fs.createWriteStream(`./logs/latest.log`, { encoding: 'utf-8' });
 
 
 logfile.write('# ' + new Date().toISOString() + '\n');
@@ -33,25 +33,25 @@ class LoggerClass {
 			if (level == 'error') return chalk.redBright('ERROR');
 			if (level == 'debug') return chalk.cyanBright('DEBUG');
 			return level;
-		}
+		};
 		const console_format = winston.format.combine(
 			winston.format.timestamp({
 				format: "HH:mm:ss"
 			}),
 			winston.format.printf(
 				log => chalk`${coloredLevelString(log.level)} {grey ${log.timestamp}} {white ${(log.message)}}`
-			))
+			));
 		const file_format = winston.format.combine(
 			winston.format.timestamp({
 				format: "isoDateTime",
 			}),
 			winston.format.printf(
 				log => `${log.level.toUpperCase()} ${log.timestamp} ${(log.message)}`.replace(/\[\d\dm/g, '')
-			))
+			));
 
 		this.internal_logger = winston.createLogger({
 			transports: [
-				new winston.transports.Console({ level: 'debug', format: console_format, handleExceptions: true }),
+				new winston.transports.Console({ level: 'debug', format: console_format, handleExceptions: false }),
 				new winston.transports.File({ level: 'debug', filename: './logs/latest.log', format: file_format, handleExceptions: true }),
 			],
 			exitOnError: false,
@@ -60,16 +60,16 @@ class LoggerClass {
 
 
 	info(message: string) {
-		this.internal_logger.info(message)
+		this.internal_logger.info(message);
 	}
 	warn(message: string) {
-		this.internal_logger.warn(message)
+		this.internal_logger.warn(message);
 	}
 	error(message: string) {
-		this.internal_logger.error(message)
+		this.internal_logger.error(message);
 	}
 	debug(message: string) {
-		this.internal_logger.debug(message)
+		this.internal_logger.debug(message);
 	}
 }
 
