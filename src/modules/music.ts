@@ -10,6 +10,7 @@ import { settings } from '../DBManager';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
 import * as CommandManager from '../CommandManager';
+import { getTrackSearchString } from '../Spotify';
 
 import os from 'os-utils';
 import { bot } from '../Main';
@@ -42,8 +43,9 @@ class Song {
 	readonly requester: GuildMember;
 	readonly textChannel: TextChannel;
 	trackId?: string;
+	readonly href: string;
 
-	constructor(obj: { title: string, uri: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel, trackId?: string; }) {
+	constructor(obj: { title: string, uri: string, thumbnail: string, duration: moment.Duration, requester: GuildMember, textChannel: TextChannel, href: string, trackId?: string; }) {
 		this.title = obj.title;
 		this.uri = obj.uri;
 		this.thumbnail = obj.thumbnail;
@@ -51,6 +53,7 @@ class Song {
 		this.requester = obj.requester;
 		this.textChannel = obj.textChannel;
 		this.trackId = obj.trackId;
+		this.href = obj.href;
 	}
 
 	getDuration() {
@@ -222,6 +225,7 @@ class MusicPlayer {
 						duration: moment.duration(vid.contentDetails.duration),
 						thumbnail: vid.snippet.thumbnails.default.url,
 						uri: vid.id,
+						href: `https://youtube.com/watch?v=${vid.id}`,
 						requester: member,
 						textChannel: textChan,
 					}));
@@ -244,6 +248,7 @@ class MusicPlayer {
 				requester: member, textChannel: textChan,
 				title: track.info.title,
 				uri: track.info.identifier,
+				href: `https://youtube.com/watch?v=${track.info.identifier}`,
 				duration: moment.duration(track.info.length),
 				thumbnail: `https://i.ytimg.com/vi/${track.info.identifier}/mqdefault.jpg`,
 				trackId: track.track
@@ -251,10 +256,6 @@ class MusicPlayer {
 		}
 		return null;
 	}
-
-	// findSongSpotify(query: string): Song[] {
-
-	// }
 
 	/**
 	  * @returns Returns true if success, otherwise returns false.
@@ -266,7 +267,28 @@ class MusicPlayer {
 
 		let result: Song | Playlist | undefined;
 		if (query.match(/https?:\/\/open.spotify.com\/(\w+)\/\w+/gi)) { // If matches Spotify URL format
-			referTextChannel.send('Spotify support coming soon.');
+
+			const [head, params_str] = query.split('spotify.com');
+			const params = params_str.split(/\/|\?|\&/g);
+			const trackID = params[params.indexOf('track') + 1];
+			logger.debug(trackID);
+			if (trackID) {
+				const { name, artist, href, thumbnail_url } = await getTrackSearchString(trackID);
+
+				const yt_track = (await lavanode.rest.resolve(`${artist} ${name}`, 'youtube')).tracks[0];
+				result = new Song({
+					requester: member, textChannel: referTextChannel,
+					title: `${artist} - ${name}`,
+					uri: yt_track.info.identifier,
+					href: href,
+					duration: moment.duration(yt_track.info.length),
+					thumbnail: thumbnail_url,
+					trackId: yt_track.track
+				});
+			} else {
+				referTextChannel.send('Only support single Spotify track at this moment. Sorry :( (im working on it k?)');
+			}
+
 			// const data = await lavanode.rest.resolve(query);
 			// this.trackId = data.tracks[0].track;
 			// await this.lavaplayer.playTrack(this.trackId, { noReplace: false });
@@ -278,7 +300,7 @@ class MusicPlayer {
 			const song = result;
 			referTextChannel.send(new MessageEmbed()
 				.setAuthor('Song Queued', member.user.displayAvatarURL())
-				.setDescription('Queued ' + `**[${song.title}](https://youtube.com/watch?v=${song.uri})**` + '.\n')
+				.setDescription('Queued ' + `**[${song.title}](${song.href})**` + '.\n')
 				.setColor(Helper.GREEN)
 				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration().asSeconds())}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
@@ -450,7 +472,7 @@ class MusicPlayer {
 
 		if ((await settings.get(this.guild.id, ['announceSong'])).announceSong) {
 			song.textChannel.send(new MessageEmbed()
-				.setDescription(`🎧 Now playing ` + ` **[${song.title}](https://youtube.com/watch?v=${song.uri})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
+				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.href})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
 				.setColor(Helper.BLUE)
 			);
 		}
@@ -808,7 +830,7 @@ new Command({
 			// .setDescription(content)
 			.setColor(Helper.BLUE)
 			.setThumbnail(current_song.thumbnail)
-			.addField('Song', `[${current_song.title}](https://youtube.com/watch?v=${current_song.uri})`)
+			.addField('Song', `[${current_song.title}](${current_song.href})`)
 			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration().asSeconds())}` + (player.getLooping() ? ' 🔂' : '') +
 				`\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
@@ -904,7 +926,7 @@ new Command({
 		let i = 0;
 		player.getQueue().forEach(song => {
 			i++;
-			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration().asSeconds())}\` __[${song.title}](https://youtube.com/watch?v=${song.uri})__ [${song.requester}]\n`);
+			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration().asSeconds())}\` __[${song.title}](${song.href})__ [${song.requester}]\n`);
 		});
 
 		let embed = new MessageEmbed()
@@ -914,7 +936,7 @@ new Command({
 		let currentSong = player.getCurrentSong();
 		if (currentSong) {
 			let secondsPlayed = Math.floor(player.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
-			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](https://youtube.com/watch?v=${currentSong.uri})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
+			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.href})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
 				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` `, true)
 				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
 		}
@@ -951,7 +973,7 @@ new Command({
 		}
 		message.channel.send(new MessageEmbed()
 			.setAuthor('🗑️ Song Removed')
-			.setDescription(`Removed [${song.title}](https://youtube.com/watch?v=${song.uri}) [${song.requester}]`)
+			.setDescription(`Removed [${song.title}](${song.href}) [${song.requester}]`)
 			.setColor(Helper.GREEN)
 		);
 
