@@ -32,6 +32,8 @@ interface ConfigOption {
 		discord: string,
 		wolfram: string,
 		youtube: string,
+		spotify_id: string,
+		spotify_secret: string,
 	};
 	defaultPrefix: string;
 	defaultDMPrefix: string;

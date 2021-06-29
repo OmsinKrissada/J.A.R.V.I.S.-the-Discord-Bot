@@ -1,5 +1,6 @@
 import axios from 'axios';
 import querystring from 'querystring';
+import ConfigManager from './ConfigManager';
 import { logger } from './Logger';
 console.log('spotify ready');
 
@@ -10,8 +11,8 @@ async function refreshAccessToken() {
 		accessToken = (await axios.post('https://accounts.spotify.com/api/token', querystring.stringify({ 'grant_type': 'client_credentials' }),
 			{
 				auth: {
-					username: 'a48092e160694ccbae51b91983f910bb',
-					password: '1e1e98a33c3b4168bd8d5721b3f41b7c'
+					username: ConfigManager.token.spotify_id,
+					password: ConfigManager.token.spotify_secret
 				}
 			})).data.access_token;
 		logger.debug(accessToken);
