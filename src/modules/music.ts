@@ -367,18 +367,21 @@ class MusicPlayer {
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
 			logger.debug(`Music Player[${this.guild.id}]: Lavalink player fired "closed", Reason: "${reason.reason}"`);
-			if (!this.guild.member(bot.user).voice.channel) {
-				this.disconnect();
-				this.lavaplayer = null;
-			} else {
-				this.lavaplayer.stopTrack();
-				this.lavaplayer.playTrack(this.currentSong.trackId, { startTime: this.playedTime, noReplace: false });
-				setTimeout(() => {
-					clearTimeout(this.leaveTimeout);
-					this.leaveTimeout = null;
-					logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`);
-				}, 5000);
-			}
+			setTimeout(() => {
+				if (!this.guild.member(bot.user).voice.channel) {
+					this.disconnect();
+					logger.debug('force disconnected');
+					// this.lavaplayer = null;
+				} else {
+					this.lavaplayer.stopTrack();
+					this.lavaplayer.playTrack(this.currentSong.trackId, { startTime: this.playedTime, noReplace: false });
+					setTimeout(() => {
+						clearTimeout(this.leaveTimeout);
+						this.leaveTimeout = null;
+						logger.debug(`Music Player[${this.guild.id}]: Cleared Timeout`);
+					}, 5000);
+				}
+			}, 200);
 		});
 		this.lavaplayer.on('playerUpdate', (update: any) => this.playedTime = update.position);
 
