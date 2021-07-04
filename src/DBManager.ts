@@ -89,7 +89,7 @@ class SettingsManager {
 
 	async set(sourceID: string, newValue: QueryDeepPartialEntity<GuildSettings>): Promise<void> {
 		await settings_repository.update({ id: sourceID }, newValue);
-		logger.debug('saved new data');
+		logger.debug(`Updated data in ${sourceID}`);
 	}
 
 	async checkExist(sourceID: string) {

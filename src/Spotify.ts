@@ -2,7 +2,6 @@ import axios from 'axios';
 import querystring from 'querystring';
 import ConfigManager from './ConfigManager';
 import { logger } from './Logger';
-console.log('spotify ready');
 
 let accessToken: string = null;
 
@@ -65,26 +64,7 @@ export async function getTrackSearchString(id: string): Promise<{ name: string, 
 				await refreshAccessToken();
 				return await getTrackSearchString(id);
 			} else logger.error(`${err.message}: ${JSON.stringify(err.response.data.error)}`);
-		} else console.error(err);
+		} else logger.error(err);
 	}
 	return null;
 }
-
-
-
-// axios.request({
-// 	url: 'https://accounts.spotify.com/api/token',
-// 	method: 'post',
-// 	auth: {
-// 		username: 'a48092e160694ccbae51b91983f910bb',
-// 		password: '1e1e98a33c3b4168bd8d5721b3f41b7c'
-// 	},
-// 	data: {
-// 		"grant_type": "client_credentials"
-// 	}
-// }).then(res => {
-// 	console.log(res.data);
-// 	process.exit();
-// 	return;
-// });
-console.log('requested');
