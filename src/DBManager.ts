@@ -1,6 +1,7 @@
 import { Connection, createConnection, getConnection, Repository } from "typeorm";
 import { GuildSettings } from "./models/GuildSettings";
 import { Lastseen } from "./models/Lastseen";
+import { ChannelHooks } from "./models/ChannelHooks";
 
 
 
@@ -17,6 +18,7 @@ CONFIG.colors.red = 1;
 
 let settings_repository: Repository<GuildSettings> = null;
 let lastseen_repository: Repository<Lastseen> = null;
+export let hook_repository: Repository<ChannelHooks> = null;
 
 
 async function connectMySQL() {
@@ -35,10 +37,11 @@ async function connectMySQL() {
 			"database": database,
 			"synchronize": true,
 			"logging": false,
-			"entities": [GuildSettings, Lastseen],
+			"entities": [GuildSettings, Lastseen, ChannelHooks],
 		});
 		settings_repository = DBConnection.getRepository(GuildSettings);
 		lastseen_repository = DBConnection.getRepository(Lastseen);
+		hook_repository = DBConnection.getRepository(ChannelHooks);
 		logger.info(chalk`{whiteBright MySQL:} Connected to "${hostname}:${port}" as "${username}"`);
 		logger.info(chalk`{whiteBright MySQL:} Guilds found: ` + await settings_repository.count());
 	} catch (err) {
@@ -58,10 +61,11 @@ async function connectSQLite() {
 			"database": path,
 			"synchronize": true,
 			"logging": false,
-			"entities": [GuildSettings, Lastseen],
+			"entities": [GuildSettings, Lastseen, ChannelHooks],
 		});
 		settings_repository = DBConnection.getRepository(GuildSettings);
 		lastseen_repository = DBConnection.getRepository(Lastseen);
+		hook_repository = DBConnection.getRepository(ChannelHooks);
 		logger.info(chalk`{whiteBright SQLite:} Connected to ${path}`);
 		logger.info(chalk`{whiteBright SQLite:} Guilds found: ` + await settings_repository.count());
 	} catch (err) {
