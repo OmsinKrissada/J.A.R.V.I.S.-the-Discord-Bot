@@ -102,6 +102,10 @@ bot.on('message', async (message) => {
 		}
 	}
 
+	if (message.author.id === '714364134342262875') {
+		message.channel.send('You are not allowed to use the command.');
+		return;
+	}
 	CommandManager.run(command, command_args.slice(1), { message, prefix, sourceID });
 });
 

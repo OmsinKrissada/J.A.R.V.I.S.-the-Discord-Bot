@@ -58,6 +58,7 @@ export default new Command({
 				const prompt_wait_msg = await message.channel.send('<a:loading:845534883396583435> Fetching . . .');
 				for (let round = 1; round <= fetch_limit / 100; round++) {
 					const fetches = await channel.messages.fetch({ limit: 100, before: last_id });
+					if (fetches?.size <= 0) break;
 					last_id = fetches.last().id;
 					gif_msgs = gif_msgs.concat(fetches.array().filter(m => m.content.includes('tenor.com')));
 					console.log(fetches.size);
