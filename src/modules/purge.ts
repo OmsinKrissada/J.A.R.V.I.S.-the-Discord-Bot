@@ -51,7 +51,7 @@ export default new Command({
 		} else if (args[0].toLowerCase() === 'gif') {
 			if (!isNaN(+args[1]) && +args[1] <= 100 && +args[1] >= 1) {
 				const amount = +args[1];
-				channel.messages.fetch({ limit: 1000 }).then(msgs => {
+				channel.messages.fetch({ limit: 500 }).then(msgs => {
 					console.log(msgs.size);
 					const gif_msgs = msgs.filter(m => m.content.includes('tenor.com')).array();
 					console.log(gif_msgs.length);
