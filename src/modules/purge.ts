@@ -51,7 +51,7 @@ export default new Command({
 		} else if (args[0].toLowerCase() === 'gif') {
 			if (!isNaN(+args[1]) && +args[1] <= 100 && +args[1] >= 1) {
 				const amount = +args[1];
-				channel.messages.fetch({ limit: 100 }).then(msgs => {
+				channel.messages.fetch({ limit: 1000 }).then(msgs => {
 					console.log(msgs.size);
 					const gif_msgs = msgs.filter(m => m.content.includes('tenor.com')).array();
 					console.log(gif_msgs.length);
@@ -59,7 +59,8 @@ export default new Command({
 					console.log(selected.length);
 					try {
 						channel.bulkDelete(selected);
-						channel.send(`<:checkmark:849685283459825714> Deleted ${selected.length} message${selected.length > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }));
+						channel.send(`<:checkmark:849685283459825714> Found and deleted ${selected.length} message${selected.length > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }));
+						if (message.deletable && !message.deleted) message.delete();
 					} catch (err) {
 						channel.send({
 							embed: {
