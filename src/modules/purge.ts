@@ -11,7 +11,7 @@ export default new Command({
 	requiredCallerPermissions: ['MANAGE_MESSAGES'],
 	requiredSelfPermissions: ['SEND_MESSAGES', 'MANAGE_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
-	exec(message, prefix, args, sourceID) {
+	async exec(message, prefix, args, sourceID) {
 		if (message.channel instanceof DMChannel || !message.channel.isText()) return;
 		const channel = message.channel;
 
@@ -50,28 +50,34 @@ export default new Command({
 			}
 		} else if (args[0].toLowerCase() === 'gif') {
 			if (!isNaN(+args[1]) && +args[1] <= 100 && +args[1] >= 1) {
+				const fetch_limit = 1000;
 				const amount = +args[1];
-				channel.messages.fetch({ limit: 500 }).then(msgs => {
-					console.log(msgs.size);
-					const gif_msgs = msgs.filter(m => m.content.includes('tenor.com')).array();
-					console.log(gif_msgs.length);
-					const selected = gif_msgs.slice(0, amount);
-					console.log(selected.length);
-					try {
-						channel.bulkDelete(selected);
-						channel.send(`<:checkmark:849685283459825714> Found and deleted ${selected.length} message${selected.length > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }));
-						if (message.deletable && !message.deleted) message.delete();
-					} catch (err) {
-						channel.send({
-							embed: {
-								title: 'Error occured',
-								description: err,
-								color: Helper.RED
-							}
-						});
-					}
+				let gif_msgs: Message[] = [];
 
-				});
+				let last_id: string;
+				const prompt_wait_msg = await message.channel.send('<a:loading:845534883396583435> Fetching . . .');
+				for (let round = 1; round <= fetch_limit / 100; round++) {
+					const fetches = await channel.messages.fetch({ limit: 100, before: last_id });
+					last_id = fetches.last().id;
+					gif_msgs = gif_msgs.concat(fetches.array().filter(m => m.content.includes('tenor.com')));
+					console.log(fetches.size);
+				}
+				console.log(gif_msgs.length);
+				const selected = gif_msgs.slice(0, amount);
+				console.log(selected.length);
+				try {
+					channel.bulkDelete(selected);
+					prompt_wait_msg.edit(`<:checkmark:849685283459825714> Found and deleted ${selected.length} message${selected.length > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }));
+					if (message.deletable && !message.deleted) message.delete();
+				} catch (err) {
+					channel.send({
+						embed: {
+							title: 'Error occured',
+							description: err,
+							color: Helper.RED
+						}
+					});
+				}
 			} else {
 				channel.send({
 					embed: {
