@@ -60,7 +60,7 @@ export default new Command({
 					const fetches = await channel.messages.fetch({ limit: 100, before: last_id });
 					if (fetches?.size <= 0) break;
 					last_id = fetches.last().id;
-					gif_msgs = gif_msgs.concat(fetches.array().filter(m => m.content.includes('tenor.com')));
+					gif_msgs = gif_msgs.concat(fetches.array().filter(m => m.content.match(/https?:\/\/tenor.com\/view\/.+/g)));
 					console.log(fetches.size);
 				}
 				console.log(gif_msgs.length);
