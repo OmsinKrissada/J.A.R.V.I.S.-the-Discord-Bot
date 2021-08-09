@@ -128,6 +128,10 @@ export async function run(command_name: string, args: string[], { message: sourc
 				return;
 			}
 		} else {
+			if (command.category === 'music') {
+				sourcemsg.channel.send('Music feature is temporary unavailable, sorry for your inconvenience.');
+				return;
+			}
 			command.exec(sourcemsg, prefix, args, sourceID);
 		}
 	} else if (command_name != 'cancel' && (await settings.get(sourceID, ["warnUnknownCommand"])).warnUnknownCommand)
