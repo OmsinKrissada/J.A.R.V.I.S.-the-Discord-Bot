@@ -13,7 +13,6 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 	const newvc = newState.channel;
 
 	if (oldvc?.id === newvc?.id) {
-		console.log('nah');
 		return;
 	}
 

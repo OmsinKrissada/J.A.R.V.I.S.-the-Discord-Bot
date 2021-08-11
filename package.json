@@ -30,7 +30,7 @@
 		"os-utils": "0.0.14",
 		"shoukaku": "1.5.2",
 		"spotify-web-api-node": "^5.0.2",
-		"sqlite3": "^5.0.2",
+		"sqlite3": "^4.2.0",
 		"ts-node": "^8.10.2",
 		"typeorm": "^0.2.33",
 		"typescript": "^3.9.9",
