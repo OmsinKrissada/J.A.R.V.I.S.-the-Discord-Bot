@@ -1,6 +1,7 @@
 import { Command } from '../CommandManager';
 import { DMChannel, Message, MessageEmbed, TextChannel } from 'discord.js';
 import { Helper } from '../Helper';
+import { logger } from '../Logger';
 
 
 export default new Command({
@@ -56,16 +57,14 @@ export default new Command({
 
 				let last_id: string;
 				const prompt_wait_msg = await message.channel.send('<a:loading:845534883396583435> Fetching . . .');
-				for (let round = 1; round <= fetch_limit / 100; round++) {
+				for (let round = 1; round <= fetch_limit / 100 && gif_msgs.length < amount; round++) {
 					const fetches = await channel.messages.fetch({ limit: 100, before: last_id });
 					if (fetches?.size <= 0) break;
 					last_id = fetches.last().id;
 					gif_msgs = gif_msgs.concat(fetches.array().filter(m => m.content.match(/https?:\/\/tenor.com\/view\/.+/g)));
-					console.log(fetches.size);
+					logger.debug(fetches.size.toString());
 				}
-				console.log(gif_msgs.length);
 				const selected = gif_msgs.slice(0, amount);
-				console.log(selected.length);
 				try {
 					channel.bulkDelete(selected);
 					prompt_wait_msg.edit(`<:checkmark:849685283459825714> Found and deleted ${selected.length} message${selected.length > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }));
