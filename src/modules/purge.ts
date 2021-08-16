@@ -2,6 +2,7 @@ import { Command } from '../CommandManager';
 import { DMChannel, Message, MessageEmbed, TextChannel } from 'discord.js';
 import { Helper } from '../Helper';
 import { logger } from '../Logger';
+import ConfigManager from '../ConfigManager';
 
 
 export default new Command({
@@ -19,10 +20,10 @@ export default new Command({
 		if (!isNaN(+args[0])) {
 			let amount = Number.parseInt(args[0]);
 
-			if (amount < 1 || amount > 100) {
+			if (amount < 1 || amount > 98) {
 				channel.send(new MessageEmbed()
 					.setTitle('Error')
-					.setDescription(`The amount of messages must not below than 1 nor greater than 100.`)
+					.setDescription(`The amount must falls in **1 - 98**.`)
 					.setColor(Helper.RED)
 				);
 			}
@@ -36,7 +37,10 @@ export default new Command({
 						if (response == 'checkmark') {
 							channel.bulkDelete(amount + 2).then(() =>
 								channel.send(`<:checkmark:849685283459825714> Deleted ${amount} message${amount > 1 ? 's' : ''}. [${message.author}]`).then(msg => msg.delete({ timeout: 5000, reason: `Issued by ${message.author.username}` }))
-							);
+							).catch(err => {
+								channel.send({ embed: { description: `**An error occured while deleting messages:**\n\`${err}\``, color: ConfigManager.colors.red } });
+								logger.warn(`Unable to delete message in ${channel.id}(channel id): ${err}`);
+							});
 						}
 						if (response == 'xmark') {
 							confirm_msg.edit(new MessageEmbed()
