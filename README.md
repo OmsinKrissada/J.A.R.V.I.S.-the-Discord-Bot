@@ -94,6 +94,7 @@ colors:
 
 loggingChannel: "<channel id here (optional)>"
 maxCPUPercent: 90
+disableMusic: false
 ```
 
 #### If you're ready, you can now run

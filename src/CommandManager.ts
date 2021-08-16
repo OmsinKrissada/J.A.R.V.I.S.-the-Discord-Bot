@@ -6,6 +6,7 @@ import { bot } from './Main';
 
 import { Helper } from './Helper';
 import { logger } from './Logger';
+import ConfigManager from "./ConfigManager";
 
 
 export const CommandMap = new Map<string, Command>();
@@ -60,8 +61,8 @@ export function loadModules() {
 		if (err) logger.error(err.stack);
 		for (const file of files) {
 			try {
-				logger.info('Loading ' + file)
-				await import(path.join(__dirname, 'modules', file))
+				logger.info('Loading ' + file);
+				await import(path.join(__dirname, 'modules', file));
 			} catch (err) {
 				logger.error(`Failed to load "${file}":\n${err.stack}`);
 			}
@@ -76,7 +77,7 @@ export function sanitize(input: string) {
 
 }
 
-export async function run(command_name: string, args: string[], { message: sourcemsg, prefix, sourceID }: { message: Message, prefix: string, sourceID: string }) {
+export async function run(command_name: string, args: string[], { message: sourcemsg, prefix, sourceID }: { message: Message, prefix: string, sourceID: string; }) {
 	prefix = (await settings.get(sourceID, ["prefix"])).prefix;
 	if (CommandMap.has(command_name)) { // check exist
 		const command = CommandMap.get(command_name)!;
@@ -87,14 +88,14 @@ export async function run(command_name: string, args: string[], { message: sourc
 			command.requiredCallerPermissions.forEach(perm => {
 				if (!sourcemsg.member!.permissionsIn(sourcemsg.channel).has(perm))
 					nocallerperm.push(perm);
-			})
+			});
 			// command.requiredSelfPermissions.push('VIEW_CHANNEL');
 			command.requiredSelfPermissions.forEach(perm => {
 				if (!sourcemsg.guild.me!.permissionsIn(sourcemsg.channel).has(perm))
 					noselfperm.push(perm);
-			})
-			nocallerperm = sourcemsg.member!.permissionsIn(sourcemsg.channel).missing(command.requiredCallerPermissions)
-			noselfperm = sourcemsg.guild!.me!.permissionsIn(sourcemsg.channel).missing(command.requiredSelfPermissions)
+			});
+			nocallerperm = sourcemsg.member!.permissionsIn(sourcemsg.channel).missing(command.requiredCallerPermissions);
+			noselfperm = sourcemsg.guild!.me!.permissionsIn(sourcemsg.channel).missing(command.requiredSelfPermissions);
 		}
 
 		if (command.serverOnly && sourcemsg.guild === null) { // check DM
@@ -109,7 +110,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 					author: { name: 'You don\'t have enough permission', iconURL: sourcemsg.author.displayAvatarURL()! },
 					description: `Lacking permission${nocallerperm.length > 1 ? 's' : ''}: ` + nocallerperm.map(perm => `\`${(perm)}\``).join(', '),
 					color: Helper.RED
-				}))
+				}));
 				return;
 
 			} else if (noselfperm.length > 0) {
@@ -118,7 +119,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 					return;
 				}
 				if (noselfperm.includes('VIEW_CHANNEL')) {
-					logger.warn
+					logger.warn;
 				}
 				else sourcemsg.channel.send(new MessageEmbed({
 					author: { name: 'I don\'t have enough permission', iconURL: bot.user!.displayAvatarURL()! },
@@ -128,7 +129,7 @@ export async function run(command_name: string, args: string[], { message: sourc
 				return;
 			}
 		} else {
-			if (command.category === 'music') {
+			if (ConfigManager.disableMusic && command.category === 'music') {
 				sourcemsg.channel.send('Music feature is temporary unavailable, sorry for your inconvenience.');
 				return;
 			}

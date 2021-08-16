@@ -117,7 +117,7 @@ function connectToLavaServer() {
 		// console.log('wait over');
 	});
 }
-connectToLavaServer();
+if (!CONFIG.disableMusic) connectToLavaServer();
 
 
 
