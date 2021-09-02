@@ -24,9 +24,9 @@ new Command({
 			const joinedTime = voiceJoinTimestamps.get(guild.id)?.get(user.id);
 			if (joinedTime)
 				message.channel.send(`**${user.tag}** has been in the channel for **${Helper.fullDurationString(moment.duration(new Date().getTime() - joinedTime.valueOf()))}**`);
-			else message.channel.send(`Cannot find join timestamp of ${user}. The user has to join a vc at least once when I'm online in this server.`)
+			else message.channel.send(`Cannot find join timestamp of ${user}. The user has to join a vc at least once when I'm online in this server.`);
 		}
-		else message.channel.send('Member not found')
+		else message.channel.send('Member not found');
 	}
 });
 
@@ -44,12 +44,12 @@ new Command({
 		if (guild.member(user)) {
 			const lastseen = await lastseenManager.getTimestamp(guild.id, user.id);
 			if (lastseen) {
-				if (lastseen.valueOf() == 0) message.channel.send(`This user is in a voice channel. Use \`${prefix}vctime\` command to see how long they've been in that channel.`)
+				if (lastseen.valueOf() == 0) message.channel.send(`This user is in a voice channel. Use \`${prefix}vctime\` command to see how long they've been in that channel.`);
 				else message.channel.send(`**${user.tag}** was last seen at **${moment.utc(lastseen).format('lll z')} (${moment(lastseen).fromNow()})**`);
 			}
-			else message.channel.send(`Cannot find lastseen timestamp of **${user.tag}**.`)
+			else message.channel.send(`Cannot find lastseen timestamp of **${user.tag}**.`);
 		}
-		else message.channel.send('Member not found')
+		else message.channel.send('Member not found');
 	}
 });
 
@@ -57,13 +57,14 @@ new Command({
 bot.on('voiceStateUpdate', (oldvs, newvs) => {
 	const guild = newvs.guild, member = newvs.member;
 	const guildJoinTimestamps = voiceJoinTimestamps.get(guild.id) ?? new Map<string, Date>();
-	if (newvs.channel) {
+	if (newvs.channel.id == oldvs.channel.id) return;
+	if (newvs.channel) { // if enter
 		guildJoinTimestamps.set(member.id, new Date());
-		lastseenManager.setTimestamp(guild.id, member.id, new Date(0))
+		lastseenManager.setTimestamp(guild.id, member.id, new Date(0));
 	}
-	else {
+	else { // if leave
 		guildJoinTimestamps.delete(member.id);
 		lastseenManager.setTimestamp(guild.id, member.id, new Date());
 	}
 	voiceJoinTimestamps.set(guild.id, guildJoinTimestamps);
-})
+});

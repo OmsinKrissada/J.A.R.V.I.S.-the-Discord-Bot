@@ -8,7 +8,7 @@ import path from 'path';
 
 export default new Command({
 	name: 'update',
-	category: 'hiden',
+	category: 'hidden',
 	description: 'Updates the bot with code from GitHub.',
 	examples: ['update'],
 	requiredCallerPermissions: [],
@@ -29,12 +29,12 @@ export default new Command({
 							exec((path.join(path.dirname(require.main!.filename), 'scripts', 'updateandrestart.sh')), (_err, stdout, _stderr) => {
 								message.channel.send(stdout).then(process.exit());
 							});
-						})
+						});
 						// shell.exec('../../scripts/updateandrestart.sh');
 					} else if (emoji == '❌') {
 						message.channel.send('Canceled.');
 					}
-				})
+				});
 		});
 	}
-}) 
+});

@@ -18,7 +18,7 @@ new Command({
 
 new Command({
 	name: 'salim',
-	category: 'hiden',
+	category: 'misc',
 	description: `Annoys you with salims' quotes`,
 	examples: ['salim'],
 	requiredCallerPermissions: [],

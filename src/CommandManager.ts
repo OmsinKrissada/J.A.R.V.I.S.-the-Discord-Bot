@@ -10,7 +10,7 @@ import ConfigManager from "./ConfigManager";
 
 
 export const CommandMap = new Map<string, Command>();
-export type CommandCategory = "general" | "settings" | "features" | "music" | "misc" | "hiden" | "moderation";
+export type CommandCategory = "general" | "settings" | "features" | "music" | "misc" | "hidden" | "moderation";
 interface IConstructor {
 	name: string;
 	displayName?: string;
