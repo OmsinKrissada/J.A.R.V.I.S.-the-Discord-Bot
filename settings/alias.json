@@ -1,108 +1,29 @@
 {
-	"help": [
-		"?",
-		"what"
-	],
-	"reload": [
-		"refresh"
-	],
-	"prefix": [
-		"pre",
-		"pf"
-	],
-	"nick": [
-		"nickname",
-		"name"
-	],
-	"ip": [
-		"ipaddress",
-		"ipannounce",
-		"announceip"
-	],
-	"purge": [
-		"delete",
-		"bulkdelete",
-		"del",
-		"d"
-	],
-	"info": [
-		"userinfo",
-		"infouser",
-		"who",
-		"whois",
-		"usrinfo",
-		"myid",
-		"id"
-	],
-	"ask": [
-		"calc",
-		"calculate",
-		"wolfram",
-		"wa",
-		"wolframalpha"
-	],
-	"askimg": [
-		"askpic",
-		"image"
-	],
-	"hello": [
-		"hi"
-	],
-	"say": [
-		"echo"
-	],
-	"movevoice": [
-		"mvvoice",
-		"mvv",
-		"mvchannel",
-		"mvchan",
-		"mvvc"
-	],
-	"whoisironman": [
-		"whoisrealironman"
-	],
-	"play": [
-		"p"
-	],
-	"queue": [
-		"q"
-	],
-	"nowplaying": [
-		"np"
-	],
-	"skip": [
-		"s"
-	],
-	"clear": [
-		"clearqueue"
-	],
-	"remove": [
-		"rm"
-	],
-	"volume": [
-		"vol"
-	],
-	"leave": [
-		"disconnect",
-		"dc"
-	],
-	"search": [
-		"youtube",
-		"yt",
-		"find",
-		"song"
-	],
-	"settings": [
-		"set",
-		"config"
-	],
-	"moveq": [
-		"mv",
-		"move",
-		"movequeue"
-	],
-	"rmrange":[
-		"removerange",
-		"rmr"
-	]
+	"help": ["?", "what"],
+	"reload": ["refresh"],
+	"prefix": ["pre", "pf"],
+	"nick": ["nickname", "name"],
+	"ip": ["ipaddress", "ipannounce", "announceip"],
+	"purge": ["delete", "bulkdelete", "del", "d"],
+	"info": ["userinfo", "infouser", "who", "whois", "usrinfo", "myid", "id"],
+	"ask": ["calc", "calculate", "wolfram", "wa", "wolframalpha"],
+	"askimg": ["askpic", "image"],
+	"hello": ["hi"],
+	"say": ["echo"],
+	"movevoice": ["mvvoice", "mvv", "mvchannel", "mvchan", "mvvc"],
+	"whoisironman": ["whoisrealironman"],
+	"play": ["p"],
+	"queue": ["q"],
+	"nowplaying": ["np"],
+	"skip": ["s"],
+	"clear": ["clearqueue"],
+	"remove": ["rm"],
+	"volume": ["vol"],
+	"leave": ["disconnect", "dc"],
+	"search": ["youtube", "yt", "find", "song"],
+	"settings": ["set", "config"],
+	"moveq": ["mv", "move", "movequeue"],
+	"rmrange": ["removerange", "rmr"],
+	"salim": ["สลิ่ม"],
+	"seen": ["lastseen"]
 }
