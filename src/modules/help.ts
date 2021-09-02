@@ -15,17 +15,17 @@ export default new Command({
 		let command_name = args[0]?.toLowerCase() ?? '';
 		for (let full_command in alias) { // check with alias
 			if (alias[full_command] instanceof Array && alias[full_command].includes(command_name)) {
-				console.log(command_name)
-				console.log(full_command)
+				console.log(command_name);
+				console.log(full_command);
 				command_name = full_command;
 			}
 		}
-		console.log(command_name)
+		console.log(command_name);
 		const command = CommandMap.get(command_name);
 		if (command_name && command) { // specific-command detail
 			let embed = new MessageEmbed()
 				.setTitle('Help | Command: ' + Helper.inlineCodeBlock(command.name))
-				.setColor(Helper.BLUE)
+				.setColor(Helper.BLUE);
 
 			embed.addField('Description:', command.description);
 			let usagestr = '';
@@ -42,19 +42,19 @@ export default new Command({
 
 			message.channel.send(embed);
 		} else {
-			let cmd_by_categories: { general: Command[], settings: Command[], features: Command[], music: Command[], moderation: Command[], misc: Command[] } = {
+			let cmd_by_categories: { general: Command[], settings: Command[], features: Command[], music: Command[], moderation: Command[], misc: Command[]; } = {
 				"general": [],
 				"settings": [],
 				"features": [],
 				"music": [],
 				"moderation": [],
 				"misc": [],
-			}
+			};
 			CommandMap.forEach(command => {
-				if (command.category && command.category != 'hiden') {
-					cmd_by_categories[command.category].push(command)
+				if (command.category && command.category != 'hidden') {
+					cmd_by_categories[command.category].push(command);
 				}
-			})
+			});
 
 			const header = prefix == '' ? 'Bot currently has no prefix.' : `Current prefix is ${Helper.inlineCodeBlock(prefix)}.`;
 			let embed = new MessageEmbed()
@@ -78,7 +78,7 @@ export default new Command({
 				let command_list = '';
 				cmd_by_categories[category].forEach((command: Command) => {
 					command_list += Helper.inlineCodeBlock(command.name) + ', ';
-				})
+				});
 				command_list = command_list.slice(0, -2);
 				embed.addField(displayCategory, command_list || '*none*');
 			}
@@ -87,4 +87,4 @@ export default new Command({
 			message.channel.send(embed);
 		}
 	}
-}) 
+});
