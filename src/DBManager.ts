@@ -1,20 +1,12 @@
 import { Connection, createConnection, getConnection, Repository } from "typeorm";
+import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
+
 import { GuildSettings } from "./models/GuildSettings";
 import { Lastseen } from "./models/Lastseen";
 import { ChannelHooks } from "./models/ChannelHooks";
-
-
-
 import CONFIG from './ConfigManager';
 import { logger } from './Logger';
 import chalk from 'chalk';
-import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
-CONFIG.colors.red = 1;
-
-
-
-
-
 
 let settings_repository: Repository<GuildSettings> = null;
 let lastseen_repository: Repository<Lastseen> = null;
@@ -120,10 +112,19 @@ class LastseenManager {
 	}
 
 	async setTimestamp(guildID: string, memberID: string, timestamp: Date) {
-		// logger.debug('set timestamp')
 		const id = (await lastseen_repository.findOne({ where: { guild_id: guildID, member_id: memberID } }))?.id;
 		await lastseen_repository.save({ id: id, guild_id: guildID, member_id: memberID, timestamp: timestamp });
 	}
+
+	async getPresent(guildID: string, memberID: string) {
+		return (await lastseen_repository.findOne({ select: ["isPresent"], where: { guild_id: guildID, member_id: memberID } }))?.isPresent;
+	}
+
+	async setPresent(guildID: string, memberID: string, x: boolean) {
+		const id = (await lastseen_repository.findOne({ where: { guild_id: guildID, member_id: memberID } }))?.id;
+		await lastseen_repository.save({ id: id, guild_id: guildID, member_id: memberID, isPresent: x });
+	}
+
 }
 
 

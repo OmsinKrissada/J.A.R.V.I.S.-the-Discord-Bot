@@ -15,4 +15,7 @@ export class Lastseen {
   @Column({})
   timestamp: Date;
 
+  @Column({ default: false })
+  isPresent: boolean;
+
 }
