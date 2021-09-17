@@ -88,9 +88,6 @@ export class GuildSettings {
   @PrimaryColumn({ unique: true, type: "varchar", length: 18 })
   id: string;
 
-  @Column()
-  name: string;
-
   @Column({ default: '-' })
   prefix: string;
 
