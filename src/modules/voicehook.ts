@@ -65,7 +65,7 @@ new Command({
 			message.channel.send({
 				embed: {
 					title: 'Channel Hooks',
-					description: hooks.map(h => `\`${h.id}\` - ${bot.channels.resolve(h.textChannel_id).toString()} <-> ${h.voiceChannel_id === 'all' ? '\`All VC\`' : bot.channels.resolve(h.voiceChannel_id).toString()}`).join('\n'),
+					description: hooks.map(h => `\`${h.id}\` - ${bot.channels.resolve(h.textChannel_id)?.toString()} <-> ${h.voiceChannel_id === 'all' ? '\`All VC\`' : bot.channels.resolve(h.voiceChannel_id)?.toString()}`).join('\n'),
 					color: ConfigManager.colors.blue
 				}
 			});
@@ -155,6 +155,9 @@ new Command({
 			for (const hook of hooks) {
 				logger.debug(`Checking hook: ${hook.textChannel_id} <-> ${hook.voiceChannel_id}`);
 				const text_channel = message.guild.channels.resolve(hook.textChannel_id);
+				if (!text_channel) {
+					loading.edit(`Error: The following hook has link to an unknown channel: ` + hook.id);
+				}
 				const voice_channel = hook.voiceChannel_id == 'all' ? null : message.guild.channels.resolve(hook.voiceChannel_id);
 
 				// Remove from text
