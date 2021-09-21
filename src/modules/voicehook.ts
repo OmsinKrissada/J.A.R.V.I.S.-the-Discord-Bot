@@ -207,7 +207,7 @@ new Command({
 			logger.debug('Done checking hooks');
 			const n_processed = n_added + n_removed + n_failed;
 			if (n_processed > 0)
-				loading.edit(`**\`${n_processed}\` misconfigured permission(s) detected.**\nRemoved access from \`${n_removed}\` members.\nAdded access to \`${n_added}\` members.\nFailed to modify access of \`${n_failed}\` members. \`(${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ')})\``);
+				loading.edit(`**\`${n_processed}\` misconfigured permission(s) detected.**\nRemoved access from \`${n_removed}\` members.\nAdded access to \`${n_added}\` members.\nFailed to modify access of \`${n_failed}\` members. \`(${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ') || 'None'})\``);
 			else
 				loading.edit(`<:checkmark:849685283459825714> Everything is already well configured!`);
 		} else {
