@@ -60,7 +60,7 @@ new Command({
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) {
 		const sub_command = args[0];
-		if (sub_command.toLowerCase() === 'list') {
+		if (sub_command?.toLowerCase() === 'list') {
 			const hooks = await hook_repository.find({ where: { guild_id: message.guild.id } });
 			message.channel.send({
 				embed: {
@@ -69,7 +69,7 @@ new Command({
 					color: ConfigManager.colors.blue
 				}
 			});
-		} else if (sub_command.toLowerCase() === 'add') {
+		} else if (sub_command?.toLowerCase() === 'add') {
 			const textId = args[1];
 			const voiceId = args[2];
 			if (!textId || !voiceId) {
@@ -122,7 +122,7 @@ new Command({
 					}
 				});
 			}
-		} else if (sub_command.toLowerCase() === 'remove') {
+		} else if (sub_command?.toLowerCase() === 'remove') {
 			const id = args[1];
 			const gonna_delete = await hook_repository.findOne(id);
 			if (gonna_delete) {
@@ -142,7 +142,7 @@ new Command({
 					}
 				});
 			}
-		} else if (sub_command.toLowerCase() === 'forceupdate') {
+		} else if (sub_command?.toLowerCase() === 'forceupdate') {
 			const hooks = await hook_repository.find({ where: { guild_id: message.guild.id } });
 			if (!hooks?.length) {
 				message.channel.send('No hooks found');
@@ -214,10 +214,10 @@ new Command({
 			message.channel.send({
 				embed: {
 					title: 'Usage',
-					description: `\`${prefix}list\` - Lists all hooks on this server.\n` +
-						`\`${prefix}add <text channel id> <voice channel id>/"all"\` - Adds a hook (provide \`all\` to hook with every voice channel.).\n` +
-						`\`${prefix}remove <id>\` - Removes a hook (get hook id from \`list\` command).\n` +
-						`\`${prefix}forceupdate\` - Force the bot to recalculate all channel hooks.\n`
+					description: `\`${prefix}hook list\` - Lists all hooks on this server.\n` +
+						`\`${prefix}hook add <text channel id> <voice channel id>/"all"\` - Adds a hook (provide \`all\` to hook with every voice channel.).\n` +
+						`\`${prefix}hook remove <id>\` - Removes a hook (get hook id from \`list\` command).\n` +
+						`\`${prefix}hook forceupdate\` - Force the bot to recalculate all channel hooks.\n`
 				}
 			});
 		}
