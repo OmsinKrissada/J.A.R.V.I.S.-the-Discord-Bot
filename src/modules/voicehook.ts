@@ -1,4 +1,4 @@
-import { DMChannel } from 'discord.js';
+import { DMChannel, GuildMember } from 'discord.js';
 import { Command } from '../CommandManager';
 import ConfigManager from '../ConfigManager';
 import { hook_repository } from '../DBManager';
@@ -142,6 +142,56 @@ new Command({
 					}
 				});
 			}
+		} else if (sub_command.toLowerCase() === 'forceupdate') {
+			const hooks = await hook_repository.find({ where: { guild_id: message.guild.id } });
+			if (!hooks?.length) {
+				message.channel.send('No hooks found');
+				return;
+			}
+			const loading = message.channel.send('<a:loading:845534883396583435> Updating, please wait.');
+
+			let n_removed = 0, n_added = 0, n_failed = 0;
+			for (const hook of hooks) {
+				const text_channel = message.guild.channels.resolve(hook.textChannel_id);
+				const voice_channel = hook.voiceChannel_id == 'all' ? null : message.guild.channels.resolve(hook.voiceChannel_id);
+
+				// Remove from text
+				for (const m of text_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) {
+					// if ((m.voice.channel && hook.voiceChannel_id == 'all') || (m.voice.channel.id == hook.voiceChannel_id)) 
+					const present_condition = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel.id == hook.voiceChannel_id;
+					if (!present_condition) {
+						try {
+							await text_channel.createOverwrite(m, { VIEW_CHANNEL: false });
+							n_removed++;
+						} catch (err) {
+							logger.debug(`Failed to remove access of ${m.user.tag} from ${text_channel.name}(${text_channel.id})`);
+							n_failed++;
+						}
+					}
+				}
+
+				// Add to text
+				const logic = async (member: GuildMember) => {
+					if (!text_channel.permissionsFor(member).has('VIEW_CHANNEL')) {
+						try {
+							await text_channel.createOverwrite(member, { VIEW_CHANNEL: true });
+							n_added++;
+						} catch (err) {
+							logger.debug(`Failed to add access of ${member.user.tag} to ${text_channel.name}(${text_channel.id})`);
+							n_failed++;
+						}
+					}
+				};
+				if (voice_channel) {
+					for (const m of voice_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) logic(m);
+				} else { // if apply to all vc
+					const all_voice_channel = message.guild.channels.cache.filter(c => c.type == 'voice');
+					for (const vc of all_voice_channel.array()) for (const m of vc.members.array()) logic(m);
+				}
+
+			}
+			(await loading).edit(`**\`${n_added + n_removed + n_failed}\` misconfigured permission(s) detected.**\nRemoved access from \`${n_removed}\` members.\nAdded access to \`${n_added}\` members.\nFailed to modify access of \`${n_failed}\` members.`);
+
 		} else {
 			message.channel.send({
 				embed: {
