@@ -148,23 +148,27 @@ new Command({
 				message.channel.send('No hooks found');
 				return;
 			}
-			const loading = message.channel.send('<a:loading:845534883396583435> Updating, please wait.');
+			const loading = await message.channel.send('<a:loading:845534883396583435> Updating, please wait. This might take about a minute due to rate limit.');
 
 			let n_removed = 0, n_added = 0, n_failed = 0;
+			const failed_members: { member: GuildMember, hookID: string; }[] = [];
 			for (const hook of hooks) {
+				logger.debug(`Checking hook: ${hook.textChannel_id} <-> ${hook.voiceChannel_id}`);
 				const text_channel = message.guild.channels.resolve(hook.textChannel_id);
 				const voice_channel = hook.voiceChannel_id == 'all' ? null : message.guild.channels.resolve(hook.voiceChannel_id);
 
 				// Remove from text
 				for (const m of text_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) {
 					// if ((m.voice.channel && hook.voiceChannel_id == 'all') || (m.voice.channel.id == hook.voiceChannel_id)) 
-					const present_condition = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel.id == hook.voiceChannel_id;
+					logger.debug(`Checking if access of ${m.user.tag} should be removed`);
+					const present_condition = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel && m.voice.channel.id == hook.voiceChannel_id;
 					if (!present_condition) {
 						try {
 							await text_channel.createOverwrite(m, { VIEW_CHANNEL: false });
 							n_removed++;
 						} catch (err) {
 							logger.debug(`Failed to remove access of ${m.user.tag} from ${text_channel.name}(${text_channel.id})`);
+							failed_members.push({ member: m, hookID: hook.id });
 							n_failed++;
 						}
 					}
@@ -178,27 +182,39 @@ new Command({
 							n_added++;
 						} catch (err) {
 							logger.debug(`Failed to add access of ${member.user.tag} to ${text_channel.name}(${text_channel.id})`);
+							failed_members.push({ member: member, hookID: hook.id });
 							n_failed++;
 						}
 					}
 				};
 				if (voice_channel) {
-					for (const m of voice_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) logic(m);
+					for (const m of voice_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) {
+						logger.debug(`Checking if access of ${m.user.tag} should be added`);
+						logic(m);
+					}
 				} else { // if apply to all vc
 					const all_voice_channel = message.guild.channels.cache.filter(c => c.type == 'voice');
-					for (const vc of all_voice_channel.array()) for (const m of vc.members.array()) logic(m);
+					for (const vc of all_voice_channel.array()) for (const m of vc.members.array()) {
+						logger.debug(`Checking if access of ${m.user.tag} should be added`);
+						logic(m);
+					}
 				}
 
 			}
-			(await loading).edit(`**\`${n_added + n_removed + n_failed}\` misconfigured permission(s) detected.**\nRemoved access from \`${n_removed}\` members.\nAdded access to \`${n_added}\` members.\nFailed to modify access of \`${n_failed}\` members.`);
-
+			logger.debug('Done checking hooks');
+			const n_processed = n_added + n_removed + n_failed;
+			if (n_processed > 0)
+				loading.edit(`**\`${n_processed}\` misconfigured permission(s) detected.**\nRemoved access from \`${n_removed}\` members.\nAdded access to \`${n_added}\` members.\nFailed to modify access of \`${n_failed}\` members. \`(${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ')})\``);
+			else
+				loading.edit(`<:checkmark:849685283459825714> Everything is already well configured!`);
 		} else {
 			message.channel.send({
 				embed: {
 					title: 'Usage',
 					description: `\`${prefix}list\` - Lists all hooks on this server.\n` +
 						`\`${prefix}add <text channel id> <voice channel id>/"all"\` - Adds a hook (provide \`all\` to hook with every voice channel.).\n` +
-						`\`${prefix}remove <id>\` - Removes a hook (get hook id from \`list\` command).\n`
+						`\`${prefix}remove <id>\` - Removes a hook (get hook id from \`list\` command).\n` +
+						`\`${prefix}forceupdate\` - Force the bot to recalculate all channel hooks.\n`
 				}
 			});
 		}
