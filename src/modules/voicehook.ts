@@ -76,7 +76,7 @@ new Command({
 				message.channel.send({
 					embed: {
 						title: 'Not enough arguments',
-						description: `Please provide both text and voice channel id.`,
+						description: `Please provide both text and voice channel id. (use "all" for voice channel if you wish to link with all vc)`,
 						color: ConfigManager.colors.red
 					}
 				});
@@ -160,8 +160,10 @@ new Command({
 				}
 				const voice_channel = hook.voiceChannel_id == 'all' ? null : message.guild.channels.resolve(hook.voiceChannel_id);
 
+				const filter = (m: GuildMember) => !m.hasPermission('ADMINISTRATOR') && !m.user.bot;
+
 				// Remove from text
-				for (const m of text_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) {
+				for (const m of text_channel.members.filter(filter).array()) {
 					// if ((m.voice.channel && hook.voiceChannel_id == 'all') || (m.voice.channel.id == hook.voiceChannel_id)) 
 					logger.debug(`Checking if access of ${m.user.tag} should be removed`);
 					const present_condition = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel && m.voice.channel.id == hook.voiceChannel_id;
@@ -191,13 +193,13 @@ new Command({
 					}
 				};
 				if (voice_channel) {
-					for (const m of voice_channel.members.filter(m => !m.hasPermission('ADMINISTRATOR')).array()) {
+					for (const m of voice_channel.members.filter(filter).array()) {
 						logger.debug(`Checking if access of ${m.user.tag} should be added`);
 						logic(m);
 					}
 				} else { // if apply to all vc
 					const all_voice_channel = message.guild.channels.cache.filter(c => c.type == 'voice');
-					for (const vc of all_voice_channel.array()) for (const m of vc.members.array()) {
+					for (const vc of all_voice_channel.array()) for (const m of vc.members.array().filter(filter)) {
 						logger.debug(`Checking if access of ${m.user.tag} should be added`);
 						logic(m);
 					}
