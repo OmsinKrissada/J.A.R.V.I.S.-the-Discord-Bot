@@ -110,7 +110,7 @@ bot.on('message', async (message) => {
 });
 
 
-function gracefulExit(signal: NodeJS.Signals) {
+export function gracefulExit(signal: NodeJS.Signals | 'MANUAL') {
 	logger.warn('Please debug the program if this wasn\'t your intention.');
 	logger.info(`Graceful shutdown initiated with "${signal}".`);
 	loggingChannel.send({

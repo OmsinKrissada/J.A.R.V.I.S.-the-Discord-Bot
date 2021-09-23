@@ -19,7 +19,6 @@
 		"discord.js": "^12.5.1",
 		"express": "^4.17.1",
 		"js-yaml": "^3.14.1",
-		"line-reader": "^0.4.0",
 		"moment": "^2.29.1",
 		"mysql2": "^2.2.5",
 		"n-readlines": "^1.0.1",
@@ -31,7 +30,6 @@
 		"ts-node": "^10.2.1",
 		"typeorm": "^0.2.37",
 		"typescript": "^3.9.9",
-		"utf-8-validate": "^5.0.4",
 		"winston": "^3.3.3",
 		"xmlhttprequest": "^1.8.0",
 		"yt-search": "^2.7.3"

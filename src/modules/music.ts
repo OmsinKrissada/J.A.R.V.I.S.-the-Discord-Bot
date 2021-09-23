@@ -13,7 +13,7 @@ import * as CommandManager from '../CommandManager';
 import { getTrackSearchString } from '../Spotify';
 
 import os from 'os-utils';
-import { bot } from '../Main';
+import { bot, gracefulExit } from '../Main';
 import { logger } from '../Logger';
 import chalk from 'chalk';
 
@@ -103,6 +103,8 @@ function connectToLavaServer() {
 			logger.error(`Lavalink - ${name}: Disconnected, Reason: "${reason || 'No reason'}"`);
 			shoukakuclient.removeNode('Main Node');
 			lavanode = null;
+			logger.error('Exiting ...');
+			gracefulExit('MANUAL');
 		});
 		shoukakuclient.on('ready', (name) => {
 			logger.info(chalk`{whiteBright Lavalink:} Connected to Lavalink server at ${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`);
@@ -117,7 +119,8 @@ function connectToLavaServer() {
 		// console.log('wait over');
 	});
 }
-if (!CONFIG.disableMusic) connectToLavaServer();
+if (!CONFIG.disableMusic)
+	connectToLavaServer();
 
 
 
