@@ -110,7 +110,7 @@ bot.on('message', async (message) => {
 });
 
 
-export function gracefulExit(signal: NodeJS.Signals | 'MANUAL') {
+export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK', code = 0) {
 	logger.warn('Please debug the program if this wasn\'t your intention.');
 	logger.info(`Graceful shutdown initiated with "${signal}".`);
 	loggingChannel.send({
@@ -123,6 +123,6 @@ export function gracefulExit(signal: NodeJS.Signals | 'MANUAL') {
 	}).then(() => {
 		bot.destroy();
 		logger.info('Successfully destroyed the bot instance.');
-		process.exit();
+		process.exit(code);
 	});
 }
