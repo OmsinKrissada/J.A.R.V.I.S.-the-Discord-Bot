@@ -19,6 +19,16 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 	const hooks = await hook_repository.find({ select: ['textChannel_id', 'voiceChannel_id'], where: { guild_id: newState.guild.id } });
 	if (hooks.length < 0) return;
 
+	try {
+		// exit on sharing text channel in hook
+		if (hooks.filter(hook => hook.voiceChannel_id === oldvc?.id)[0]?.textChannel_id === hooks.filter(hook => hook.voiceChannel_id === newvc?.id)[0]?.textChannel_id) {
+			return;
+		}
+	} catch (err) {
+		logger.error('Error occured in optimizing voice channel change in voice hook' + err);
+		return;
+	}
+
 	hooks.forEach((hook) => {
 		const text = bot.channels.resolve(hook.textChannel_id);
 		// const voice = bot.channels.resolve(hook.voiceChannel_id);
@@ -33,9 +43,9 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 		}
 
 		if (hook.voiceChannel_id === 'all') {
-			if (newvc && !oldvc) {
+			if (newvc && !oldvc) { // on join
 				text.createOverwrite(newState.member.id, { VIEW_CHANNEL: true });
-			} else if (!newvc && oldvc) {
+			} else if (!newvc && oldvc) { // on leave
 				text.createOverwrite(oldState.member.id, { VIEW_CHANNEL: false });
 			}
 			return;
