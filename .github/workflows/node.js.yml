@@ -21,5 +21,6 @@ jobs:
       with:
         node-version: '15.12.0'
         persist-credentials: false
+    - run: yarn install
     - run: yarn build
 #     - run: npm test
