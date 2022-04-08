@@ -41,3 +41,18 @@ new Command({
 	}
 });
 
+new Command({
+	name: 'rate',
+	category: 'misc',
+	description: 'Rate something out of boredom.',
+	examples: ['rate <something>'],
+	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES', "VIEW_CHANNEL"],
+	serverOnly: false,
+	exec(message, prefix, args, sourceID) {
+		if (args.length > 0)
+			message.channel.send(`I'd rate ${args.join(' ')} ${Math.floor(Math.random() * 11)}/10`);
+		else
+			message.channel.send(`I'd rate you ${Math.floor(Math.random() * 11)}/10`);
+	}
+});
