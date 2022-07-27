@@ -277,6 +277,5 @@ bot.once('ready', async () => {
 	for (const guild_id of guild_ids.values()) {
 		logger.debug(`Updating hooks for ${guild_id}`);
 		await updateHooks(guild_id);
-		// logger.debug('');
 	}
 });

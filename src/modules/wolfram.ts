@@ -3,6 +3,7 @@ import { Command } from '../CommandManager';
 import ConfigManager from '../ConfigManager';
 import { Helper } from '../Helper';
 import axios from 'axios';
+import { logger } from '../Logger';
 
 
 new Command({
@@ -16,11 +17,11 @@ new Command({
 	async exec(message, prefix, args, sourceID) {
 		const input = encodeURI(args.join(' ')).replace(/\+/g, '%2B');
 		const apitoken = ConfigManager.token.wolfram;
-		console.log(`Wolfram: going to send as ${input}`)
-		const replymsg = message.channel.send(`<a:loading:845534883396583435> Processing request from **${message.author.tag}**`)
+		logger.debug(`Wolfram: sending as "${input}"`);
+		const replymsg = message.channel.send(`<a:loading:845534883396583435> Processing request from **${message.author.tag}**`);
 		let output;
 		try {
-			output = (await axios.get(`https://api.wolframalpha.com/v1/result?i=${input}&appid=${apitoken}`)).data
+			output = (await axios.get(`https://api.wolframalpha.com/v1/result?i=${input}&appid=${apitoken}`)).data;
 		} catch (err) {
 			(await replymsg).edit('', new MessageEmbed()
 				.setAuthor(`Q: ${args.join(' ')}`, message.author.displayAvatarURL())
@@ -28,7 +29,7 @@ new Command({
 				.setColor(Helper.RED)
 			);
 		}
-		console.log(output);
+		logger.debug(`Wolfram: got response as "${output}"`);
 		if (output) {
 			(await replymsg).edit('', new MessageEmbed()
 				.setAuthor(`Q: ${args.join(' ')}`, message.author.displayAvatarURL())
