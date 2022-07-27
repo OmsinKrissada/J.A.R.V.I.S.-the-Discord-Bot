@@ -9,6 +9,7 @@ import { bot } from '../Main';
 bot.on('voiceStateUpdate', async (oldState, newState) => {
 	if (newState.member.user.bot) return;
 
+	const guild = newState.guild;
 	const oldvc = oldState.channel;
 	const newvc = newState.channel;
 
@@ -16,45 +17,59 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 		return;
 	}
 
-	const hooks = await hook_repository.find({ select: ['textChannel_id', 'voiceChannel_id'], where: { guild_id: newState.guild.id } });
+	const hooks = await hook_repository.find({ select: ['id', 'textChannel_id', 'voiceChannel_id'], where: { guild_id: guild.id } });
 	if (hooks.length < 0) return;
 
-	// try {
-	// 	// exit on sharing text channel in hook
-	// 	if (hooks.filter(hook => hook.voiceChannel_id === oldvc.id)[0].textChannel_id === hooks.filter(hook => hook.voiceChannel_id === newvc.id)[0].textChannel_id) {
-	// 		return;
-	// 	}
-	// } catch (err) {
-	// 	logger.error('Error occured in optimizing voice channel change in voice hook' + err);
-	// 	return;
-	// }
 
-	hooks.forEach((hook) => {
+	hooks.forEach(async (hook) => {
 		const text = bot.channels.resolve(hook.textChannel_id);
-		// const voice = bot.channels.resolve(hook.voiceChannel_id);
+		const voice = bot.channels.resolve(hook.voiceChannel_id);
+		if (!text) {
+			logger.warn(`Text channel ${hook.textChannel_id} not found in ${guild.id}, removing hook.`);
+			hook_repository.delete(hook.id);
+			return;
+		}
+		if (hook.voiceChannel_id != 'all' && !voice) {
+			logger.warn(`Voice channel ${hook.textChannel_id} not found in ${guild.id}, removing hook.`);
+			hook_repository.delete(hook.id);
+			return;
+		}
 		if (!text.isText() || text instanceof DMChannel) {
-			logger.warn(`${text.id} isn't a server text channel (from ${newState.guild.id})`);
+			logger.warn(`${text.id} isn't a server text channel (from ${guild.id})`);
 			return;
 		}
 
 		if (!text) { // text channel not found
-			logger.warn(`VoiceHook: TextChannel "${hook.textChannel_id}" doesn't exist in "${newState.guild.id}"`);
+			logger.warn(`VoiceHook: TextChannel "${hook.textChannel_id}" doesn't exist in "${guild.id}"`);
 			return;
 		}
 
-		if (hook.voiceChannel_id === 'all') {
-			if (newvc && !oldvc) { // on join
-				text.createOverwrite(newState.member.id, { VIEW_CHANNEL: true });
-			} else if (!newvc && oldvc) { // on leave
-				text.createOverwrite(oldState.member.id, { VIEW_CHANNEL: false });
+		try {
+			if (newState.member.hasPermission('ADMINISTRATOR')) {
+				logger.debug(`${newState.member.id} has admin permissions, skipping voicehook checks.`);
+				return;
 			}
-			return;
-		}
 
-		if (newvc?.id === hook.voiceChannel_id) {
-			text.createOverwrite(newState.member.id, { VIEW_CHANNEL: true });
-		} else if (oldvc?.id === hook.voiceChannel_id) {
-			text.createOverwrite(oldState.member.id, { VIEW_CHANNEL: false });
+			if (hook.voiceChannel_id === 'all') {
+				if (newvc && !oldvc) { // on join
+					logger.debug(`Updating voicehook for ${newState.member.id} [add all]`);
+					await text.updateOverwrite(newState.member.id, { VIEW_CHANNEL: true });
+				} else if (!newvc && oldvc) { // on leave
+					logger.debug(`Updating voicehook for ${newState.member.id} [remove all]`);
+					await text.updateOverwrite(oldState.member.id, { VIEW_CHANNEL: false });
+				}
+				return;
+			}
+
+			if (newvc?.id === hook.voiceChannel_id) {
+				logger.debug(`Updating voicehook for ${newState.member.id} [add ${hook.voiceChannel_id}]`);
+				await text.updateOverwrite(newState.member.id, { VIEW_CHANNEL: true });
+			} else if (oldvc?.id === hook.voiceChannel_id) {
+				logger.debug(`Updating voicehook for ${newState.member.id} [remove ${hook.voiceChannel_id}]`);
+				await text.updateOverwrite(oldState.member.id, { VIEW_CHANNEL: false });
+			}
+		} catch (e) {
+			logger.warn(`Unable to update voicehook of ${newState.member.id}: ${e}`);
 		}
 	});
 
@@ -153,73 +168,13 @@ new Command({
 				});
 			}
 		} else if (sub_command?.toLowerCase() === 'forceupdate') {
-			const hooks = await hook_repository.find({ where: { guild_id: message.guild.id } });
-			if (!hooks?.length) {
-				message.channel.send('No hooks found');
-				return;
-			}
-			const loading = await message.channel.send('<a:loading:845534883396583435> Updating, please wait. This might take about a minute due to rate limit.');
 
-			let n_removed = 0, n_added = 0, n_failed = 0;
-			const failed_members: { member: GuildMember, hookID: string; }[] = [];
-			for (const hook of hooks) {
-				logger.debug(`Checking hook: ${hook.textChannel_id} <-> ${hook.voiceChannel_id}`);
-				const text_channel = message.guild.channels.resolve(hook.textChannel_id);
-				if (!text_channel) {
-					loading.edit(`Error: The following hook has link to an unknown channel: ` + hook.id);
-				}
-				const voice_channel = hook.voiceChannel_id == 'all' ? null : message.guild.channels.resolve(hook.voiceChannel_id);
-
-				const filter = (m: GuildMember) => !m.hasPermission('ADMINISTRATOR') && !m.user.bot;
-
-				// Remove from text
-				for (const m of text_channel.members.filter(filter).array()) {
-					// if ((m.voice.channel && hook.voiceChannel_id == 'all') || (m.voice.channel.id == hook.voiceChannel_id)) 
-					logger.debug(`Checking if access of ${m.user.tag} should be removed`);
-					const present_condition = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel && m.voice.channel.id == hook.voiceChannel_id;
-					if (!present_condition) {
-						try {
-							await text_channel.createOverwrite(m, { VIEW_CHANNEL: false });
-							n_removed++;
-						} catch (err) {
-							logger.debug(`Failed to remove access of ${m.user.tag} from ${text_channel.name}(${text_channel.id})`);
-							failed_members.push({ member: m, hookID: hook.id });
-							n_failed++;
-						}
-					}
-				}
-
-				// Add to text
-				const logic = async (member: GuildMember) => {
-					if (!text_channel.permissionsFor(member).has('VIEW_CHANNEL')) {
-						try {
-							await text_channel.createOverwrite(member, { VIEW_CHANNEL: true });
-							n_added++;
-						} catch (err) {
-							logger.debug(`Failed to add access of ${member.user.tag} to ${text_channel.name}(${text_channel.id})`);
-							failed_members.push({ member: member, hookID: hook.id });
-							n_failed++;
-						}
-					}
-				};
-				if (voice_channel) {
-					for (const m of voice_channel.members.filter(filter).array()) {
-						logger.debug(`Checking if access of ${m.user.tag} should be added`);
-						logic(m);
-					}
-				} else { // if apply to all vc
-					const all_voice_channel = message.guild.channels.cache.filter(c => c.type == 'voice');
-					for (const vc of all_voice_channel.array()) for (const m of vc.members.array().filter(filter)) {
-						logger.debug(`Checking if access of ${m.user.tag} should be added`);
-						logic(m);
-					}
-				}
-
-			}
+			const loading = await message.channel.send('<a:loading:845534883396583435> Updating, please wait. This might take about a minute due to discord rate limit.');
+			const { added, failed, removed, failed_members } = await updateHooks(message.guild.id);
 			logger.debug('Done checking hooks');
-			const n_processed = n_added + n_removed + n_failed;
+			const n_processed = added + removed + failed;
 			if (n_processed > 0)
-				loading.edit(`**\`${n_processed}\` misconfigured permission(s) detected.**\nRemoved access from \`${n_removed}\` members.\nAdded access to \`${n_added}\` members.\nFailed to modify access of \`${n_failed}\` members. \`(${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ') || 'None'})\``);
+				loading.edit(`**\`${n_processed}\` misconfigured permission(s) detected.**\nRemoved access from \`${removed}\` members.\nAdded access to \`${added}\` members.\nFailed to modify access of \`${failed}\` members. \`(${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ') || 'None'})\``);
 			else
 				loading.edit(`<:checkmark:849685283459825714> Everything is already well configured!`);
 		} else {
@@ -233,5 +188,95 @@ new Command({
 				}
 			});
 		}
+	}
+});
+
+async function updateHooks(guild_id: string): Promise<{ added: number; removed: number; failed: number; failed_members: { member: GuildMember, hookID: string; }[]; }> {
+	let n_removed = 0, n_added = 0, n_failed = 0;
+	const guild = await bot.guilds.fetch(guild_id);
+
+	const hooks = await hook_repository.find({ where: { guild_id } });
+	if (!hooks?.length) {
+		logger.debug('No hooks found');
+		return;
+	}
+
+	const failed_members: { member: GuildMember, hookID: string; }[] = [];
+	for (const hook of hooks) {
+		logger.debug(`Checking hook: ${hook.textChannel_id}(text) to ${hook.voiceChannel_id}(voice)`);
+		const text_channel = guild.channels.resolve(hook.textChannel_id);
+
+		if (!text_channel) {
+			logger.warn(`Error: The following hook has link to an unknown channel: ${hook.id}, skipping.`);
+			continue;
+		}
+
+		const voice_channel = hook.voiceChannel_id == 'all' ? null : guild.channels.resolve(hook.voiceChannel_id);
+
+		const filter = (m: GuildMember) => !m.hasPermission('ADMINISTRATOR') && !m.user.bot;
+
+		// Remove from text
+		for (const m of text_channel.members.filter(filter).array()) {
+			// if ((m.voice.channel && hook.voiceChannel_id == 'all') || (m.voice.channel.id == hook.voiceChannel_id)) 
+			logger.debug(`Checking if access of ${m.user.tag} should be removed`);
+			const isUserPresent = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel && m.voice.channel.id == hook.voiceChannel_id;
+			if (!isUserPresent) {
+				try {
+					logger.debug(`Removing access of ${m.user.tag} to ${text_channel.name}(${text_channel.id})`);
+					await text_channel.updateOverwrite(m, { VIEW_CHANNEL: false });
+					n_removed++;
+				} catch (err) {
+					logger.warn(`Failed to remove access of ${m.user.tag} from ${text_channel.name}(${text_channel.id})`);
+					failed_members.push({ member: m, hookID: hook.id });
+					n_failed++;
+				}
+			}
+		}
+
+		// Add to text
+		const logic = async (member: GuildMember) => {
+			if (!text_channel.permissionsFor(member).has('VIEW_CHANNEL')) {
+				try {
+					logger.debug(`Adding access of ${member.user.tag} to ${text_channel.name}(${text_channel.id})`);
+					await text_channel.updateOverwrite(member, { VIEW_CHANNEL: true });
+					n_added++;
+				} catch (err) {
+					logger.warn(`Failed to add access of ${member.user.tag} to ${text_channel.name}(${text_channel.id})`);
+					failed_members.push({ member: member, hookID: hook.id });
+					n_failed++;
+				}
+			}
+		};
+		if (voice_channel) {
+			for (const m of voice_channel.members.filter(filter).array()) {
+				logger.debug(`Checking if access of ${m.user.tag} should be added`);
+				logic(m);
+			}
+		} else { // if apply to all vc
+			const all_voice_channel = guild.channels.cache.filter(c => c.type == 'voice');
+			for (const vc of all_voice_channel.array()) for (const m of vc.members.array().filter(filter)) {
+				logger.debug(`Checking if access of ${m.user.tag} should be added`);
+				logic(m);
+			}
+		}
+	}
+	// logger.info('');
+	logger.info(`Done checking hooks for ${guild_id} aka ${guild.name}:`);
+	logger.info(`  Added: ${n_added}`);
+	logger.info(`  Removed: ${n_removed}`);
+	logger.info(`  Failed: ${n_failed}`);
+	if (failed_members.length > 0) logger.info(`  Failed members: ${failed_members}`);
+	return { added: n_added, removed: n_removed, failed: n_failed, failed_members };
+}
+
+bot.once('ready', async () => {
+	logger.info('Probe updating voicehooks...');
+	const all_hooks = await hook_repository.find({ select: ['guild_id'] });
+	const guild_ids = new Set<string>();
+	all_hooks.forEach(h => guild_ids.add(h.guild_id));
+	for (const guild_id of guild_ids.values()) {
+		logger.debug(`Updating hooks for ${guild_id}`);
+		await updateHooks(guild_id);
+		// logger.debug('');
 	}
 });

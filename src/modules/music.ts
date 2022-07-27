@@ -104,7 +104,7 @@ function connectToLavaServer() {
 			shoukakuclient.removeNode('Main Node');
 			lavanode = null;
 			logger.error('Exiting ...');
-			gracefulExit('LAVALINK', 1);
+			gracefulExit('LAVALINK');
 		});
 		shoukakuclient.on('ready', (name) => {
 			logger.info(chalk`{whiteBright Lavalink:} Connected to Lavalink server at ${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`);

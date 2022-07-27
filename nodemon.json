@@ -1,0 +1,6 @@
+{
+	"watch": ["src", "config.yml"],
+	"ext": "ts,yml",
+	"exec": "ts-node ./src/Main.ts",
+	"signal": "SIGINT"
+}

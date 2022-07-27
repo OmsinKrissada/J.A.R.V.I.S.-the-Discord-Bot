@@ -14,15 +14,6 @@ logger.info(`Running on Node ${process.version}`);
 // export const bot = new Client({ intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILDS', 'GUILD_EMOJIS', 'GUILD_INTEGRATIONS', 'GUILD_INVITES', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILD_PRESENCES', 'GUILD_VOICE_STATES'] });
 export const bot = new Client();
 
-connectDB().then(() => {
-	CommandManager.loadModules();
-	bot.login(CONFIG.token.discord).catch(err => {
-		logger.error('Failed to log-in to Discord.');
-		logger.error(err);
-	});
-	logger.info('Logging in to Discord ...');
-});
-
 var client_id: string;
 var loggingChannel: TextChannel | DMChannel | NewsChannel;
 
@@ -109,10 +100,8 @@ bot.on('message', async (message) => {
 	CommandManager.run(command, command_args.slice(1), { message, prefix, sourceID });
 });
 
-
-export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK', code = 0) {
-	logger.warn('Please debug the program if this wasn\'t your intention.');
-	logger.info(`Graceful shutdown initiated with "${signal}".`);
+export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK' | 'ERROR') {
+	logger.warn(`Graceful shutdown triggered by "${signal}".`);
 	loggingChannel.send({
 		embed: {
 			title: '👋 Logged out!',
@@ -120,9 +109,19 @@ export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK', code = 0) {
 			color: CONFIG.colors.yellow,
 			timestamp: new Date()
 		}
-	}).then(() => {
+	}).finally(() => {
 		bot.destroy();
-		logger.info('Successfully destroyed the bot instance.');
-		process.exit(code);
+		logger.warn('Successfully destroyed the bot instance.');
+		process.exit(signal === 'LAVALINK' || signal === 'ERROR' ? 1 : 0);
 	});
 }
+
+connectDB().then(() => {
+	CommandManager.loadModules();
+	bot.login(CONFIG.token.discord);
+	// .catch(err => {
+	// 	logger.error('Failed to sign in to Discord.');
+	// 	logger.error(err);
+	// });
+	logger.info('Logging in to Discord ...');
+});
