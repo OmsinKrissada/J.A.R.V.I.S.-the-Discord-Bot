@@ -170,7 +170,12 @@ new Command({
 		} else if (sub_command?.toLowerCase() === 'forceupdate') {
 
 			const loading = await message.channel.send('<a:loading:845534883396583435> Updating, please wait. This might take about a minute due to discord rate limit.');
-			const { added, failed, removed, failed_members } = await updateHooks(message.guild.id);
+			const updateResult = await updateHooks(message.guild.id);
+			if (!updateResult) {
+				loading.edit(`<:checkmark:849685283459825714> No hooks found, no need to update.`);
+				return;
+			}
+			const { added, failed, removed, failed_members } = updateResult;
 			logger.debug('Done checking hooks');
 			const n_processed = added + removed + failed;
 			if (n_processed > 0)
