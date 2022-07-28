@@ -193,7 +193,13 @@ new Command({
 
 async function updateHooks(guild_id: string): Promise<{ added: number; removed: number; failed: number; failed_members: { member: GuildMember, hookID: string; }[]; }> {
 	let n_removed = 0, n_added = 0, n_failed = 0;
-	const guild = await bot.guilds.fetch(guild_id);
+	let guild;
+	try {
+		guild = await bot.guilds.fetch(guild_id);
+	} catch (e) {
+		logger.error(`Cannot access guild ${guild_id}`);
+		return;
+	}
 
 	const hooks = await hook_repository.find({ where: { guild_id } });
 	if (!hooks?.length) {
@@ -265,7 +271,7 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 	logger.info(`  Added: ${n_added}`);
 	logger.info(`  Removed: ${n_removed}`);
 	logger.info(`  Failed: ${n_failed}`);
-	if (failed_members.length > 0) logger.info(`  Failed members: ${failed_members}`);
+	if (failed_members.length > 0) logger.info(`  Failed members: ${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ')}`);
 	return { added: n_added, removed: n_removed, failed: n_failed, failed_members };
 }
 
