@@ -2609,6 +2609,11 @@ performance-now@^2.1.0:
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
   integrity sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=
 
+petitio@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/petitio/-/petitio-1.4.0.tgz#1887cba89b95de2c61ef774a2f1baf68845ba022"
+  integrity sha512-9LaVd/5BLmbNU8Q4Ax8NezihiPt2ISNqi2vKilEchSSf+YSOXxfsLUb0SUmDskm1WkBOVTsqdyuyYI0RYKqr0Q==
+
 picomatch@^2.0.4, picomatch@^2.2.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
@@ -2895,14 +2900,13 @@ sha.js@^2.4.11:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-shoukaku@1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/shoukaku/-/shoukaku-1.5.2.tgz#797576ebf40a4979fedf9ff2dd46e712034bde80"
-  integrity sha512-sRb6j78RHVfdy96/DdhBA1emZWdPnFH2+5JZ9t3TThjMvfiBa/AaMJMyVBpYH8svI+xOZnXEsfQyqN9BJ15oqA==
+shoukaku@3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/shoukaku/-/shoukaku-3.1.3.tgz#9d1e3a419f8a4b7c6dafc84755c4dc6c6f5c2429"
+  integrity sha512-Ie2fBYKGrVD5Q4hfoT2wQ1LR1gG64zDY2hEsUgJaNIN6yMGv5W+UdTtPG1tvp5skerSLMcHJjjEOAz80/Z+UZw==
   dependencies:
-    abort-controller "^3.0.0"
-    node-fetch "^2.6.1"
-    ws "^7.3.1"
+    petitio "^1.4.0"
+    ws "^8.7.0"
 
 signal-exit@^3.0.0:
   version "3.0.3"
@@ -3454,10 +3458,15 @@ write-file-atomic@^3.0.3:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-ws@^7.3.1, ws@^7.4.4:
+ws@^7.4.4:
   version "7.5.4"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.4.tgz#56bfa20b167427e138a7795de68d134fe92e21f9"
   integrity sha512-zP9z6GXm6zC27YtspwH99T3qTG7bBFv2VIkeHstMLrLlDJuzA7tQ5ls3OJ1hOGGCzTQPniNJoHXIAOS0Jljohg==
+
+ws@^8.7.0:
+  version "8.8.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.8.1.tgz#5dbad0feb7ade8ecc99b830c1d77c913d4955ff0"
+  integrity sha512-bGy2JzvzkPowEJV++hF07hAD6niYSr0JzBNo/J29WsB57A2r7Wlc1UFcTR9IzrPvuNVO4B8LGqF8qcpsVOhJCA==
 
 xml2js@^0.4.23:
   version "0.4.23"

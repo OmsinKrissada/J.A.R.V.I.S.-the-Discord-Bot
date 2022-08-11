@@ -3,7 +3,7 @@ import { DMChannel, Guild, GuildMember, MessageEmbed, MessageReaction, Snowflake
 import { Helper } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
-import { Shoukaku, ShoukakuPlayer, ShoukakuSocket } from 'shoukaku';
+import { Shoukaku, Player, Connectors, Node } from 'shoukaku';
 // import erela from 'erela.js'
 
 import { settings } from '../DBManager';
@@ -79,17 +79,17 @@ const MusicPlayerMap = new Map<Snowflake, MusicPlayer>();
 
 // connect to LavaLink server
 
-const LavalinkServer = [{ name: 'Main Node', host: CONFIG.lavalink.hostname, port: CONFIG.lavalink.port, auth: CONFIG.lavalink.password }];
+const LavalinkServer = [{ name: 'Main Node', url: `${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`, auth: CONFIG.lavalink.password }];
 const ShoukakuOptions = { moveOnDisconnect: true, resumable: false, resumableTimeout: 5000, reconnectTries: 2, restTimeout: 10000 };
 let shoukakuclient: Shoukaku;
 
 let isFirstAttempt = true;
 
-let lavanode: ShoukakuSocket;
+let lavanode: Node;
 function connectToLavaServer() {
 	return new Promise<void>((resolve, reject) => {
 		logger.info(chalk`{whiteBright Lavalink:} Connecting to Lavalink server ...`);
-		shoukakuclient = new Shoukaku(bot, LavalinkServer, ShoukakuOptions);
+		shoukakuclient = new Shoukaku(new Connectors.DiscordJS(bot), LavalinkServer, ShoukakuOptions);
 		// if (!isFirstAttempt) shoukakuclient.addNode(LavalinkServer[0]);
 		// isFirstAttempt = false;
 
@@ -99,7 +99,7 @@ function connectToLavaServer() {
 		shoukakuclient.on('close', (name, code, reason) => {
 			logger.warn(`Lavalink - ${name}: Closed with code ${code}, Reason: "${reason || 'No reason'}"`);
 		});
-		shoukakuclient.on('disconnected', (name, reason) => {
+		shoukakuclient.on('disconnect', (name, reason) => {
 			logger.error(`Lavalink - ${name}: Disconnected, Reason: "${reason || 'No reason'}"`);
 			shoukakuclient.removeNode('Main Node');
 			lavanode = null;
@@ -139,7 +139,7 @@ class MusicPlayer {
 	private queue: Array<Song> = [];
 	private volume: number = CONFIG.defaultVolume;
 	private leaveTimeout: NodeJS.Timeout;
-	public lavaplayer: ShoukakuPlayer = null;
+	public lavaplayer: Player = null;
 	// private trackId: string;
 	private playedTime: number;
 
@@ -245,7 +245,7 @@ class MusicPlayer {
 		}
 
 		// if query is a single video
-		const track = (await lavanode.rest.resolve(query, 'youtube')).tracks[0];
+		const track = (await lavanode.rest.resolve(`ytsearch:${query}`)).tracks[0];
 		if (track) {
 			return new Song({
 				requester: member, textChannel: textChan,
@@ -278,7 +278,7 @@ class MusicPlayer {
 			if (trackID) {
 				const { name, artist, href, thumbnail_url } = await getTrackSearchString(trackID);
 
-				const yt_track = (await lavanode.rest.resolve(`${artist} ${name}`, 'youtube')).tracks[0];
+				const yt_track = (await lavanode.rest.resolve(`${artist} ${name}`)).tracks[0];
 				result = new Song({
 					requester: member, textChannel: referTextChannel,
 					title: `${artist} - ${name}`,
@@ -356,16 +356,17 @@ class MusicPlayer {
 			logger.debug(`Reconnected to Lavalink server (initiated from player${this.guild.id})`);
 		}
 
-		this.lavaplayer = await lavanode.joinVoiceChannel({
-			guildID: this.voiceChannel.guild.id,
-			voiceChannelID: this.voiceChannel.id,
+		this.lavaplayer = await lavanode.joinChannel({
+			guildId: this.voiceChannel.guild.id,
+			channelId: this.voiceChannel.id,
+			shardId: 0,
 			deaf: true,
 		});
-		this.lavaplayer.on('error', (error) => {
-			logger.error(`Music Player[${this.guild.id}]: Lavalink player error: ${error}`);
-			this.lavaplayer.disconnect();
-		});
-		this.lavaplayer.setVolume(this.volume);
+		// this.lavaplayer.on('exception', (error) => {
+		// 	logger.error(`Music Player[${this.guild.id}]: Lavalink player error: ${error}`);
+		// 	this.lavaplayer.disconnect();
+		// });
+		this.lavaplayer.setVolume(this.volume / 100);
 
 		// when the player is closed
 		this.lavaplayer.on('closed', (reason: any) => { // on user force disconnect
@@ -377,7 +378,7 @@ class MusicPlayer {
 					// this.lavaplayer = null;
 				} else {
 					this.lavaplayer.stopTrack();
-					this.lavaplayer.playTrack(this.currentSong.trackId, { startTime: this.playedTime, noReplace: false });
+					this.lavaplayer.playTrack({track:this.currentSong.trackId, options:{ startTime: this.playedTime, noReplace: false }});
 					setTimeout(() => {
 						clearTimeout(this.leaveTimeout);
 						this.leaveTimeout = null;
@@ -386,7 +387,7 @@ class MusicPlayer {
 				}
 			}, 200);
 		});
-		this.lavaplayer.on('playerUpdate', (update: any) => this.playedTime = update.position);
+		this.lavaplayer.on('update', update => this.playedTime = update.state.position);
 
 		// when the player finish playing a song
 		this.lavaplayer.on('end', async (reason) => {
@@ -418,7 +419,7 @@ class MusicPlayer {
 		this.isLooping = false;
 		this.voiceChannel = null;
 		if (this.lavaplayer) {
-			this.lavaplayer.disconnect();
+			this.lavaplayer.connection.disconnect();
 			this.lavaplayer = null;
 			this.queue = [];
 			return true;
@@ -472,7 +473,7 @@ class MusicPlayer {
 			const data = await lavanode.rest.resolve(song.uri);
 			song.trackId = data.tracks[0].track;
 		}
-		await this.lavaplayer.playTrack(song.trackId, { noReplace: false });
+		await this.lavaplayer.playTrack({track: song.trackId, options: { noReplace: false }});
 		this.currentSong = song;
 
 
@@ -514,7 +515,8 @@ class MusicPlayer {
 
 	setVolume(volume: number) {
 		if (!this.lavaplayer) return;
-		this.lavaplayer.setVolume(volume);
+		logger.debug(`volume: ${volume}`)
+		this.lavaplayer.setVolume(volume / 100);
 		logger.debug(`Volume set to ${volume} in "${this.guild.id}"`);
 		this.volume = volume;
 	}

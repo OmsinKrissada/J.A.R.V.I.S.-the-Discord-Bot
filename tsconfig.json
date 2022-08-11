@@ -11,7 +11,8 @@
     "target": "ES2020", // specify ECMAScript target version
     "allowJs": true, // allow a partial TypeScript and JavaScript codebase
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strict": false
   },
   "include": [
     "./src/"
