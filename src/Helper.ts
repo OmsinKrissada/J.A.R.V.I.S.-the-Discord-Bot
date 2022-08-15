@@ -1,4 +1,5 @@
 import { exec } from 'child_process';
+import { formatDuration } from 'date-fns';
 import { TextChannel, MessageEmbed, MessageReaction, User, EmojiResolvable, Message, MessageEmbedOptions, Guild, GuildMember, Channel } from 'discord.js';
 import moment from 'moment';
 import CONFIG from './ConfigManager';
@@ -77,17 +78,13 @@ class HelperClass {
 		return `\`${hours > 0 ? hours + ':' : ''}${mins}:${Helper.min2(secs)}\``;
 	}
 
-	fullDurationString(duration: moment.Duration) {
-		let str = '';
-		const days = Math.floor(duration.asDays());
-		const hours = duration.hours();
-		const mins = duration.minutes();
-		const secs = duration.seconds();
-		if (days) str += `${days} day${days > 1 ? 's' : ''} `;
-		if (hours) str += `${hours} hour${hours > 1 ? 's' : ''} `;
-		if (mins) str += `${mins} minute${mins > 1 ? 's' : ''} `;
-		if (secs) str += `${secs} second${secs > 1 ? 's' : ''}`;
-		return str.trimEnd();
+	fullDurationString(seconds: number) {
+		return formatDuration({
+			days: Math.floor(seconds / 60 / 60 / 24),
+			hours: Math.floor(seconds / 60 / 60 % 60),
+			minutes: Math.floor(seconds / 60 % 60),
+			seconds: Math.floor(seconds % 60)
+		}, { delimiter: ', ' });
 	}
 
 

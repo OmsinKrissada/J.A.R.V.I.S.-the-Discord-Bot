@@ -968,6 +968,11 @@ dasu@~0.4.3:
   resolved "https://registry.yarnpkg.com/dasu/-/dasu-0.4.3.tgz#892ecaa66ab69b1f21d9ca016699dbd0aec7e359"
   integrity sha512-AFwspl5k7V8MW8H7tyIGJ0gtOauUg7JC+DgiRFUIXvPNNDFXTMtvnCkZY0macN6JLGqBjNP38WVnQN7Iv3RSlg==
 
+date-fns@^2.29.1:
+  version "2.29.1"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.29.1.tgz#9667c2615525e552b5135a3116b95b1961456e60"
+  integrity sha512-dlLD5rKaKxpFdnjrs+5azHDFOPEu4ANy/LTh04A1DTzMM7qoajmKCBc8pkKRFT41CNzw+4gQh79X5C+Jq27HAw==
+
 debug@4, debug@^4.1.0:
   version "4.3.2"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.2.tgz#f0a49c18ac8779e31d4a0c6029dfb76873c7428b"

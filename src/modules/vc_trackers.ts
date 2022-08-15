@@ -1,26 +1,10 @@
-import { TextChannel } from 'discord.js';
-import moment from 'moment';
+import { TextChannel, User } from 'discord.js';
+import { formatDistanceToNow, intlFormat } from 'date-fns';
 import { Command } from '../CommandManager';
 import { Helper } from '../Helper';
 import { bot } from '../Main';
 import { lastseen as lastseenManager } from '../DBManager';
 
-
-const voiceJoinTimestamps = new Map<string, Map<string, Date>>();
-
-
-new Command({
-	name: 'vctime',
-	category: 'hidden',
-	description: 'Shows how long a user has been in a voice channel. (Deprecated)',
-	examples: ['vctime <user>'],
-	requiredCallerPermissions: [],
-	requiredSelfPermissions: ['SEND_MESSAGES'],
-	serverOnly: true,
-	async exec(message, prefix, args, sourceID) {
-		message.channel.send(`I've merged this command with \`${prefix}seen\`, please use that command instead.`);
-	}
-});
 
 new Command({
 	name: 'seen',
@@ -32,16 +16,20 @@ new Command({
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) {
 		const guild = message.guild;
-		const user = await Helper.resolveUser(args.join(' '), { memberList: guild.members.cache.array(), askingChannel: <TextChannel>message.channel, caller: message.author });
+		let user: User;
+		if (args.length > 0)
+			user = await Helper.resolveUser(args.join(' '), { memberList: guild.members.cache.array(), askingChannel: <TextChannel>message.channel, caller: message.author });
+		else
+			user = message.author;
 		if (guild.member(user)) {
 			const timestamp = await lastseenManager.getTimestamp(guild.id, user.id);
 			if (timestamp) {
 				if (await lastseenManager.getPresent(guild.id, user.id)) { // if present in a voice channel
-					message.channel.send(`\`${user.tag}\` has been in voice channel for **${Helper.fullDurationString(moment.duration(new Date().getTime() - timestamp.valueOf()))}**`);
+					message.channel.send(`**${user.tag}** has been in a voice channel for \`${Helper.fullDurationString((Date.now() - timestamp.valueOf()) / 1000)}\`.`);
 				}
-				else message.channel.send(`\`${user.tag}\` was last seen in a voice channel at **${moment.utc(timestamp).format('lll z')} (${moment(timestamp).fromNow()})**`);
+				else message.channel.send(`**${user.tag}** was seen in a voice channel \`${formatDistanceToNow(timestamp, { addSuffix: true })}\`. ||(${intlFormat(timestamp, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })})||`);
 			}
-			else message.channel.send(`Cannot find lastseen timestamp of \`${user.tag}\`. The user has to join a vc at least once when I'm online in this server.`);
+			else message.channel.send(`Cannot find timestamp of \`${user.tag}\`. The user has to join a voice channel at least once when I'm online in this server.`);
 		}
 		else message.channel.send('Member not found');
 	}

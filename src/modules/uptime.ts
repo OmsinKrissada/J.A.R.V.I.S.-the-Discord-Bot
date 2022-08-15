@@ -13,6 +13,6 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', "VIEW_CHANNEL"],
 	serverOnly: false,
 	exec(message, prefix, args, sourceID) {
-		message.channel.send(`I have been online for **${Helper.fullDurationString(moment.duration(bot.uptime))}**`)
+		message.channel.send(`I've been online for \`${Helper.fullDurationString(bot.uptime / 1000)}\`.`);
 	}
 });
