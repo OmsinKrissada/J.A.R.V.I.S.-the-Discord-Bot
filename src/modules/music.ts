@@ -15,7 +15,8 @@ import os from 'os-utils';
 import { bot, gracefulExit } from '../Main';
 import { logger } from '../Logger';
 import chalk from 'chalk';
-import { getGuildSettings } from '../DBManager';
+import { getGuildSettings, prisma } from '../DBManager';
+import { formatISO9075, formatRFC3339, formatRFC7231, intlFormat } from 'date-fns';
 
 if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 	if (percent * 100 > CONFIG.maxCPUPercent) {
@@ -473,9 +474,19 @@ class MusicPlayer {
 			const data = await lavanode.rest.resolve(song.uri);
 			song.trackId = data.tracks[0].track;
 		}
-		await this.lavaplayer.playTrack({ track: song.trackId, options: { noReplace: false } });
+		this.lavaplayer.playTrack({ track: song.trackId, options: { noReplace: false } });
 		this.currentSong = song;
 
+		if ((await getGuildSettings(this.guild.id)).saveMusicHistory) {
+			await prisma.musicHistory.create({
+				data: {
+					guildId: this.guild.id,
+					requesterId: song.requester.id,
+					title: song.title,
+					uri: song.uri
+				}
+			});
+		}
 
 		if ((await getGuildSettings(this.guild.id)).announceSong) {
 			song.textChannel.send(new MessageEmbed()
@@ -1105,5 +1116,38 @@ new Command({
 
 		// }
 
+	}
+});
+
+new Command({
+	name: 'history',
+	category: 'music',
+	description: 'List songs that have been played.',
+	examples: ['history'],
+	requiredCallerPermissions: [],
+	requiredSelfPermissions: ['SEND_MESSAGES'],
+	serverOnly: true,
+	async exec(message, prefix, args, sourceID) {
+		const history = await prisma.musicHistory.findMany({
+			where: {
+				guildId: message.guild.id,
+			},
+			orderBy: {
+				timestamp: 'desc'
+			},
+		});
+
+		let lastTimestampStr = '';
+		const historyLines = history.map(song => {
+			const currentTimestampStr = intlFormat(song.timestamp, { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+			const lineStr = `${currentTimestampStr !== lastTimestampStr ? `**${currentTimestampStr}**\n` : ''}[${song.title}](https://youtube.com/watch?v=${song.uri}) by <@${song.requesterId}>\n`;
+			lastTimestampStr = currentTimestampStr;
+			return lineStr;
+		});
+		let embed = new MessageEmbed()
+			.setTitle('🗓️ Song History')
+			.setColor(BLUE)
+			.setFooter('from latest to oldest');
+		sendEmbedPage(<TextChannel>message.channel, embed, ZERO_WIDTH, (historyLines.length != 0 ? historyLines : ['Empty History']));
 	}
 });

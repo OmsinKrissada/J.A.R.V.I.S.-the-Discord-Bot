@@ -65,13 +65,13 @@ model VoicePresence {
 }
 
 model MusicHistory {
-  id        Int      @id @default(autoincrement())
-  title     String   @map("title")
-  url       String
-  memberId  String   @map("member_id")
-  guild     Guild    @relation(fields: [guildId], references: [id])
-  guildId   String   @map("guild_id")
-  timestamp DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  title       String   @map("title")
+  uri         String
+  requesterId String   @map("requester_id")
+  guild       Guild    @relation(fields: [guildId], references: [id])
+  guildId     String   @map("guild_id")
+  timestamp   DateTime @default(now())
 
   // member    User   @relation(fields: [memberId], references: [discord_id])
 
