@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { DMChannel, Message, MessageEmbed, TextChannel } from 'discord.js';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import { logger } from '../Logger';
 import ConfigManager from '../ConfigManager';
 

@@ -1,6 +1,6 @@
 import { MessageEmbed, TextChannel } from 'discord.js';
 import { Command } from '../CommandManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 
 
 new Command({
@@ -28,7 +28,7 @@ new Command({
 						description: `🙋‍♂️ Kicked ${usr}` + (reason ? ` for "${reason}"` : ''),
 						color: Helper.GREEN
 					}));
-				})
+				});
 			}
 			else {
 				message.channel.send(new MessageEmbed({
@@ -36,7 +36,7 @@ new Command({
 					color: Helper.RED
 				}));
 			}
-		})
+		});
 	}
 });
 
@@ -69,7 +69,7 @@ new Command({
 						description: `Banned ${member}` + (reason ? ` for "${reason}"` : ''),
 						color: Helper.GREEN
 					}));
-				})
+				});
 			}
 			else {
 				message.channel.send(new MessageEmbed({
@@ -77,7 +77,7 @@ new Command({
 					color: Helper.RED
 				}));
 			}
-		})
+		});
 	}
 });
 

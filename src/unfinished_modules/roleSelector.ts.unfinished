@@ -1,7 +1,7 @@
 import { Emoji, GuildEmoji, Message, MessageEmbed, PartialMessage, ReactionEmoji, TextChannel } from 'discord.js';
 import { Command } from '../CommandManager';
 import { rolePanel } from '../DBManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import { bot } from '../Main';
 
 

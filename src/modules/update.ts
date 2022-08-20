@@ -1,8 +1,8 @@
 import { Command } from '../CommandManager';
 import { TextChannel } from 'discord.js';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import { exec } from 'child_process';
-import path from 'path';
+import * as path from 'path';
 
 
 

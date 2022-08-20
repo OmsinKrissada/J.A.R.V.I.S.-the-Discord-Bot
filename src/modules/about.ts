@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
 import CONFIG from '../ConfigManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import packageinfo from '../../package.json';
 import { bot } from '../Main';
 export default new Command({
@@ -16,7 +16,7 @@ export default new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('About Me')
 			.setColor(Helper.BLUE)
-			.setThumbnail(bot.user!.displayAvatarURL({dynamic: true, size: 4096}))
+			.setThumbnail(bot.user!.displayAvatarURL({ dynamic: true, size: 4096 }))
 			.addField('Name', '**J.A.R.V.I.S.**', true)
 			.addField('Current Version', Helper.inlineCodeBlock(packageinfo.version), true)
 			.addField('Node version', Helper.inlineCodeBlock(process.version), true)
@@ -27,6 +27,6 @@ export default new Command({
 			.addField('Guild Count', bot.guilds.cache.size, true)
 			.addField('Shard Count', bot.ws.shards.size, true)
 			.addField('HTTP API Version', bot.options.http!.version, true)
-		)
+		);
 	}
-})
+});

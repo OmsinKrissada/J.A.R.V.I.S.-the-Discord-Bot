@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
-import { settings } from '../DBManager';
-import { Helper } from '../Helper';
+import { setGuildSettings } from '../DBManager';
+import * as Helper from '../Helper';
 export default new Command({
 	name: 'prefix',
 	category: 'settings',
@@ -16,12 +16,12 @@ export default new Command({
 	exec(message, prefix, args, sourceID) {
 		if (args[0] === 'clear') {
 			if (message.guild === null) {
-				settings.set(message.channel.id, { prefix: '' });
+				setGuildSettings(message.channel.id, { prefix: '' });
 				message.channel.send(new MessageEmbed()
 					.setTitle('Prefix Cleared')
 					.setDescription(`Prefix has cleared`)
 					.setColor(Helper.GREEN)
-				)
+				);
 			}
 			else {
 				message.channel.send(new MessageEmbed()
@@ -33,12 +33,12 @@ export default new Command({
 		}
 		else if (args[0] === 'set') {
 			let new_prefix = args[1];
-			settings.set(sourceID, { prefix: new_prefix });
+			setGuildSettings(sourceID, { prefix: new_prefix });
 			message.channel.send(new MessageEmbed()
 				.setTitle('Prefix Changed')
 				.setDescription(`Prefix has changed to ${Helper.inlineCodeBlock(new_prefix)}`)
 				.setColor(Helper.GREEN)
-			)
+			);
 		}
 		else {
 			message.channel.send(new MessageEmbed()
@@ -49,4 +49,4 @@ export default new Command({
 			);
 		}
 	}
-})
+});

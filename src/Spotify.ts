@@ -63,8 +63,9 @@ export async function getTrackSearchString(id: string): Promise<{ name: string, 
 			if (err.response.status == 401) {
 				await refreshAccessToken();
 				return await getTrackSearchString(id);
-			} else logger.error(`${err.message}: ${JSON.stringify(err.response.data.error)}`);
-		} else logger.error(err);
+			} else logger.error(`${err.message}: ${JSON.stringify(err.response.data)}`);
+		} else
+			logger.error(err);
 	}
 	return null;
 }

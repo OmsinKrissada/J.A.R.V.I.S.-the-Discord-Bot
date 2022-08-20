@@ -1,11 +1,11 @@
 import { Client, MessageEmbed, Message, TextChannel, DMChannel, NewsChannel } from 'discord.js';
 
-import { Helper } from "./Helper";
+import * as Helper from "./Helper";
 import * as CommandManager from './CommandManager';
-import { connectDB, settings } from './DBManager';
 import { logger } from './Logger';
 import registered_commands from '../settings/alias.json';
 import CONFIG from './ConfigManager';
+import { getGuildSettings, prisma } from './DBManager';
 
 logger.info('Initiating ...');
 logger.info(`Running on Node ${process.version}`);
@@ -35,12 +35,6 @@ bot.once('ready', async () => {
 		}));
 	}
 
-	bot.guilds.cache.forEach(async (guild) => {
-		if (!(await settings.checkExist(guild.id))) {
-			logger.info('Guild data not found, creating default data for this guild. ' + `[${guild.id}]`);
-			await settings.create(guild.id, guild.name, guild.channels.cache[0] instanceof DMChannel, CONFIG.defaultPrefix);
-		}
-	});
 });
 
 function log(message: Message): void {
@@ -66,25 +60,15 @@ bot.on('message', async (message) => {
 
 	const isDMMessage = message.channel instanceof DMChannel;
 	const sourceID = isDMMessage ? message.channel.id : message.guild!.id;
-	const sourceName = isDMMessage ? message.author.username : message.guild!.name;
 
-	if (!(await settings.checkExist(sourceID))) {
-		logger.info('Guild data not found, creating default data for this guild. ' + `[${sourceID}]`);
-		await settings.create(sourceID, sourceName, isDMMessage, isDMMessage ? CONFIG.defaultDMPrefix : CONFIG.defaultPrefix);
-	}
-
-	const prefix: string = (await settings.get(sourceID, ['prefix'])).prefix;
+	// const prefix: string = (await settings.get(sourceID, ['prefix'])).prefix;
+	const prefix = (await getGuildSettings(sourceID)).prefix;
 
 	if (!((message.content.startsWith(prefix) && message.content.length > prefix.length) || message.content.startsWith(client_id))) return;
 
 	log(message);
 
-	let command_args: Array<string>;
-	if (message.content.startsWith(client_id)) {
-		command_args = message.content.slice(client_id.length).trim().split(' ');
-	} else {
-		command_args = message.content.slice(prefix.length).trim().split(' ');
-	}
+	const command_args = message.content.slice(message.content.startsWith(client_id) ? client_id.length : prefix.length).trim().split(' ');
 
 	let command = command_args[0].toLowerCase();
 	for (const aliases in registered_commands) {
@@ -109,19 +93,14 @@ export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK' | 'ERROR') {
 			color: CONFIG.colors.yellow,
 			timestamp: new Date()
 		}
-	}).finally(() => {
+	}).finally(async () => {
 		bot.destroy();
+		await prisma.$disconnect();
 		logger.warn('Successfully destroyed the bot instance.');
 		process.exit(signal === 'LAVALINK' || signal === 'ERROR' ? 1 : 0);
 	});
 }
 
-connectDB().then(() => {
-	CommandManager.loadModules();
-	bot.login(CONFIG.token.discord);
-	// .catch(err => {
-	// 	logger.error('Failed to sign in to Discord.');
-	// 	logger.error(err);
-	// });
-	logger.info('Logging in to Discord ...');
-});
+CommandManager.loadModules();
+bot.login(CONFIG.token.discord);
+logger.info('Logging in to Discord ...');

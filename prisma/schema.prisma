@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id                 String         @id
+  prefix             String         @default("-")
+  isDM               Boolean        @map("is_dm")
+  warnUnknownCommand Boolean        @default(true) @map("warn_unknown_command")
+  announceSong       Boolean        @default(true) @map("announce_song")
+  announceQueueEnd   Boolean        @default(false) @map("announce_queue_end")
+  queueInOrder       Boolean        @default(true) @map("queue_in_order")
+  enforceUserLimit   Boolean        @default(false) @map("enforce_user_limit")
+  saveMusicHistory   Boolean        @default(true) @map("save_music_history")
+  lastRefreshed      DateTime       @default(now()) @map("last_refreshed")
+  MusicHistory       MusicHistory[]
+
+  @@map("guild")
+}
+
+// model User {
+//   discord_id   String         @id
+//   MusicHistory MusicHistory[]
+
+//   @@map("user")
+// }
+
+// model GuildChannelPair {
+//   id         String @id
+//   guild_id   String @map("guild_id")
+//   channel_id String @map("channel_id")
+// }
+
+// model GuildMember {
+//   id            String          @id @default(cuid())
+//   guildId       String          @map("guild_id")
+//   memberId      String          @map("member_id")
+//   VoicePresence VoicePresence[]
+
+//   @@map("guild_member")
+// }
+
+model ChannelHook {
+  id             Int    @id @default(autoincrement())
+  guildId        String @map("guild_id")
+  textChannelId  String @map("text_channel_id")
+  voiceChannelId String @map("voice_channel_id")
+
+  @@map("channel_hook")
+}
+
+model VoicePresence {
+  id        Int      @id @default(autoincrement())
+  guildId   String   @map("guild_id")
+  memberId  String   @map("member_id")
+  timestamp DateTime
+  isPresent Boolean  @default(false) @map("is_present")
+
+  @@map("voice_presence")
+}
+
+model MusicHistory {
+  id        Int      @id @default(autoincrement())
+  title     String   @map("title")
+  url       String
+  memberId  String   @map("member_id")
+  guild     Guild    @relation(fields: [guildId], references: [id])
+  guildId   String   @map("guild_id")
+  timestamp DateTime @default(now())
+
+  // member    User   @relation(fields: [memberId], references: [discord_id])
+
+  @@map("music_history")
+}

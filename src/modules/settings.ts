@@ -1,7 +1,7 @@
 import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
 import { Command } from '../CommandManager';
-import { settings } from '../DBManager';
-import { Helper } from '../Helper';
+import { getGuildSettings, setGuildSettings } from '../DBManager';
+import * as Helper from '../Helper';
 import { bot } from '../Main';
 
 
@@ -14,13 +14,14 @@ new Command({
 	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL"],
 	serverOnly: true,
 	async exec(message, prefix, args, sourceID) {
-		const settings_name = await settings.get(sourceID, ['announceQueueEnd', 'announceSong', 'enforceUserLimit', 'queueInOrder', 'warnUnknownCommand']);
+		const settings_name = await getGuildSettings(sourceID);
 		const settingsdesc = {
 			warnUnknownCommand: 'Warns when the bot receives an unknown command.',
 			announceSong: 'Announces when a song is being played.',
 			announceQueueEnd: 'Announces when music queue is ended.',
 			queueInOrder: 'Use sync method to get videos from playlist. (EXPERIMENTAL)',
 			enforceUserLimit: 'Kicks users when joining a voice channel that exceed the user limit regardless of the permission they have. (Requires MOVE_MEMBER permission)',
+			saveMusicHistory: 'Whether to save music requests.',
 		};
 
 		const field = args[0];
@@ -35,7 +36,7 @@ new Command({
 			}
 			else if (['true', 'on', 'yes', 'enable', '1'].includes(value)) {
 				const oldval = settings_name[field];
-				await settings.set(sourceID, { [field]: true });
+				await setGuildSettings(sourceID, { [field]: true });
 				embedOptions = {
 					title: 'Setting Applied',
 					description: `${oldval ? '<:checkmark:849685283459825714>' : '<:empty:849697672884650065>'} <:join_arrow:845520716715917314> <:checkmark:849685283459825714> \`${field}\``,
@@ -44,7 +45,7 @@ new Command({
 			}
 			else if (['false', 'off', 'no', 'disable', '0'].includes(value)) {
 				const oldval = settings_name[field];
-				await settings.set(sourceID, { [field]: false });
+				await setGuildSettings(sourceID, { [field]: false });
 				embedOptions = {
 					title: 'Setting Applied',
 					description: `${oldval ? '<:checkmark:849685283459825714>' : '<:empty:849697672884650065>'} <:join_arrow:845520716715917314> <:empty:849697672884650065> \`${field}\``,

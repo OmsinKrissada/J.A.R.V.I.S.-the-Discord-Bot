@@ -1,8 +1,8 @@
 import { DMChannel, GuildMember } from 'discord.js';
 import { Command } from '../CommandManager';
 import ConfigManager from '../ConfigManager';
-import { hook_repository } from '../DBManager';
-import { Helper } from '../Helper';
+import { prisma } from '../DBManager';
+import * as Helper from '../Helper';
 import { logger } from '../Logger';
 import { bot } from '../Main';
 
@@ -17,21 +17,24 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 		return;
 	}
 
-	const hooks = await hook_repository.find({ select: ['id', 'textChannel_id', 'voiceChannel_id'], where: { guild_id: guild.id } });
-	if (hooks.length < 0) return;
+	const hooks = await prisma.channelHook.findMany({
+		select: { id: true, textChannelId: true, voiceChannelId: true },
+		where: { guildId: guild.id }
+	});
+	if (!hooks.length) return;
 
 
 	hooks.forEach(async (hook) => {
-		const text = bot.channels.resolve(hook.textChannel_id);
-		const voice = bot.channels.resolve(hook.voiceChannel_id);
+		const text = bot.channels.resolve(hook.textChannelId);
+		const voice = bot.channels.resolve(hook.voiceChannelId);
 		if (!text) {
-			logger.warn(`Text channel ${hook.textChannel_id} not found in ${guild.id}, removing hook.`);
-			hook_repository.delete(hook.id);
+			logger.warn(`Text channel ${hook.textChannelId} not found in ${guild.id}, removing hook.`);
+			prisma.channelHook.delete({ where: { id: hook.id } });
 			return;
 		}
-		if (hook.voiceChannel_id != 'all' && !voice) {
-			logger.warn(`Voice channel ${hook.textChannel_id} not found in ${guild.id}, removing hook.`);
-			hook_repository.delete(hook.id);
+		if (hook.voiceChannelId != 'all' && !voice) {
+			logger.warn(`Voice channel ${hook.textChannelId} not found in ${guild.id}, removing hook.`);
+			prisma.channelHook.delete({ where: { id: hook.id } });
 			return;
 		}
 		if (!text.isText() || text instanceof DMChannel) {
@@ -40,7 +43,7 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 		}
 
 		if (!text) { // text channel not found
-			logger.warn(`VoiceHook: TextChannel "${hook.textChannel_id}" doesn't exist in "${guild.id}"`);
+			logger.warn(`VoiceHook: TextChannel "${hook.textChannelId}" doesn't exist in "${guild.id}"`);
 			return;
 		}
 
@@ -50,7 +53,7 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 				return;
 			}
 
-			if (hook.voiceChannel_id === 'all') {
+			if (hook.voiceChannelId === 'all') {
 				if (newvc && !oldvc) { // on join
 					logger.debug(`Updating voicehook for ${newState.member.id} [add all]`);
 					await text.updateOverwrite(newState.member.id, { VIEW_CHANNEL: true });
@@ -61,11 +64,11 @@ bot.on('voiceStateUpdate', async (oldState, newState) => {
 				return;
 			}
 
-			if (newvc?.id === hook.voiceChannel_id) {
-				logger.debug(`Updating voicehook for ${newState.member.id} [add ${hook.voiceChannel_id}]`);
+			if (newvc?.id === hook.voiceChannelId) {
+				logger.debug(`Updating voicehook for ${newState.member.id} [add ${hook.voiceChannelId}]`);
 				await text.updateOverwrite(newState.member.id, { VIEW_CHANNEL: true });
-			} else if (oldvc?.id === hook.voiceChannel_id) {
-				logger.debug(`Updating voicehook for ${newState.member.id} [remove ${hook.voiceChannel_id}]`);
+			} else if (oldvc?.id === hook.voiceChannelId) {
+				logger.debug(`Updating voicehook for ${newState.member.id} [remove ${hook.voiceChannelId}]`);
 				await text.updateOverwrite(oldState.member.id, { VIEW_CHANNEL: false });
 			}
 		} catch (e) {
@@ -86,11 +89,11 @@ new Command({
 	async exec(message, prefix, args, sourceID) {
 		const sub_command = args[0];
 		if (sub_command?.toLowerCase() === 'list') {
-			const hooks = await hook_repository.find({ where: { guild_id: message.guild.id } });
+			const hooks = await prisma.channelHook.findMany({ where: { guildId: message.guild.id } });
 			message.channel.send({
 				embed: {
 					title: 'Channel Hooks',
-					description: hooks.map(h => `\`${h.id}\` - ${bot.channels.resolve(h.textChannel_id)?.toString()} <-> ${h.voiceChannel_id === 'all' ? '\`All VC\`' : bot.channels.resolve(h.voiceChannel_id)?.toString()}`).join('\n'),
+					description: hooks.map(h => `\`${h.id}\` - ${bot.channels.resolve(h.textChannelId)?.toString()} <-> ${h.voiceChannelId === 'all' ? '\`All VC\`' : bot.channels.resolve(h.voiceChannelId)?.toString()}`).join('\n'),
 					color: ConfigManager.colors.blue
 				}
 			});
@@ -130,7 +133,7 @@ new Command({
 				return;
 			}
 
-			const isExists = (await hook_repository.find({ where: { textChannel_id: textId, voiceChannel_id: voiceId } })).length > 0;
+			const isExists = (await prisma.channelHook.findMany({ where: { textChannelId: textId, voiceChannelId: voiceId } })).length > 0;
 			if (isExists) {
 				message.channel.send({
 					embed: {
@@ -139,19 +142,36 @@ new Command({
 					}
 				});
 			} else {
-				hook_repository.insert({ textChannel_id: textId, voiceChannel_id: voiceId, guild_id: message.guild.id });
-				message.channel.send({
-					embed: {
-						title: 'Hook Created',
-						color: ConfigManager.colors.green
+				prisma.channelHook.create({
+					data: {
+						textChannelId: textId,
+						voiceChannelId: voiceId,
+						guildId: message.guild.id
 					}
+				}).then(() => {
+					message.channel.send({
+						embed: {
+							title: 'Hook Created',
+							color: ConfigManager.colors.green
+						}
+					});
+
 				});
 			}
 		} else if (sub_command?.toLowerCase() === 'remove') {
-			const id = args[1];
-			const gonna_delete = await hook_repository.findOne(id);
-			if (gonna_delete) {
-				hook_repository.remove(gonna_delete);
+			const id = +args[1];
+			if (isNaN(id)) {
+				message.channel.send({
+					embed: {
+						title: 'Invalid Hook ID',
+						description: 'Hook ID must be a number',
+						color: ConfigManager.colors.red
+					}
+				});
+				return;
+			}
+			const deleted = await prisma.channelHook.delete({ where: { id } });
+			if (deleted) {
 				message.channel.send({
 					embed: {
 						title: 'Hook Deleted',
@@ -162,7 +182,7 @@ new Command({
 				message.channel.send({
 					embed: {
 						title: 'Invalid Hook ID',
-						description: `Hook with ID ${Helper.inlineCodeBlock(id)} does not exist.`,
+						description: `Hook with ID ${Helper.inlineCodeBlock(String(id))} does not exist.`,
 						color: ConfigManager.colors.red
 					}
 				});
@@ -206,7 +226,7 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 		return;
 	}
 
-	const hooks = await hook_repository.find({ where: { guild_id } });
+	const hooks = await prisma.channelHook.findMany({ where: { guildId: guild_id } });
 	if (!hooks?.length) {
 		logger.debug('No hooks found');
 		return;
@@ -214,15 +234,15 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 
 	const failed_members: { member: GuildMember, hookID: string; }[] = [];
 	for (const hook of hooks) {
-		logger.debug(`Checking hook: ${hook.textChannel_id}(text) to ${hook.voiceChannel_id}(voice)`);
-		const text_channel = guild.channels.resolve(hook.textChannel_id);
+		logger.debug(`Checking hook: ${hook.textChannelId}(text) to ${hook.voiceChannelId}(voice)`);
+		const text_channel = guild.channels.resolve(hook.textChannelId);
 
 		if (!text_channel) {
 			logger.warn(`Error: The following hook has link to an unknown channel: ${hook.id}, skipping.`);
 			continue;
 		}
 
-		const voice_channel = hook.voiceChannel_id == 'all' ? null : guild.channels.resolve(hook.voiceChannel_id);
+		const voice_channel = hook.voiceChannelId == 'all' ? null : guild.channels.resolve(hook.voiceChannelId);
 
 		const filter = (m: GuildMember) => !m.hasPermission('ADMINISTRATOR') && !m.user.bot;
 
@@ -230,7 +250,7 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 		for (const m of text_channel.members.filter(filter).array()) {
 			// if ((m.voice.channel && hook.voiceChannel_id == 'all') || (m.voice.channel.id == hook.voiceChannel_id)) 
 			logger.debug(`Checking if access of ${m.user.tag} should be removed`);
-			const isUserPresent = hook.voiceChannel_id == 'all' ? !!m.voice.channel : m.voice.channel && m.voice.channel.id == hook.voiceChannel_id;
+			const isUserPresent = hook.voiceChannelId == 'all' ? !!m.voice.channel : m.voice.channel && m.voice.channel.id == hook.voiceChannelId;
 			if (!isUserPresent) {
 				try {
 					logger.debug(`Removing access of ${m.user.tag} to ${text_channel.name}(${text_channel.id})`);
@@ -238,7 +258,7 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 					n_removed++;
 				} catch (err) {
 					logger.warn(`Failed to remove access of ${m.user.tag} from ${text_channel.name}(${text_channel.id})`);
-					failed_members.push({ member: m, hookID: hook.id });
+					failed_members.push({ member: m, hookID: hook.id + '' });
 					n_failed++;
 				}
 			}
@@ -253,7 +273,7 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 					n_added++;
 				} catch (err) {
 					logger.warn(`Failed to add access of ${member.user.tag} to ${text_channel.name}(${text_channel.id})`);
-					failed_members.push({ member: member, hookID: hook.id });
+					failed_members.push({ member: member, hookID: String(hook.id) });
 					n_failed++;
 				}
 			}
@@ -282,11 +302,11 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 
 bot.once('ready', async () => {
 	logger.info('Probe updating voicehooks...');
-	const all_hooks = await hook_repository.find({ select: ['guild_id'] });
-	const guild_ids = new Set<string>();
-	all_hooks.forEach(h => guild_ids.add(h.guild_id));
-	for (const guild_id of guild_ids.values()) {
-		logger.debug(`Updating hooks for ${guild_id}`);
-		await updateHooks(guild_id);
+	const hooks = await prisma.channelHook.findMany({ select: { guildId: true } });
+	const guildIds = new Set<string>();
+	hooks.forEach(h => guildIds.add(h.guildId));
+	for (const guildId of guildIds.values()) {
+		logger.debug(`Updating hooks for ${guildId}`);
+		await updateHooks(guildId);
 	}
 });

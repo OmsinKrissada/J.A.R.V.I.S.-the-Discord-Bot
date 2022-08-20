@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { Command } from '../CommandManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import { bot } from '../Main';
 
 

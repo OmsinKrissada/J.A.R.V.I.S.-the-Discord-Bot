@@ -1,9 +1,9 @@
-import { TextChannel, User } from 'discord.js';
+import { Guild, TextChannel, User } from 'discord.js';
 import { formatDistanceToNow, intlFormat } from 'date-fns';
 import { Command } from '../CommandManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import { bot } from '../Main';
-import { lastseen as lastseenManager } from '../DBManager';
+import { prisma } from '../DBManager';
 
 
 new Command({
@@ -22,29 +22,69 @@ new Command({
 		else
 			user = message.author;
 		if (guild.member(user)) {
-			const timestamp = await lastseenManager.getTimestamp(guild.id, user.id);
-			if (timestamp) {
-				if (await lastseenManager.getPresent(guild.id, user.id)) { // if present in a voice channel
-					message.channel.send(`**${user.tag}** has been in a voice channel for \`${Helper.fullDurationString((Date.now() - timestamp.valueOf()) / 1000)}\`.`);
+			try {
+				const { isPresent, timestamp } = await prisma.voicePresence.findFirstOrThrow({ where: { guildId: guild.id, memberId: user.id } });
+				if (isPresent) { // if present in a voice channel
+					message.channel.send(`**${user.tag}** has been in current voice channel for \`${Helper.fullDurationString((Date.now() - timestamp.valueOf()) / 1000)}\`.`);
 				}
 				else message.channel.send(`**${user.tag}** was seen in a voice channel \`${formatDistanceToNow(timestamp, { addSuffix: true })}\`. ||(${intlFormat(timestamp, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })})||`);
+			} catch {
+				message.channel.send(`Cannot find timestamp of \`${user.tag}\`. The user has to join a voice channel at least once when I'm online in this server.`);
 			}
-			else message.channel.send(`Cannot find timestamp of \`${user.tag}\`. The user has to join a voice channel at least once when I'm online in this server.`);
 		}
 		else message.channel.send('Member not found');
 	}
 });
 
 
-bot.on('voiceStateUpdate', (oldvs, newvs) => {
+bot.on('voiceStateUpdate', async (oldvs, newvs) => {
 	const guild = newvs.guild, member = newvs.member;
-	if (newvs?.channel?.id == oldvs?.channel?.id) return;
-	if (newvs.channel) { // if enter
-		lastseenManager.setTimestamp(guild.id, member.id, new Date());
-		lastseenManager.setPresent(guild.id, member.id, true);
+	if (newvs?.channel?.id == oldvs?.channel?.id) return; // ignore mute and deafen events
+	// on enter
+	if (newvs.channel) {
+		const updated = await prisma.voicePresence.updateMany({
+			where: {
+				guildId: guild.id,
+				memberId: member.id
+			},
+			data: {
+				isPresent: true,
+				timestamp: new Date()
+			},
+		});
+		if (!updated.count) {
+			await prisma.voicePresence.create({
+				data: {
+					guildId: guild.id,
+					memberId: member.id,
+					isPresent: true,
+					timestamp: new Date()
+				}
+			});
+		}
 	}
-	else { // if leave
-		lastseenManager.setTimestamp(guild.id, member.id, new Date());
-		lastseenManager.setPresent(guild.id, member.id, false);
+	// on leave
+	else {
+		const updated = await prisma.voicePresence.updateMany({
+			where: {
+				guildId: guild.id,
+				memberId: member.id
+			},
+			data: {
+				isPresent: false,
+				timestamp: new Date()
+			},
+		});
+		if (!updated.count) {
+			await prisma.voicePresence.create({
+				data: {
+					guildId: guild.id,
+					memberId: member.id,
+					isPresent: false,
+					timestamp: new Date()
+
+				}
+			});
+		}
 	}
 });

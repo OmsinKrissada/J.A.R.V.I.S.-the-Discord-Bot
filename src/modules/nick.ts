@@ -1,6 +1,6 @@
 import { MessageEmbed, Permissions } from 'discord.js';
 import { Command } from '../CommandManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import { bot } from '../Main';
 
 export default new Command({
@@ -21,30 +21,30 @@ export default new Command({
 		}
 		if (args[0] != undefined) {
 			try {
-				await message.guild!.member(bot.user!)!.setNickname(longarg(0, args))
+				await message.guild!.member(bot.user!)!.setNickname(longarg(0, args));
 				message.channel.send(new MessageEmbed()
 					.setTitle('Nickname Changed')
 					.setDescription(`Nickname has changed to **${longarg(0, args)}**`)
 					.setColor(Helper.GREEN)
-				)
+				);
 			} catch (err) {
 				message.channel.send(new MessageEmbed()
 					.setTitle('Nickname Unchanged')
 					.setDescription(`I have trouble changing my nickname, try with a different name.`)
 					.setColor(Helper.RED)
-				)
+				);
 			}
 		}
 		else {
-			message.guild!.member(bot.user!)!.setNickname('')
+			message.guild!.member(bot.user!)!.setNickname('');
 			message.channel.send(new MessageEmbed()
 				.setTitle('Nickname Reset')
 				.setDescription(`Nickname has reset to **${bot.user!.username}**`)
 				.setColor(Helper.GREEN)
-			)
+			);
 		}
 	}
-})
+});
 
 function longarg(begin_index = 1, args: string[]) {
 	return args.slice(begin_index).join(' ').trim();

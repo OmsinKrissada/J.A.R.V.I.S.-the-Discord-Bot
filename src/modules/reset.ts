@@ -1,13 +1,13 @@
 import { MessageEmbed, MessageReaction, ReactionEmoji, ReactionManager } from 'discord.js';
 import { Command } from '../CommandManager';
-import { Helper } from '../Helper';
-import { settings } from '../DBManager';
+import { prisma } from '../DBManager';
+import * as Helper from '../Helper';
 
 
 export default new Command({
 	name: 'reset',
 	category: 'settings',
-	description: 'Resets this guild\'s data to default state',
+	description: 'Resets this guild\'s data to its default state',
 	examples: ['reset'],
 	requiredCallerPermissions: ['MANAGE_CHANNELS'],
 	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL", "READ_MESSAGE_HISTORY", "ADD_REACTIONS"],
@@ -21,24 +21,28 @@ export default new Command({
 				msg.react('849685295779545108');
 				msg.awaitReactions((reaction: MessageReaction, user) => (reaction.emoji.id == '849685283459825714' || reaction.emoji.id == '849685295779545108') && user == message.author, { max: 1, time: 10000, errors: ['time'] })
 					.then(collected => {
-						console.log(collected.first()!.emoji.name)
+						console.log(collected.first()!.emoji.name);
 						if (collected.first()!.emoji.id == '849685283459825714') {
 							if (message.guild) {
-								settings.purge(message.guild.id)
+								prisma.guild.delete({
+									where: { id: message.guild.id }
+								});
 							} else {
-								settings.purge(message.channel.id)
+								prisma.guild.delete({
+									where: { id: message.channel.id }
+								});
 							}
 
 							message.channel.send(new MessageEmbed()
 								.setTitle('Done!')
 								.setDescription('')
-								.setColor(Helper.GREEN))
+								.setColor(Helper.GREEN));
 						}
 						else {
 							message.channel.send(new MessageEmbed()
 								.setTitle('Canceled!')
 								.setDescription('')
-								.setColor(Helper.RED))
+								.setColor(Helper.RED));
 						}
 					})
 					.catch(() => {
@@ -49,4 +53,4 @@ export default new Command({
 					});
 			});
 	}
-})
+});

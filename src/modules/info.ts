@@ -1,6 +1,6 @@
 import { Command } from '../CommandManager';
 import { DiscordAPIError, GuildMember, Message, MessageEmbed, TextChannel, User } from 'discord.js';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import * as CommandManager from '../CommandManager';
 import * as DataManager from '../DBManager';
 import moment from 'moment';
@@ -41,28 +41,28 @@ export default new Command({
 
 				// add fields
 				embeduserinfo
-					.addField('Tag', user.tag, true)
+					.addField('Tag', user.tag, true);
 				if (message.guild && message.guild.member(user)) {
 					embeduserinfo
-						.addField('Status', statusstr, true)
+						.addField('Status', statusstr, true);
 				}
 				embeduserinfo
 					.addField('Race', user.bot ? '🤖 Bot' : '👤 User', true)
-					.addField('ID', `\`${user.id}\``, true)
+					.addField('ID', `\`${user.id}\``, true);
 				if (message.guild && message.guild.member(user)) {
 					const rolesOfTheMember = message.guild.member(user)!.roles.cache.filter(r => r.name !== '@everyone').array().join(', ');
 					if (rolesOfTheMember)
 						embeduserinfo
-							.addField('<:role:845532456072249355> Roles', rolesOfTheMember)
+							.addField('<:role:845532456072249355> Roles', rolesOfTheMember);
 					embeduserinfo
 						.setColor(message.guild.member(user)!.displayHexColor)
 						.addField('<:join_arrow:845520716715917314> Server Joined', `${moment.utc(message.guild.member(user).joinedAt).format('lll z')} (${moment(message.guild.member(user).joinedAt).fromNow()})`);
 				}
 				embeduserinfo
 					.addField('🎂 Account Created', `${moment.utc(user.createdAt).format('lll z')} (${moment(user.createdAt).fromNow()})`)
-					.setTimestamp()
+					.setTimestamp();
 				message.channel.send(embeduserinfo);
-			}
+			};
 
 			if (longarg(1)) {
 				const user = await Helper.resolveUser(longarg(1), message.guild ? { askingChannel: <TextChannel>message.channel, caller: message.author, memberList: message.guild.members.cache.array() } : undefined);
@@ -91,7 +91,7 @@ export default new Command({
 								title: 'No Access',
 								description: "I don't have permission to view content of this server.",
 								color: Helper.RED
-							}))
+							}));
 						return;
 					});
 					if (!fetchedGuild) return;
@@ -119,5 +119,5 @@ export default new Command({
 			return args.slice(begin_index).join(' ').trim();
 		}
 	}
-})
+});
 

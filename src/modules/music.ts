@@ -1,12 +1,11 @@
 import { Command } from '../CommandManager';
 import { DMChannel, Guild, GuildMember, MessageEmbed, MessageReaction, Snowflake, StreamDispatcher, TextChannel, User, VoiceChannel, VoiceConnection } from 'discord.js';
-import { Helper } from '../Helper';
+import { BLUE, confirm_type, GREEN, inlineCodeBlock, longarg, digitDurationString, progressBar, RED, sendEmbedPage, shuffle, YELLOW, ZERO_WIDTH } from '../Helper';
 import axios, { AxiosResponse } from 'axios';
 import moment from 'moment';
 import { Shoukaku, Player, Connectors, Node } from 'shoukaku';
 // import erela from 'erela.js'
 
-import { settings } from '../DBManager';
 import yts from 'yt-search';
 import CONFIG from '../ConfigManager';
 import * as CommandManager from '../CommandManager';
@@ -16,6 +15,7 @@ import os from 'os-utils';
 import { bot, gracefulExit } from '../Main';
 import { logger } from '../Logger';
 import chalk from 'chalk';
+import { getGuildSettings } from '../DBManager';
 
 if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 	if (percent * 100 > CONFIG.maxCPUPercent) {
@@ -304,10 +304,10 @@ class MusicPlayer {
 			referTextChannel.send(new MessageEmbed()
 				.setAuthor('Song Queued', member.user.displayAvatarURL())
 				.setDescription('Queued ' + `**[${song.title}](${song.href})**` + '.\n')
-				.setColor(Helper.GREEN)
-				.addField('Song Duration', `\`${Helper.prettyTime(song.getDuration().asSeconds())}\``, true)
+				.setColor(GREEN)
+				.addField('Song Duration', `\`${digitDurationString(song.getDuration().asSeconds())}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\``, true)
-				.addField('Time Before Playing', `\`${this.getTotalTime().asSeconds() ? Helper.prettyTime(this.getTotalTime().asSeconds()) : "Now"}\``, true)
+				.addField('Time Before Playing', `\`${this.getTotalTime().asSeconds() ? digitDurationString(this.getTotalTime().asSeconds()) : "Now"}\``, true)
 				.setThumbnail(song.thumbnail)
 			);
 			this.queue.push(song);
@@ -318,10 +318,10 @@ class MusicPlayer {
 			referTextChannel.send(new MessageEmbed()
 				.setAuthor('Playlist Queued', member.user.displayAvatarURL())
 				.setDescription(`Queued ${playlist.songs.length} songs from playlist **[${playlist.title}](${playlist.url})**.\n`)
-				.setColor(Helper.GREEN)
-				.addField('Playlist Duration', `\`${Helper.prettyTime(totalDuration)}\``, true)
+				.setColor(GREEN)
+				.addField('Playlist Duration', `\`${digitDurationString(totalDuration)}\``, true)
 				.addField('Position in Queue', `\`${this.currentSong ? this.queue.length + 1 : 0}\` to \`${this.currentSong ? this.queue.length + playlist.songs.length : playlist.songs.length - 1}\``, true)
-				.addField('Time Before Playing', `\`${this.getTotalTime().asSeconds() ? Helper.prettyTime(this.getTotalTime().asSeconds()) : "Now"}\``, true)
+				.addField('Time Before Playing', `\`${this.getTotalTime().asSeconds() ? digitDurationString(this.getTotalTime().asSeconds()) : "Now"}\``, true)
 				.setThumbnail(playlist.thumbnail)
 			);
 			this.queue = this.queue.concat(playlist.songs);
@@ -330,7 +330,7 @@ class MusicPlayer {
 			referTextChannel.send(new MessageEmbed({
 				title: "No Songs Found",
 				description: "Sorry, we experienced difficulties finding your song. Try again with other phrases.",
-				color: Helper.RED
+				color: RED
 			}));
 			return;
 		} else {
@@ -378,7 +378,7 @@ class MusicPlayer {
 					// this.lavaplayer = null;
 				} else {
 					this.lavaplayer.stopTrack();
-					this.lavaplayer.playTrack({track:this.currentSong.trackId, options:{ startTime: this.playedTime, noReplace: false }});
+					this.lavaplayer.playTrack({ track: this.currentSong.trackId, options: { startTime: this.playedTime, noReplace: false } });
 					setTimeout(() => {
 						clearTimeout(this.leaveTimeout);
 						this.leaveTimeout = null;
@@ -404,7 +404,7 @@ class MusicPlayer {
 			else if (this.queue.length >= 1) this.playNext(); // Have next song
 			else { // Doesn't have next song
 				this.currentSong = null;
-				if ((await settings.get(this.guild.id, ['announceQueueEnd'])).announceQueueEnd) {
+				if ((await getGuildSettings(this.guild.id)).announceQueueEnd) {
 					this.respondChannel.send('Queue Ended.');
 				}
 			}
@@ -473,14 +473,14 @@ class MusicPlayer {
 			const data = await lavanode.rest.resolve(song.uri);
 			song.trackId = data.tracks[0].track;
 		}
-		await this.lavaplayer.playTrack({track: song.trackId, options: { noReplace: false }});
+		await this.lavaplayer.playTrack({ track: song.trackId, options: { noReplace: false } });
 		this.currentSong = song;
 
 
-		if ((await settings.get(this.guild.id, ['announceSong'])).announceSong) {
+		if ((await getGuildSettings(this.guild.id)).announceSong) {
 			song.textChannel.send(new MessageEmbed()
-				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.href})** \`${Helper.prettyTime(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
-				.setColor(Helper.BLUE)
+				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.href})** \`${digitDurationString(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
+				.setColor(BLUE)
 			);
 		}
 		// }																-----> closing for above
@@ -515,7 +515,7 @@ class MusicPlayer {
 
 	setVolume(volume: number) {
 		if (!this.lavaplayer) return;
-		logger.debug(`volume: ${volume}`)
+		logger.debug(`volume: ${volume}`);
 		this.lavaplayer.setVolume(volume / 100);
 		logger.debug(`Volume set to ${volume} in "${this.guild.id}"`);
 		this.volume = volume;
@@ -548,7 +548,7 @@ class MusicPlayer {
 	}
 
 	shuffle() {
-		this.queue = Helper.shuffle(this.queue);
+		this.queue = shuffle(this.queue);
 	}
 
 	move(oldPosition: number, newPosition: number) {
@@ -571,8 +571,8 @@ class MusicPlayer {
 		responseChannel.send(new MessageEmbed()
 			.setTitle('Seeked!')
 			// cannot get real-time position back from Lavalink server -.- making the next line inaccurate
-			// .setDescription(`${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(this.currentSong.getDuration().asSeconds())}\n${Helper.progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
-			.setColor(Helper.GREEN)
+			// .setDescription(`${prettyTime(secondsPlayed)} / ${prettyTime(this.currentSong.getDuration().asSeconds())}\n${progressBar(Math.round(secondsPlayed / this.currentSong.getDuration().asSeconds() * 100), 45)}`)
+			.setColor(GREEN)
 		);
 	}
 
@@ -658,7 +658,7 @@ new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Error')
 					.setDescription('**You must be in a voice channel** to use this command.')
-					.setColor(Helper.RED)
+					.setColor(RED)
 				);
 				return;
 			}
@@ -681,7 +681,7 @@ new Command({
 			message.channel.send(new MessageEmbed({
 				title: 'Error',
 				description: 'I am not in a voice channel, use join command to connect me to one.',
-				color: Helper.RED
+				color: RED
 			}));
 			return;
 		}
@@ -692,20 +692,20 @@ new Command({
 				message.channel.send(new MessageEmbed({
 					title: 'Warning',
 					description: "**You're NOT in a voice channel.** You won't be able to enjoy your music unless you join the one I'm currently in.",
-					color: Helper.YELLOW
+					color: YELLOW
 				}));
 			} else if (player.voiceChannel.id != member.voice.channel.id)
 				message.channel.send(new MessageEmbed({
 					title: 'Warning',
 					description: "**I'm in a different voice channel.** You won't be able to enjoy your music unless you join the one I'm currently in.",
-					color: Helper.YELLOW
+					color: YELLOW
 				}));
 
 		}
 		else { // equivalent to if (message.member.voice.channel) -- only user is in a vc
 			await MusicPlayerMap.get(message.guild.id).connect(<TextChannel>message.channel, message.member!.voice.channel);
 		}
-		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.guild, <TextChannel>message.channel, Helper.longarg(0, args));
+		await MusicPlayerMap.get(message.guild!.id)!.appendQueue(message.member!, message.guild, <TextChannel>message.channel, longarg(0, args));
 	}
 });
 
@@ -754,7 +754,7 @@ new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Error')
 				.setDescription('I am **NOT** in a voice channel.')
-				.setColor(Helper.RED)
+				.setColor(RED)
 			);
 		}
 	}
@@ -774,7 +774,7 @@ new Command({
 		if (!player.voiceChannel) {
 			message.channel.send(new MessageEmbed({
 				title: "I'm not in a voice channel.",
-				color: Helper.RED
+				color: RED
 			}));
 			return;
 		}
@@ -786,7 +786,7 @@ new Command({
 				player.setLooping(false);
 				message.channel.send('✋ Looping Disabled!');
 			} else {
-				message.channel.send(`❌ Invalid value ${Helper.inlineCodeBlock(args[0])}`);
+				message.channel.send(`❌ Invalid value ${inlineCodeBlock(args[0])}`);
 			}
 		} else {
 			const isLooping = player.toggleLooping();
@@ -827,7 +827,7 @@ new Command({
 		if (!current_song) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('No Playing Song')
-				.setColor(Helper.BLUE)
+				.setColor(BLUE)
 			);
 			return;
 		}
@@ -836,11 +836,11 @@ new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('🎧 Now Playing')
 			// .setDescription(content)
-			.setColor(Helper.BLUE)
+			.setColor(BLUE)
 			.setThumbnail(current_song.thumbnail)
 			.addField('Song', `[${current_song.title}](${current_song.href})`)
-			.addField('Duration', `${Helper.prettyTime(secondsPlayed)} / ${Helper.prettyTime(current_song.getDuration().asSeconds())}` + (player.getLooping() ? ' 🔂' : '') +
-				`\n${Helper.progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
+			.addField('Duration', `\`${digitDurationString(secondsPlayed)}\` / \`${digitDurationString(current_song.getDuration().asSeconds())}\`` + (player.getLooping() ? ' 🔂' : '') +
+				`\n${progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
 			.addField('Voice Channel', `\`${player.voiceChannel.name}\``, true)
 			.addField('Requester', `${current_song.requester}`, true)
@@ -885,7 +885,7 @@ new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Invalid Argument')
 					.setDescription('The number must fall in the range of 0 to 100.')
-					.setColor(Helper.RED)
+					.setColor(RED)
 				);
 				return;
 			}
@@ -894,7 +894,7 @@ new Command({
 				message.channel.send(new MessageEmbed()
 					.setTitle('Volume Unchanged')
 					.setDescription(`Volume has not changed since it's already at \`${args[0]}%\``)
-					.setColor(Helper.BLUE)
+					.setColor(BLUE)
 				);
 				return;
 			}
@@ -905,16 +905,16 @@ new Command({
 			// }
 			message.channel.send(new MessageEmbed()
 				.setTitle('Volume Adjusted ' + (oldVolume < volume ? '🔺' : '🔻'))
-				.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[0]}%\`.\n\n**${Helper.progressBar(volume, 31)}**`)
-				.setColor(Helper.GREEN)
+				.setDescription(`Volume has been ` + (oldVolume < volume ? 'increased' : 'decreased') + ` to \`${args[0]}%\`.\n\n**${progressBar(volume, 31)}**`)
+				.setColor(GREEN)
 			);
 		}
 		else {
 			let volume = player.getVolume();
 			message.channel.send(new MessageEmbed()
 				.setTitle('Current Volume')
-				.setDescription(`The volume is at \`${volume}%\`\n\n**${Helper.progressBar(volume, 31)}**`)
-				.setColor(Helper.BLUE)
+				.setDescription(`The volume is at \`${volume}%\`\n\n**${progressBar(volume, 31)}**`)
+				.setColor(BLUE)
 			);
 		}
 	}
@@ -934,21 +934,21 @@ new Command({
 		let i = 0;
 		player.getQueue().forEach(song => {
 			i++;
-			content.push(`${Helper.inlineCodeBlock(String(i))} - \`${Helper.prettyTime(song.getDuration().asSeconds())}\` __[${song.title}](${song.href})__ [${song.requester}]\n`);
+			content.push(`${inlineCodeBlock(String(i))} - \`${digitDurationString(song.getDuration().asSeconds())}\` __[${song.title}](${song.href})__ [${song.requester}]\n`);
 		});
 
 		let embed = new MessageEmbed()
 			.setTitle('Song Queue 🎶')
-			.setColor(Helper.BLUE);
+			.setColor(BLUE);
 
 		let currentSong = player.getCurrentSong();
 		if (currentSong) {
 			let secondsPlayed = Math.floor(player.getPlayedTime().asSeconds()); // currentSong.getPlayedTime()
-			embed.addField('​\n🎧 Now Playing', `**​[${currentSong.title}](${currentSong.href})** \n${Helper.progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
-				.addField('Total Time', `\`${Helper.prettyTime(player.getTotalTime().asSeconds())}\` `, true)
-				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : '❌ None\n​', true);
+			embed.addField(`${ZERO_WIDTH}\n🎧 Now Playing`, `**${ZERO_WIDTH}[${currentSong.title}](${currentSong.href})** \n${progressBar(Math.round(secondsPlayed / currentSong.getDuration().asSeconds() * 100))}`)
+				.addField('Total Time', `\`${digitDurationString(player.getTotalTime().asSeconds())}\` `, true)
+				.addField('Loop Mode', player.getLooping() ? '🔂 Current Song' : `❌ None\n${ZERO_WIDTH}`, true);
 		}
-		Helper.sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']));
+		sendEmbedPage(<TextChannel>message.channel, embed, '🔺 Upcoming\n', (content.length != 0 ? content : ['Empty Queue']));
 	}
 });
 
@@ -965,7 +965,7 @@ new Command({
 			message.channel.send(new MessageEmbed()
 				.setTitle('Song Not Found')
 				.setDescription('Please do not use negative numbers.')
-				.setColor(Helper.RED)
+				.setColor(RED)
 			);
 			return;
 		}
@@ -974,15 +974,15 @@ new Command({
 		if (!song) {
 			message.channel.send(new MessageEmbed()
 				.setTitle('Song Not Found')
-				.setDescription('Please use any number displayed in ' + Helper.inlineCodeBlock(prefix + 'queue') + '.')
-				.setColor(Helper.RED)
+				.setDescription('Please use any number displayed in ' + inlineCodeBlock(prefix + 'queue') + '.')
+				.setColor(RED)
 			);
 			return;
 		}
 		message.channel.send(new MessageEmbed()
 			.setAuthor('🗑️ Song Removed')
 			.setDescription(`Removed [${song.title}](${song.href}) [${song.requester}]`)
-			.setColor(Helper.GREEN)
+			.setColor(GREEN)
 		);
 
 	}
@@ -1001,7 +1001,7 @@ new Command({
 		message.channel.send(new MessageEmbed()
 			.setTitle('Queue Cleared')
 			.setDescription('Music queue for this server has been reset.')
-			.setColor(Helper.GREEN)
+			.setColor(GREEN)
 		);
 	}
 });
@@ -1022,19 +1022,19 @@ new Command({
 			message.channel.send(new MessageEmbed({
 				title: "Usage",
 				description: 'rmrange <from (number)> <to (number)>',
-				color: Helper.RED,
+				color: RED,
 			}));
 		} else if (from > to) {
 			message.channel.send(new MessageEmbed({
 				title: "Invalid Range",
 				description: 'Position must be from lower to higher',
-				color: Helper.RED,
+				color: RED,
 			}));
 		} else if (from - 1 < 0 || to - 1 < 0 || from > player.getQueue().length || to > player.getQueue().length) {
 			message.channel.send(new MessageEmbed({
 				title: 'Song Not Found',
 				description: `Please use positions that exist in ${prefix}queue`,
-				color: Helper.RED,
+				color: RED,
 			})
 			);
 			return;
@@ -1043,7 +1043,7 @@ new Command({
 			message.channel.send(new MessageEmbed({
 				title: 'Songs Removed',
 				description: `${to - from + 1} songs have been removed from the queue.`,
-				color: Helper.GREEN,
+				color: GREEN,
 			})
 			);
 		}
@@ -1061,7 +1061,7 @@ new Command({
 	async exec(message, prefix, args, sourceID) {
 		const player = MusicPlayerMap.get(sourceID);
 		const results = await player.search(args.join(' '));
-		const song: yts.VideoSearchResult = await Helper.confirm_type('Pick a song you want\n(type number in chat)',
+		const song: yts.VideoSearchResult = await confirm_type('Pick a song you want\n(type number in chat)',
 			results,
 			message.author, <TextChannel>message.channel,
 			result => `\`${result.duration.timestamp}\` __[${result.title}](${result.url})__\n`);
@@ -1085,15 +1085,15 @@ new Command({
 			message.channel.send(new MessageEmbed({
 				title: 'No Playing Song',
 				description: 'I am not playing any song at the moment.',
-				color: Helper.RED
+				color: RED
 			}));
 		}
 
 		// if (!player.connection) {
 		// 	message.channel.send(new MessageEmbed({
 		// 		title: 'Invalid Option',
-		// 		description: `Use ${Helper.inlineCodeBlock(prefix + 'help seek')} for info.`,		-----> for the future
-		// 		color: Helper.RED
+		// 		description: `Use ${inlineCodeBlock(prefix + 'help seek')} for info.`,		-----> for the future
+		// 		color: RED
 		// 	}))
 		// 	return;
 		// }

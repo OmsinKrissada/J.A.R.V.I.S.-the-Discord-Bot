@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
 import ConfigManager from '../ConfigManager';
-import { Helper } from '../Helper';
+import * as Helper from '../Helper';
 import axios from 'axios';
 import { logger } from '../Logger';
 
