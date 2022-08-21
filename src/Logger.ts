@@ -3,6 +3,7 @@ import fs from 'fs';
 import winston from 'winston';
 import { createGzip } from 'zlib';
 import { gracefulExit } from './Main';
+import CONFIG from './ConfigManager';
 
 // Checks if file directory exists, if not, create them.
 if (!fs.existsSync('./logs')) {
@@ -49,12 +50,12 @@ class LoggerClass {
 		this.internal_logger = winston.createLogger({
 			transports: [
 				new winston.transports.Console({
-					level: 'info',
+					level: CONFIG.logLevel.console,
 					format: console_format,
 					handleExceptions: true,
 				}),
 				new winston.transports.File({
-					level: 'debug',
+					level: CONFIG.logLevel.file,
 					filename: './logs/latest.log',
 					format: file_format,
 					handleExceptions: true

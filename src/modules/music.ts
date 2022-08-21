@@ -279,7 +279,7 @@ class MusicPlayer {
 			if (trackID) {
 				const { name, artist, href, thumbnail_url } = await getTrackSearchString(trackID);
 
-				const yt_track = (await lavanode.rest.resolve(`${artist} ${name}`)).tracks[0];
+				const yt_track = (await lavanode.rest.resolve(`ytsearch:${artist} ${name}`)).tracks[0];
 				result = new Song({
 					requester: member, textChannel: referTextChannel,
 					title: `${artist} - ${name}`,

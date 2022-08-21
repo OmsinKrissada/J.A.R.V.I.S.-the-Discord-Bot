@@ -1,6 +1,6 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
-import { logger } from './Logger';
+// import { logger } from './Logger';
 
 
 
@@ -11,18 +11,6 @@ import { logger } from './Logger';
 
 
 interface ConfigOption {
-	database: string;
-	mysql: {
-		hostname: string;
-		port: number;
-		database: string;
-		authorizationEnabled: boolean;
-		username: string;
-		password: string;
-	};
-	sqlite: {
-		path: string;
-	};
 	lavalink: {
 		hostname: string;
 		password: string;
@@ -34,6 +22,10 @@ interface ConfigOption {
 		youtube: string,
 		spotify_id: string,
 		spotify_secret: string,
+	};
+	logLevel: {
+		console: string,
+		file: string,
 	};
 	defaultPrefix: string;
 	defaultDMPrefix: string;
@@ -50,55 +42,10 @@ interface ConfigOption {
 	disableMusic: boolean;
 }
 
-// const validator = new YamlValidator({
-// 	log: false,
-// 	structure: {
-// 		database: 'string',
-// 		mysql: {
-// 			hostname: 'string',
-// 			port: 'number',
-// 			authorizationEnabled: 'boolean',
-// 			username: 'string',
-// 			password: 'string',
-// 		},
-// 		sqlite: {
-// 			path: 'string',
-// 		},
-// 		lavalink: {
-// 			hostname: 'string',
-// 			password: 'string',
-// 			port: 'number',
-// 		},
-// 		token: {
-// 			discord: 'string',
-// 			wolfram: 'string',
-// 			youtube: 'string',
-// 		},
-// 		defaultPrefix: 'string',
-// 		defaultDMPrefix: 'string',
-// 		defaultVolume: 'number',
-// 		colors: {
-// 			red: 'number',
-// 			green: 'number',
-// 			blue: 'number',
-// 			yellow: 'number',
-// 		},
-// 		loggingChannel: 'string',
-// 		maxCPUPercent: 'number',
-// 	},
-// 	onWarning: undefined,
-// 	writeJson: false
-// });
-// validator.validate(['./config.yml']);
-// if (validator.report()) {
-// 	console.error('ERROR: Bad Configuration Format');
-// 	process.exit();
-// }
-
 let loaded;
 try {
 	loaded = yaml.load(fs.readFileSync('./config.yml', 'utf8'));
 } catch (err) {
-	logger.error(`Unable to load config file, this is probably caused by format error.\n${err}`);
+	throw (`Unable to load config file, this is probably caused by format error.\n${err}`);
 }
 export default <ConfigOption>(loaded);
