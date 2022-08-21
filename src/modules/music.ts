@@ -1147,7 +1147,7 @@ new Command({
 		let embed = new MessageEmbed()
 			.setTitle('🗓️ Song History')
 			.setColor(BLUE)
-			.setFooter('Order: From newset to oldest');
+			.setFooter('Order: newest to oldest');
 		sendEmbedPage(<TextChannel>message.channel, embed, ZERO_WIDTH, (historyLines.length != 0 ? historyLines : ['Empty History']));
 	}
 });
