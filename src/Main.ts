@@ -96,7 +96,8 @@ export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK' | 'ERROR') {
 	}).finally(async () => {
 		bot.destroy();
 		await prisma.$disconnect();
-		logger.warn('Successfully destroyed the bot instance.');
+		logger.info('Disconnected from database.', 'prisma');
+		logger.info('Successfully destroyed the bot instance.');
 		process.exit(signal === 'LAVALINK' || signal === 'ERROR' ? 1 : 0);
 	});
 }

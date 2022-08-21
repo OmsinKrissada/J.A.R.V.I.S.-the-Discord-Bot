@@ -2,8 +2,29 @@ import { bot } from './Main';
 import CONFIG from './ConfigManager';
 import { Guild, Prisma, PrismaClient, } from '@prisma/client';
 import { Snowflake } from 'discord.js';
+import { logger } from './Logger';
+import chalk from 'chalk';
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+	log: [
+		{ emit: 'event', level: 'error' },
+		{ emit: 'event', level: 'warn' },
+		{ emit: 'event', level: 'info' },
+		{ emit: 'event', level: 'query' },
+	]
+});
+prisma.$on('error', e => {
+	logger.error(e.message, 'prisma');
+});
+prisma.$on('warn', e => {
+	logger.warn(e.message, 'prisma');
+});
+prisma.$on('info', e => {
+	logger.info(e.message, 'prisma');
+});
+prisma.$on('query', e => {
+	logger.debug(`${e.query}; ${e.params}`, 'prisma');
+});
 
 
 // type SelectSubset<T, U> = { [key in keyof T]: key extends keyof U ? T[key] : never; } & (T extends Prisma.SelectAndInclude ? "Please either choose `select` or `include`." : {})

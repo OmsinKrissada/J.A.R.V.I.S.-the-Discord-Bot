@@ -21,13 +21,6 @@ class LoggerClass {
 	private readonly internal_logger: winston.Logger;
 
 	constructor() {
-		const coloredLevelString = (level: string) => {
-			if (level == 'info') return chalk.greenBright('info');
-			if (level == 'warn') return chalk.yellowBright('warn');
-			if (level == 'error') return chalk.redBright('error');
-			if (level == 'debug') return chalk.cyanBright('debug');
-			return level;
-		};
 		const console_format = winston.format.combine(
 			winston.format.timestamp({
 				format: "HH:mm:ss"
@@ -38,7 +31,8 @@ class LoggerClass {
 					gracefulExit('ERROR');
 					return `${log.timestamp} ${log.level} ${log.stack}`;
 				}
-				return `${log.timestamp} ${log.level} ${log.message}`;
+				const [group, message] = log.message.split(':group:');
+				return `${log.level}${group ? ':' + group : ''} ${message}`;
 			})
 		);
 		const file_format = winston.format.combine(
@@ -47,14 +41,15 @@ class LoggerClass {
 			}),
 			winston.format.printf(log => {
 				if (log.exception) return `${log.timestamp} ${log.level.toUpperCase()} ${log.stack}`.replace(/\[\d\dm/g, '');
-				return `${log.timestamp} ${log.level.toUpperCase()} ${log.message}`.replace(/\[\d\dm/g, '');
+				const [group, message] = log.message.split(':group:');
+				return `${log.timestamp} ${log.level.toUpperCase()}${group ? ':' + group : ''} ${message}`.replace(/\[\d\dm/g, '');
 			})
 		);
 
 		this.internal_logger = winston.createLogger({
 			transports: [
 				new winston.transports.Console({
-					level: 'debug',
+					level: 'info',
 					format: console_format,
 					handleExceptions: true,
 				}),
@@ -65,39 +60,30 @@ class LoggerClass {
 					handleExceptions: true
 				}),
 			],
-			// exceptionHandlers: [
-			// 	new winston.transports.Console({
-			// 		// filename: './logs/exceptions.log',
-			// 		level: 'debug',
-			// 		format: console_format,
-			// 		handleExceptions: true,
-			// 	}),
-			// ],
-			// rejectionHandlers: [
-			// 	new winston.transports.Console({
-			// 		// filename: './logs/exceptions.log',
-			// 		level: 'debug',
-			// 		format: console_format,
-			// 		handleExceptions: true,
-			// 	}),
-			// ],
-
 			exitOnError: true,
 		});
 	}
 
+	private getGroupColor(group: string) {
+		if (group == 'prisma') return chalk.cyanBright(group);
+		if (group == 'lavalink') return chalk.magentaBright(group);
+		return chalk.gray(group);
+	}
 
-	info(message: any) {
-		this.internal_logger.info(message);
+	info(message: any, group = '') {
+		this.internal_logger.info(`${this.getGroupColor(group)}:group:${message}`);
 	}
-	warn(message: any) {
-		this.internal_logger.warn(message);
+	warn(message: any, group = '') {
+		this.internal_logger.warn(`${this.getGroupColor(group)}:group:${message}`);
 	}
-	error(message: any) {
-		this.internal_logger.error(message);
+	error(message: any, group = '') {
+		this.internal_logger.error(`${this.getGroupColor(group)}:group:${message}`);
 	}
-	debug(message: any) {
-		this.internal_logger.debug(message);
+	debug(message: any, group = '') {
+		this.internal_logger.debug(`${this.getGroupColor(group)}:group:${message}`);
+	}
+	query(message: any, group = '') {
+		this.internal_logger.debug(`${group}:group:${message}`);
 	}
 }
 

@@ -16,7 +16,7 @@ import { bot, gracefulExit } from '../Main';
 import { logger } from '../Logger';
 import chalk from 'chalk';
 import { getGuildSettings, prisma } from '../DBManager';
-import { formatISO9075, formatRFC3339, formatRFC7231, intlFormat } from 'date-fns';
+import { intlFormat } from 'date-fns';
 
 if (CONFIG.maxCPUPercent > 0) setInterval(() => os.cpuUsage(percent => {
 	if (percent * 100 > CONFIG.maxCPUPercent) {
@@ -89,7 +89,7 @@ let isFirstAttempt = true;
 let lavanode: Node;
 function connectToLavaServer() {
 	return new Promise<void>((resolve, reject) => {
-		logger.info(chalk`{whiteBright Lavalink:} Connecting to Lavalink server ...`);
+		logger.info(`Connecting to Lavalink server ...`, 'lavalink');
 		shoukakuclient = new Shoukaku(new Connectors.DiscordJS(bot), LavalinkServer, ShoukakuOptions);
 		// if (!isFirstAttempt) shoukakuclient.addNode(LavalinkServer[0]);
 		// isFirstAttempt = false;
@@ -108,7 +108,7 @@ function connectToLavaServer() {
 			gracefulExit('LAVALINK');
 		});
 		shoukakuclient.on('ready', (name) => {
-			logger.info(chalk`{whiteBright Lavalink:} Connected to Lavalink server at ${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`);
+			logger.info(`Connected to Lavalink server at ${CONFIG.lavalink.hostname}:${CONFIG.lavalink.port}`, 'lavalink');
 			lavanode = shoukakuclient.getNode();
 			resolve();
 		});
@@ -477,7 +477,9 @@ class MusicPlayer {
 		this.lavaplayer.playTrack({ track: song.trackId, options: { noReplace: false } });
 		this.currentSong = song;
 
-		if ((await getGuildSettings(this.guild.id)).saveMusicHistory) {
+
+		const { saveMusicHistory, announceSong } = await getGuildSettings(this.guild.id);
+		if (saveMusicHistory) {
 			await prisma.musicHistory.create({
 				data: {
 					guildId: this.guild.id,
@@ -487,14 +489,12 @@ class MusicPlayer {
 				}
 			});
 		}
-
-		if ((await getGuildSettings(this.guild.id)).announceSong) {
+		if (announceSong) {
 			song.textChannel.send(new MessageEmbed()
 				.setDescription(`🎧 Now playing ` + ` **[${song.title}](${song.href})** \`${digitDurationString(song.getDuration().asSeconds())}\` ` + `[${song.requester.user}]`)
 				.setColor(BLUE)
 			);
 		}
-		// }																-----> closing for above
 
 
 		// if (this.connection?.dispatcher) {
