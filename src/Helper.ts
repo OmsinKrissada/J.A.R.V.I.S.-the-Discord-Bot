@@ -177,9 +177,6 @@ export async function sendEmbedPage(textChannel: TextChannel, prototype: Message
 						msg.first().reply('Unknown page').then(unknownmsg => unknownmsg.delete({ timeout: 5000 }));
 					}
 					(<TextChannel>message.channel).bulkDelete([ask4pagemsg, msg.first()]);
-					msg.first().delete();
-				}).finally(() => {
-					if (!ask4pagemsg.deleted) ask4pagemsg.delete();
 				});
 			});
 		}

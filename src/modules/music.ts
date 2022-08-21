@@ -1076,7 +1076,7 @@ new Command({
 			results,
 			message.author, <TextChannel>message.channel,
 			result => `\`${result.duration.timestamp}\` __[${result.title}](${result.url})__\n`);
-		CommandManager.run('play', [song.url], { message: message, prefix: prefix, sourceID: sourceID });
+		if (song) CommandManager.run('play', [song.url], { message: message, prefix: prefix, sourceID: sourceID });
 	}
 });
 
@@ -1147,7 +1147,7 @@ new Command({
 		let embed = new MessageEmbed()
 			.setTitle('🗓️ Song History')
 			.setColor(BLUE)
-			.setFooter('from latest to oldest');
+			.setFooter('Order: From newset to oldest');
 		sendEmbedPage(<TextChannel>message.channel, embed, ZERO_WIDTH, (historyLines.length != 0 ? historyLines : ['Empty History']));
 	}
 });
