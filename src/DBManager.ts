@@ -3,7 +3,6 @@ import CONFIG from './ConfigManager';
 import { Guild, Prisma, PrismaClient, } from '@prisma/client';
 import { Snowflake } from 'discord.js';
 import { logger } from './Logger';
-import chalk from 'chalk';
 
 export const prisma = new PrismaClient({
 	log: [

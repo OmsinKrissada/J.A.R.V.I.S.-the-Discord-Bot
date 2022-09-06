@@ -853,7 +853,7 @@ new Command({
 			.addField('Duration', `\`${digitDurationString(secondsPlayed)}\` / \`${digitDurationString(current_song.getDuration().asSeconds())}\`` + (player.getLooping() ? ' 🔂' : '') +
 				`\n${progressBar(Math.round(secondsPlayed / current_song.getDuration().asSeconds() * 100), 45)}`)
 			.addField('Text Channel', current_song.textChannel, true)
-			.addField('Voice Channel', `\`${player.voiceChannel.name}\``, true)
+			.addField('Voice Channel', `${player.voiceChannel}`, true)
 			.addField('Requester', `${current_song.requester}`, true)
 		);
 	}
@@ -1139,8 +1139,9 @@ new Command({
 
 		let lastTimestampStr = '';
 		const historyLines = history.map(song => {
-			const currentTimestampStr = intlFormat(song.timestamp, { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-			const lineStr = `${currentTimestampStr !== lastTimestampStr ? `**${currentTimestampStr}**\n` : ''}[${song.title}](https://youtube.com/watch?v=${song.uri}) by <@${song.requesterId}>\n`;
+			// const currentTimestampStr = intlFormat(song.timestamp, { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+			const currentTimestampStr = `<t:${Math.round(song.timestamp.getTime()/1000)}:f>`;
+			const lineStr = `${currentTimestampStr !== lastTimestampStr ? `__${currentTimestampStr}__\n` : ''}[${song.title}](https://youtube.com/watch?v=${song.uri}) by <@${song.requesterId}>\n`;
 			lastTimestampStr = currentTimestampStr;
 			return lineStr;
 		});
