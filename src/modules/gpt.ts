@@ -35,33 +35,37 @@ new Command({
 	async exec(message, prefix, args, _sourceID) {
 		const prompt = args.join(' ');
 		if (!prompt) {
-			message.channel.send(`Please provide your prompt. Usage: ${prefix}img <prompt>`);
+			message.channel.send(`Please provide your prompt. \`Usage: ${prefix}img <your prompt>\`\nE.g. \`\`\`${prefix}img a mountain made of cake\n${prefix}img An astronaut riding a horse in a photorealistic style\n${prefix}img a boy drinking coffee in a classroom, sitting in his seat, pixel art\`\`\``);
 			return;
 		}
 		const msg = message.channel.send('<a:loading:845534883396583435> The AI is thinking...');
 		const startTime = new Date();
-		const { data: res } = await axios.post('https://api.openai.com/v1/images/generations',
-			{
-				prompt: prompt,
-				n: 1,
-				size: '1024x1024',
-				// user:''
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${config.token.openai}`
+		try {
+			const { data: res } = await axios.post('https://api.openai.com/v1/images/generations',
+				{
+					prompt: prompt,
+					n: 1,
+					size: '1024x1024',
+					// user:''
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${config.token.openai}`
+					}
 				}
-			}
-		);
-		const elapsed = (new Date().getTime() - startTime.getTime()) / 1000;
-		const url = res.data[0].url;
-		(await msg).edit('', {
-			embed: {
-				description: `Prompt: **${Util.escapeMarkdown(prompt)}**\n\n**[Click here for full image](${url})**`,
-				image: { url: url },
-				footer: { text: `This command uses DALL E from OpenAI. Took ${elapsed}s` }
-			}
-		});
+			);
+			const elapsed = (new Date().getTime() - startTime.getTime()) / 1000;
+			const url = res.data[0].url;
+			(await msg).edit('', {
+				embed: {
+					description: `Prompt: **${Util.escapeMarkdown(prompt)}**\n\n**[Click here for full image](${url})**`,
+					image: { url: url },
+					footer: { text: `This command uses DALL E from OpenAI. Took ${elapsed}s` }
+				}
+			});
+		} catch (e) {
+			await ((await msg).edit(`An error has occured: ${e}`));
+		}
 	}
 });
 
