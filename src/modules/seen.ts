@@ -27,7 +27,7 @@ new Command({
 				if (isPresent) { // if present in a voice channel
 					message.channel.send(`**${user.tag}** has been in current voice channel for \`${Helper.fullDurationString((Date.now() - timestamp.valueOf()) / 1000)}\`.`);
 				}
-				else message.channel.send(`**${user.tag}** was seen in a voice channel __<t:${Math.round(timestamp.getTime()/1000)}:R>__.`);
+				else message.channel.send(`**${user.tag}** was seen in a voice channel __<t:${Math.round(timestamp.getTime() / 1000)}:R>__.`);
 			} catch {
 				message.channel.send(`Cannot find timestamp of \`${user.tag}\`. The user has to join a voice channel at least once when I'm online in this server.`);
 			}

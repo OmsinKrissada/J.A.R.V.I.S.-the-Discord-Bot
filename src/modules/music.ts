@@ -1137,12 +1137,12 @@ new Command({
 			},
 		});
 
-		let lastTimestampStr = '';
+		let lastTimestamp: number;
 		const historyLines = history.map(song => {
-			// const currentTimestampStr = intlFormat(song.timestamp, { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-			const currentTimestampStr = `<t:${Math.round(song.timestamp.getTime()/1000)}:f>`;
-			const lineStr = `${currentTimestampStr !== lastTimestampStr ? `__${currentTimestampStr}__\n` : ''}[${song.title}](https://youtube.com/watch?v=${song.uri}) by <@${song.requesterId}>\n`;
-			lastTimestampStr = currentTimestampStr;
+			const mergeSpan = 60; // in seconds
+			const currentTimestamp = Math.round(song.timestamp.getTime() / 1000 / mergeSpan);
+			const lineStr = `${currentTimestamp !== lastTimestamp ? `__<t:${Math.round(song.timestamp.getTime() / 1000)}:R>__ ` : ''}[${song.title}](https://youtube.com/watch?v=${song.uri}) by <@${song.requesterId}>\n`;
+			lastTimestamp = currentTimestamp;
 			return lineStr;
 		});
 		let embed = new MessageEmbed()

@@ -22,6 +22,7 @@ interface ConfigOption {
 		youtube: string,
 		spotify_id: string,
 		spotify_secret: string,
+		openai: string,
 	};
 	logLevel: {
 		console: string,
