@@ -1,7 +1,6 @@
 import { DMChannel, MessageEmbed, MessageReaction, ReactionEmoji, ReactionManager } from 'discord.js';
 import { Command } from '../CommandManager';
 import { prisma } from '../DBManager';
-import * as Helper from '../Helper';
 import { logger } from '../Logger';
 import { bot } from '../Main';
 
@@ -9,10 +8,10 @@ import { bot } from '../Main';
 export default new Command({
 	name: 'reactnoti',
 	category: 'features',
-	description: 'Resets this guild\'s data to its default state',
+	description: 'Sends notification when someone react your message',
 	examples: ['reactnoti <on/off/check>'],
 	requiredCallerPermissions: ['MANAGE_CHANNELS'],
-	requiredSelfPermissions: ['SEND_MESSAGES', "EMBED_LINKS", "VIEW_CHANNEL", "READ_MESSAGE_HISTORY", "ADD_REACTIONS"],
+	requiredSelfPermissions: ['SEND_MESSAGES', "VIEW_CHANNEL"],
 	serverOnly: false,
 	async exec(message, _prefix, args) {
 		const user = message.author;
