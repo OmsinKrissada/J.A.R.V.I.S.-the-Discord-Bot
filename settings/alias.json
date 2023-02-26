@@ -25,5 +25,6 @@
 	"moveq": ["mv", "move", "movequeue"],
 	"rmrange": ["removerange", "rmr"],
 	"salim": ["สลิ่ม"],
-	"seen": ["lastseen"]
+	"seen": ["lastseen"],
+	"reactnoti": ["rn"]
 }

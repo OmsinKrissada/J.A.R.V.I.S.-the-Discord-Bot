@@ -77,3 +77,10 @@ model MusicHistory {
 
   @@map("music_history")
 }
+
+model ReactionNotification {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique @map("user_id")
+  isEnabled Boolean  @default(false) @map("is_enabled")
+  updatedAt DateTime @updatedAt
+}

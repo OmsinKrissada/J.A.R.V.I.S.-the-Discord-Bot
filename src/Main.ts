@@ -12,7 +12,7 @@ logger.info(`Running on Node ${process.version}`);
 
 // Creates an instance of a Discord client
 // export const bot = new Client({ intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILDS', 'GUILD_EMOJIS', 'GUILD_INTEGRATIONS', 'GUILD_INVITES', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILD_PRESENCES', 'GUILD_VOICE_STATES'] });
-export const bot = new Client();
+export const bot = new Client({ partials: ['REACTION', 'MESSAGE'] });
 
 var client_id: string;
 var loggingChannel: TextChannel | DMChannel | NewsChannel;
