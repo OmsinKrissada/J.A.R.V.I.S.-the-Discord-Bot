@@ -103,7 +103,7 @@ bot.on('messageReactionAdd', async (reaction, reactor) => {
 
 	const data = await prisma.reactionNotification.findUnique({
 		where: {
-			userId: reactor.id
+			userId: msg_owner.id
 		}
 	});
 
