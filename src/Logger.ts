@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import fs from 'fs';
 import winston from 'winston';
 import { createGzip } from 'zlib';
-import { gracefulExit } from './Main';
 import CONFIG from './ConfigManager';
 
 // Checks if file directory exists, if not, create them.
@@ -29,7 +28,6 @@ class LoggerClass {
 			winston.format.colorize(),
 			winston.format.printf(log => {
 				if (log.exception) {
-					gracefulExit('ERROR');
 					return `${log.timestamp} ${log.level} ${log.stack}`;
 				}
 				const [group, message] = log.message.split(':group:');
