@@ -12,7 +12,7 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
 	if (oldState.channel && !newState.channel) {
 		const joinAt = joinTime.get(oldState.member.id);
 		const leaveAt = new Date().valueOf();
-		if (joinAt && leaveAt - joinAt < 5000) {
+		if (joinAt && leaveAt - joinAt < 5000 && oldState.channel.members.size > 0) {
 			oldState.guild.systemChannel.send({
 				embed: {
 					description: `${oldState.member} peaked in <#${oldState.channel.id}> for **${Math.round((leaveAt - joinAt) / 100) / 10} s**`
