@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import * as Helper from '../Helper';
 import { Command, CommandMap } from '../CommandManager';
-import * as alias from '../../settings/alias.json';
+import * as alias from '../settings/alias.json';
 
 export default new Command({
 	name: 'help',

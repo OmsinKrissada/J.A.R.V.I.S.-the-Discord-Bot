@@ -3,7 +3,7 @@ import { Client, MessageEmbed, Message, TextChannel, DMChannel, NewsChannel } fr
 import * as Helper from "./Helper";
 import * as CommandManager from './CommandManager';
 import { logger } from './Logger';
-import registered_commands from '../settings/alias.json';
+import registered_commands from './settings/alias.json';
 import CONFIG from './ConfigManager';
 import { getGuildSettings, prisma } from './DBManager';
 
@@ -53,6 +53,9 @@ function log(message: Message): void {
 }
 
 
+bot.login(CONFIG.token.discord);
+logger.info('Logging in to Discord ...');
+CommandManager.loadModules();
 // Handles received messages
 bot.on('message', async (message) => {
 	message = Object.create(message);
@@ -101,7 +104,3 @@ export function gracefulExit(signal: NodeJS.Signals | 'LAVALINK' | 'ERROR') {
 		process.exit(signal === 'LAVALINK' || signal === 'ERROR' ? 1 : 0);
 	});
 }
-
-CommandManager.loadModules();
-bot.login(CONFIG.token.discord);
-logger.info('Logging in to Discord ...');

@@ -293,9 +293,9 @@ async function updateHooks(guild_id: string): Promise<{ added: number; removed: 
 	}
 	// logger.info('');
 	logger.info(`Done checking hooks for ${guild_id} aka ${guild.name}:`);
-	logger.info(`  Added: ${n_added}`);
-	logger.info(`  Removed: ${n_removed}`);
-	logger.info(`  Failed: ${n_failed}`);
+	if (n_added > 0) logger.info(`  Added: ${n_added}`);
+	if (n_removed > 0) logger.info(`  Removed: ${n_removed}`);
+	if (n_failed > 0) logger.info(`  Failed: ${n_failed}`);
 	if (failed_members.length > 0) logger.info(`  Failed members: ${failed_members.map(m => `Hook~${m.hookID}:${m.member.user.tag}`).join(', ')}`);
 	return { added: n_added, removed: n_removed, failed: n_failed, failed_members };
 }

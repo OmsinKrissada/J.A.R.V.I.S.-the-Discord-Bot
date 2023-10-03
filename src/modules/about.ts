@@ -2,7 +2,7 @@ import { MessageEmbed } from 'discord.js';
 import { Command } from '../CommandManager';
 import CONFIG from '../ConfigManager';
 import * as Helper from '../Helper';
-import packageinfo from '../../package.json';
+// import packageinfo from '../../package.json';
 import { bot } from '../Main';
 export default new Command({
 	name: 'about',
@@ -18,7 +18,7 @@ export default new Command({
 			.setColor(Helper.BLUE)
 			.setThumbnail(bot.user!.displayAvatarURL({ dynamic: true, size: 4096 }))
 			.addField('Name', '**J.A.R.V.I.S.**', true)
-			.addField('Current Version', Helper.inlineCodeBlock(packageinfo.version), true)
+			// .addField('Current Version', Helper.inlineCodeBlock(packageinfo.version), true)
 			.addField('Node version', Helper.inlineCodeBlock(process.version), true)
 			.addField('License', '[**MIT License**](https://en.wikipedia.org/wiki/MIT_License)', true)
 			.addField('Author', '[**OmsinKrissada**](https://github.com/OmsinKrissada)', true)

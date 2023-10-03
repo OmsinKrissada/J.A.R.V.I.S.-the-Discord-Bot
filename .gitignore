@@ -20,3 +20,4 @@ src/modules/testing.ts
 /.vscode/
 *.db
 .env
+bundle/
