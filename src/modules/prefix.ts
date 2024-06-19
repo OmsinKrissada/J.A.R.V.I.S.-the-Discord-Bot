@@ -12,7 +12,7 @@ export default new Command({
 	],
 	requiredCallerPermissions: [],
 	requiredSelfPermissions: ['SEND_MESSAGES'],
-	serverOnly: false,
+	serverOnly: true,
 	exec(message, prefix, args, sourceID) {
 		if (args[0] === 'clear') {
 			if (message.guild === null) {

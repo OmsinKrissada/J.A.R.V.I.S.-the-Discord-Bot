@@ -9,17 +9,19 @@ datasource db {
 }
 
 model Guild {
-  id                 String         @id
-  prefix             String         @default("-")
-  isDM               Boolean        @map("is_dm")
-  warnUnknownCommand Boolean        @default(true) @map("warn_unknown_command")
-  announceSong       Boolean        @default(true) @map("announce_song")
-  announceQueueEnd   Boolean        @default(false) @map("announce_queue_end")
-  queueInOrder       Boolean        @default(true) @map("queue_in_order")
-  enforceUserLimit   Boolean        @default(false) @map("enforce_user_limit")
-  saveMusicHistory   Boolean        @default(true) @map("save_music_history")
-  lastRefreshed      DateTime       @default(now()) @map("last_refreshed")
-  MusicHistory       MusicHistory[]
+  id                 String   @id
+  prefix             String   @default("-")
+  isDM               Boolean  @map("is_dm")
+  warnUnknownCommand Boolean  @default(true) @map("warn_unknown_command")
+  announceSong       Boolean  @default(true) @map("announce_song")
+  announceQueueEnd   Boolean  @default(false) @map("announce_queue_end")
+  queueInOrder       Boolean  @default(true) @map("queue_in_order")
+  enforceUserLimit   Boolean  @default(false) @map("enforce_user_limit")
+  lastRefreshed      DateTime @default(now()) @map("last_refreshed")
+
+  musicVolume      Int?           @map("music_volume")
+  saveMusicHistory Boolean        @default(true) @map("save_music_history")
+  MusicHistory     MusicHistory[]
 
   @@map("guild")
 }
@@ -83,5 +85,7 @@ model ReactionNotification {
   id        Int      @id @default(autoincrement())
   userId    String   @unique @map("user_id")
   isEnabled Boolean  @default(false) @map("is_enabled")
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("reaction_notification")
 }
