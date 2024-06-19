@@ -390,7 +390,7 @@ class MusicPlayer {
 			guildId: this.voiceChannel.guild.id,
 			channelId: this.voiceChannel.id,
 			shardId: 0,
-			//   deaf: true,
+			deaf: true,
 		});
 		// this.lavaplayer.on('exception', (error) => {
 		// 	logger.error(`Music Player[${this.guild.id}]: Lavalink player error: ${error}`);
