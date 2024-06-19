@@ -17,6 +17,7 @@ model Guild {
   announceQueueEnd   Boolean  @default(false) @map("announce_queue_end")
   queueInOrder       Boolean  @default(true) @map("queue_in_order")
   enforceUserLimit   Boolean  @default(false) @map("enforce_user_limit")
+  antiPeaking        Boolean  @default(false) @map("anti_peaking")
   lastRefreshed      DateTime @default(now()) @map("last_refreshed")
 
   musicVolume      Int?           @map("music_volume")
