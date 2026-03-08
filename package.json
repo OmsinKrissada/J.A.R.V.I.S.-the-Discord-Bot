@@ -9,7 +9,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "node .",
 		"dev": "nodemon",
-		"build": "rimraf bundle && esbuild src/*.ts src/**/*.ts --platform=node --format=cjs --minify --keep-names --outdir=bundle --outbase=src && copyfiles --flat package.json prisma/schema.prisma bundle && copyfiles --flat src/settings/* bundle/settings && copyfiles --flat resources/* bundle/resources",
+		"build": "rimraf bundle && esbuild src/*.ts src/**/*.ts --platform=node --bundle --minify --keep-names --outdir=bundle --outbase=src && copyfiles --flat package.json prisma/schema.prisma bundle && copyfiles --flat src/settings/* bundle/settings && copyfiles --flat resources/* bundle/resources && cp node_modules/prisma/*.node bundle",
 		"upload": "scp -r bundle/* ubunsin.krissada.com:~/host/jarvis"
 	},
 	"keywords": [],

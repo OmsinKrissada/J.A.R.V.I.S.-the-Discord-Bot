@@ -55,7 +55,7 @@ function log(message: Message): void {
 
 bot.login(CONFIG.token.discord);
 logger.info('Logging in to Discord ...');
-CommandManager.loadModules();
+// CommandManager.loadModules();
 // Handles received messages
 bot.on('message', async (message) => {
 	message = Object.create(message);

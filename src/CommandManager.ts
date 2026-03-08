@@ -67,21 +67,45 @@ export class Command {
 }
 
 // loads commands
-export function loadModules() {
-	fs.readdir(path.join(__dirname, 'modules'), async (err, files) => {
-		if (err) logger.error(err.stack);
-		for (const file of files) {
-			try {
-				logger.info('Loading ' + file);
-				await import(`./modules/${file}`);
-			} catch (err) {
-				logger.error(`Failed to load "${file}":\n${err.stack}`);
-			}
-		}
+import("./modules/about")
+import("./modules/aiaiaionly")
+import("./modules/antipeaking")
+import("./modules/gpt")
+import("./modules/help")
+import("./modules/info")
+import("./modules/misc")
+import("./modules/moderation")
+import("./modules/movevoice")
+import("./modules/music")
+import("./modules/muting")
+import("./modules/nick")
+import("./modules/ping")
+import("./modules/prefix")
+import("./modules/purge")
+import("./modules/reaction_notification")
+import("./modules/reset")
+import("./modules/seen")
+import("./modules/settings")
+import("./modules/update")
+import("./modules/uptime")
+import("./modules/voice_channel_limit")
+import("./modules/voicehook")
+import("./modules/wolfram")
+// export function loadModules() {
+// 	fs.readdir(path.join(__dirname, 'modules'), async (err, files) => {
+// 		if (err) logger.error(err.stack);
+// 		for (const file of files) {
+// 			try {
+// 				logger.info('Loading ' + file);
+// 				await import(`./modules/${file}`);
+// 			} catch (err) {
+// 				logger.error(`Failed to load "${file}":\n${err.stack}`);
+// 			}
+// 		}
 
-		logger.info('All modules were loaded.');
-	});
-}
+// 		logger.info('All modules were loaded.');
+// 	});
+// }
 
 
 export function sanitize(input: string) {
